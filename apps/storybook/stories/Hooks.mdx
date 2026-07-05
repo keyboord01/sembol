@@ -1,0 +1,115 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Hooks" />
+
+# Headless hooks
+
+Every component in this library is a thin layer over these hooks — if the built-in styling
+doesn't fit, drop to the hooks and keep 100% of the behavior (state machines, error
+normalization, session handling, balance invalidation).
+
+All hooks must be used inside `<PasskeyWalletProvider />`.
+
+## `usePasskeyWallet()`
+
+The core hook: connection state + lifecycle actions.
+
+```tsx
+const {
+  status,        // "initializing" | "disconnected" | "connecting" | "creating" | "connected"
+  address,       // smart-account contract address (C…) or null
+  credentialId,  // passkey credential ID or null
+  isConnected,
+  error,         // last SembolError or null
+  capabilities,  // WebAuthn capability detection result
+  kit,           // the underlying SmartAccountKit instance (escape hatch)
+  connect,       // (opts?) => Promise<{contractId, credentialId} | null>
+  createWallet,  // (opts?) => Promise<{contractId, credentialId}>
+  disconnect,    // () => Promise<void>
+  fund,          // () => Promise<TransactionResult>  (testnet Friendbot)
+} = usePasskeyWallet();
+```
+
+The provider silently restores the previous session on mount (`autoConnect: false` to opt out).
+
+## `useCreateWallet()`
+
+Creation flow with per-phase progress for rich UX:
+
+```tsx
+const { createWallet, status, phase, error, result, reset } = useCreateWallet();
+// phase: "passkey" → OS prompt, "deploying" → on-chain, "funding" → Friendbot
+
+<button onClick={() => createWallet({ userName: "you@example.com" })}>
+  {phase === "passkey" ? "Touch your authenticator…"
+   : phase === "deploying" ? "Deploying smart account…"
+   : phase === "funding" ? "Funding with test XLM…"
+   : "Create wallet"}
+</button>
+```
+
+## `useConnectWallet()`
+
+```tsx
+const { connect, status, error, reset } = useConnectWallet();
+await connect();                 // stored session or passkey prompt
+await connect({ fresh: true }); // always prompt (switch account)
+```
+
+## `useSignTransaction()`
+
+```tsx
+const { signAndSubmit, sign, status, error, result, reset } = useSignTransaction();
+// status: "idle" | "signing" | "submitting" | "success" | "error"
+
+const txResult = await signAndSubmit(assembledTransaction);
+// → { success: true, hash: "…", ledger: 123 }
+```
+
+`signAndSubmit` runs the full WebAuthn flow: sign auth entries → **re-simulate**
+(WebAuthn signatures are much larger than simulation placeholders, so resource fees change)
+→ submit via RPC or your configured relayer. `sign` only signs auth entries — you own
+re-simulation and submission.
+
+Build transactions with the included helpers:
+
+```tsx
+import { buildTransferTransaction } from "@sembol/passkey-react";
+
+const tx = await buildTransferTransaction(kit, {
+  tokenContract: config.nativeTokenContract,
+  to: "G… or C…",
+  amount: "12.5",
+});
+```
+
+## `useTransfer()`
+
+The whole send-payment flow in one call (build → sign → re-simulate → submit),
+with input validation:
+
+```tsx
+const { transfer, status, error, result } = useTransfer();
+await transfer({ to: "G…", amount: "12.5" });          // native XLM
+await transfer({ to: "C…", amount: "5", token: { code: "USDC", issuer: "G…" } });
+```
+
+## `useWalletBalance()`
+
+```tsx
+const { formatted, raw, symbol, decimals, status, error, refetch, isRefreshing } =
+  useWalletBalance();                                 // native XLM
+useWalletBalance({ token: { contractId: "C…" } });    // any SEP-41 token
+useWalletBalance({ refreshInterval: 15_000 });        // polling
+```
+
+Balances **auto-refresh after every transaction** submitted through the kit — no manual
+invalidation needed. SAC balances use the fast ledger-entry path; arbitrary token contracts
+fall back to `balance()`/`decimals()`/`symbol()` simulation (metadata cached).
+
+## `useWalletAddress()`
+
+```tsx
+const { address, displayAddress, explorerUrl, copy, copied } = useWalletAddress();
+// displayAddress: "CDLZ…CYSC" ; copy() → clipboard + 2s `copied` flag
+```

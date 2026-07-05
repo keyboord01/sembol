@@ -1,0 +1,70 @@
+.sembol-story-canvas {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: var(--sembol-color-fg);
+}
+
+.sembol-story-canvas[data-sembol-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Simple layout helpers used by stories */
+.sembol-story-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 320px;
+}
+
+.sembol-story-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sembol-story-card {
+  border: 1px solid var(--sembol-color-border);
+  background: var(--sembol-color-bg);
+  border-radius: 16px;
+  padding: 20px;
+  max-width: 460px;
+}
+
+.sembol-story-note {
+  font-size: 0.8125rem;
+  color: var(--sembol-color-fg-muted);
+  margin: 0;
+  max-width: 420px;
+}
+
+.sembol-story-kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  font-size: 0.875rem;
+}
+
+.sembol-story-kv dt {
+  color: var(--sembol-color-fg-muted);
+}
+
+.sembol-story-kv dd {
+  margin: 0;
+  font-family: ui-monospace, monospace;
+  overflow-wrap: anywhere;
+}
+
+.sembol-story-input {
+  padding: 0.5em 0.75em;
+  border-radius: 10px;
+  border: 1px solid var(--sembol-color-border);
+  background: var(--sembol-color-bg);
+  color: var(--sembol-color-fg);
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
+}

@@ -1,0 +1,26 @@
+{
+  "name": "sembol",
+  "private": true,
+  "description": "Sembol — Passkey Wallet React Component Library for Stellar smart wallets",
+  "license": "MIT",
+  "packageManager": "pnpm@10.21.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "@tailwindcss/oxide"
+    ]
+  },
+  "scripts": {
+    "build": "pnpm --filter @sembol/passkey-react build",
+    "test": "pnpm --filter @sembol/passkey-react test",
+    "typecheck": "pnpm -r typecheck",
+    "storybook": "pnpm --filter sembol-storybook dev",
+    "storybook:build": "pnpm --filter sembol-storybook build",
+    "demo": "pnpm --filter sembol-demo dev",
+    "demo:build": "pnpm --filter sembol-demo build"
+  }
+}

@@ -1,0 +1,94 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Introduction" />
+
+# Sembol — Passkey Wallet React Components for Stellar
+
+**`@sembol/passkey-react`** lets any React developer ship a production-quality Stellar
+passkey smart-wallet flow — create wallet, sign transactions, view balances — in under an hour.
+No seed phrases, no browser extensions: users authenticate with Face ID / Touch ID / Windows Hello,
+and their wallet is an on-chain [OpenZeppelin Smart Account](https://docs.openzeppelin.com/stellar-contracts/accounts/smart-account) contract.
+
+> 🔴 **Everything in this Storybook runs live against Stellar testnet.**
+> You can create a real passkey wallet, fund it with Friendbot XLM, and submit real
+> transactions — right here, inside the stories. Head to **Live Playground** to try the full flow.
+
+## Install
+
+```bash
+npm install @sembol/passkey-react
+# or: pnpm add @sembol/passkey-react
+```
+
+## Quickstart
+
+```tsx
+import {
+  PasskeyWalletProvider,
+  CreateWalletButton,
+  ConnectWalletButton,
+  WalletBalance,
+} from "@sembol/passkey-react";
+import "@sembol/passkey-react/styles.css";
+
+const config = {
+  rpcUrl: "https://soroban-testnet.stellar.org",
+  networkPassphrase: "Test SDF Network ; September 2015",
+  // Current smart-account-kit testnet deployment:
+  accountWasmHash: "8537b8166c0078440a5324c12f6db48d6340d157c306a54c5ea81405abcc2611",
+  webauthnVerifierAddress: "CCMR63YE5T7MPWREF3PC5XNTTGXFSB4GYUGUIT5POHP2UGCS65TBIUUU",
+  appName: "My Stellar App",
+};
+
+export function App() {
+  return (
+    <PasskeyWalletProvider config={config}>
+      <ConnectWalletButton />
+      <CreateWalletButton />
+      <WalletBalance />
+    </PasskeyWalletProvider>
+  );
+}
+```
+
+That's a working passkey wallet: `CreateWalletButton` registers a passkey and deploys a
+smart account on testnet (auto-funded via Friendbot), `ConnectWalletButton` restores or
+prompts for sessions, and `WalletBalance` live-reads the XLM balance.
+
+## What's in the box
+
+| Layer | Exports |
+| --- | --- |
+| **Components** | `PasskeyWalletProvider`, `ConnectWalletButton`, `CreateWalletButton`, `WalletBalance`, `SignTransactionModal` |
+| **Headless hooks** | `usePasskeyWallet`, `useConnectWallet`, `useCreateWallet`, `useSignTransaction`, `useTransfer`, `useWalletBalance`, `useWalletAddress` |
+| **Utilities** | `buildTransferTransaction`, `buildContractCallTransaction`, `summarizeTransaction`, `detectWebAuthnCapabilities`, `toSembolError`, formatting helpers |
+
+Every component is a thin, styled layer over the hooks — use the hooks directly for fully
+custom UI (see **Hooks**), and restyle the components with CSS variables (see **Theming**).
+
+## Architecture
+
+```
+your React app
+  └─ @sembol/passkey-react      (components + hooks + errors + theming)
+       └─ smart-account-kit      (WebAuthn ceremonies, deployment, signing, sessions)
+            ├─ OpenZeppelin smart-account contracts   (audited, on-chain)
+            ├─ Stellar RPC                            (simulation + submission)
+            ├─ Indexer (optional)                     (credential → contract discovery)
+            └─ OpenZeppelin Relayer (optional)        (fee-sponsored submission)
+```
+
+- **On testnet no backend is required** — transactions are submitted via RPC with the kit's
+  deployer keypair as fee payer, and wallets are funded by Friendbot.
+- **For production**, point `relayerUrl` at your [OpenZeppelin Relayer](https://docs.openzeppelin.com/relayer)
+  proxy for fee-sponsored, channel-account submission.
+- A note on lineage: this library targets **smart-account-kit**, the successor of
+  [passkey-kit](https://github.com/kalepail/passkey-kit) (now legacy) — and Launchtube,
+  passkey-kit's fee-sponsorship service, has been replaced by OpenZeppelin Relayer.
+  Migrating? See the migration note in the repo README.
+
+## Browser support
+
+Passkeys work in all evergreen browsers (Chrome/Edge 108+, Safari 16.1+, Firefox 122+).
+See **Browser Compatibility** for the full matrix, feature detection, and the WebAuthn
+error taxonomy this library normalizes for you.

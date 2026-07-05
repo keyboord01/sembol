@@ -1,0 +1,435 @@
+/**
+ * Sembol default theme.
+ *
+ * Every visual decision is a CSS custom property, so adopters can restyle
+ * without forking — override the variables below in your own stylesheet, or
+ * map them to Tailwind v4 tokens:
+ *
+ *   @theme inline {
+ *     --color-sembol-accent: var(--sembol-color-accent);
+ *   }
+ *   :root { --sembol-color-accent: theme(colors.indigo.600); }
+ *
+ * Dark mode: set `data-sembol-theme="dark"` on <html> (or any ancestor),
+ * or leave the attribute off to follow `prefers-color-scheme`.
+ */
+
+:root {
+  --sembol-font:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --sembol-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --sembol-color-accent: #4f46e5;
+  --sembol-color-accent-hover: #4338ca;
+  --sembol-color-on-accent: #ffffff;
+  --sembol-color-bg: #ffffff;
+  --sembol-color-surface: #f8fafc;
+  --sembol-color-border: #e2e8f0;
+  --sembol-color-fg: #0f172a;
+  --sembol-color-fg-muted: #64748b;
+  --sembol-color-success: #16a34a;
+  --sembol-color-danger: #dc2626;
+  --sembol-color-overlay: rgb(15 23 42 / 0.55);
+
+  --sembol-radius: 10px;
+  --sembol-radius-lg: 16px;
+  --sembol-shadow: 0 10px 30px rgb(2 6 23 / 0.18);
+  --sembol-focus-ring: 0 0 0 3px color-mix(in srgb, var(--sembol-color-accent) 35%, transparent);
+}
+
+[data-sembol-theme="dark"] {
+  --sembol-color-accent: #818cf8;
+  --sembol-color-accent-hover: #a5b4fc;
+  --sembol-color-on-accent: #0f172a;
+  --sembol-color-bg: #0b1220;
+  --sembol-color-surface: #101a2e;
+  --sembol-color-border: #1e293b;
+  --sembol-color-fg: #e2e8f0;
+  --sembol-color-fg-muted: #94a3b8;
+  --sembol-color-overlay: rgb(2 6 23 / 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-sembol-theme]) {
+    --sembol-color-accent: #818cf8;
+    --sembol-color-accent-hover: #a5b4fc;
+    --sembol-color-on-accent: #0f172a;
+    --sembol-color-bg: #0b1220;
+    --sembol-color-surface: #101a2e;
+    --sembol-color-border: #1e293b;
+    --sembol-color-fg: #e2e8f0;
+    --sembol-color-fg-muted: #94a3b8;
+    --sembol-color-overlay: rgb(2 6 23 / 0.7);
+  }
+}
+
+/* ---------- Buttons ---------- */
+
+.sembol-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 0.55em 1.1em;
+  border-radius: var(--sembol-radius);
+  border: 1px solid transparent;
+  font: 500 0.9375rem/1.3 var(--sembol-font);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    opacity 120ms ease;
+}
+
+.sembol-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--sembol-focus-ring);
+}
+
+.sembol-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.sembol-btn--primary {
+  background: var(--sembol-color-accent);
+  color: var(--sembol-color-on-accent);
+}
+
+.sembol-btn--primary:hover:not(:disabled) {
+  background: var(--sembol-color-accent-hover);
+}
+
+.sembol-btn--secondary {
+  background: var(--sembol-color-surface);
+  color: var(--sembol-color-fg);
+  border-color: var(--sembol-color-border);
+}
+
+.sembol-btn--secondary:hover:not(:disabled) {
+  border-color: var(--sembol-color-fg-muted);
+}
+
+.sembol-btn--ghost {
+  background: transparent;
+  color: var(--sembol-color-fg-muted);
+}
+
+.sembol-btn--ghost:hover:not(:disabled) {
+  color: var(--sembol-color-fg);
+}
+
+/* ---------- Spinner ---------- */
+
+.sembol-spinner {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: sembol-spin 700ms linear infinite;
+}
+
+@keyframes sembol-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Address chip + menu ---------- */
+
+.sembol-chip-root {
+  position: relative;
+  display: inline-block;
+  font-family: var(--sembol-font);
+}
+
+.sembol-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.45em 0.9em;
+  border-radius: 999px;
+  border: 1px solid var(--sembol-color-border);
+  background: var(--sembol-color-surface);
+  color: var(--sembol-color-fg);
+  font: 500 0.875rem/1.2 var(--sembol-font-mono);
+  cursor: pointer;
+}
+
+.sembol-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--sembol-focus-ring);
+}
+
+.sembol-chip__dot {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 999px;
+  background: var(--sembol-color-success);
+}
+
+.sembol-chip__caret {
+  color: var(--sembol-color-fg-muted);
+  font-size: 0.75em;
+}
+
+.sembol-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 180px;
+  padding: 6px;
+  border-radius: var(--sembol-radius);
+  border: 1px solid var(--sembol-color-border);
+  background: var(--sembol-color-bg);
+  box-shadow: var(--sembol-shadow);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+}
+
+.sembol-menu__item {
+  display: block;
+  width: 100%;
+  padding: 0.5em 0.75em;
+  border: none;
+  border-radius: calc(var(--sembol-radius) - 4px);
+  background: transparent;
+  color: var(--sembol-color-fg);
+  font: 400 0.875rem/1.3 var(--sembol-font);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.sembol-menu__item:hover,
+.sembol-menu__item:focus-visible {
+  background: var(--sembol-color-surface);
+  outline: none;
+}
+
+.sembol-menu__item--danger {
+  color: var(--sembol-color-danger);
+}
+
+/* ---------- Balance ---------- */
+
+.sembol-balance {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+  font-family: var(--sembol-font);
+  color: var(--sembol-color-fg);
+}
+
+.sembol-balance__value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.sembol-balance__symbol {
+  color: var(--sembol-color-fg-muted);
+  font-size: 0.85em;
+}
+
+.sembol-balance__error {
+  color: var(--sembol-color-danger);
+}
+
+.sembol-skeleton {
+  display: inline-block;
+  width: 5em;
+  height: 1em;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--sembol-color-surface) 25%,
+    var(--sembol-color-border) 50%,
+    var(--sembol-color-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: sembol-shimmer 1.4s ease infinite;
+}
+
+@keyframes sembol-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.sembol-icon-btn {
+  border: none;
+  background: transparent;
+  color: var(--sembol-color-fg-muted);
+  font-size: 0.9em;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0 0.2em;
+  align-self: center;
+}
+
+.sembol-icon-btn:hover:not(:disabled) {
+  color: var(--sembol-color-fg);
+}
+
+.sembol-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--sembol-focus-ring);
+}
+
+.sembol-icon-btn[data-spinning] {
+  animation: sembol-spin 700ms linear infinite;
+}
+
+/* ---------- Modal ---------- */
+
+.sembol-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--sembol-color-overlay);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 100;
+}
+
+.sembol-modal {
+  width: 100%;
+  max-width: 420px;
+  border-radius: var(--sembol-radius-lg);
+  border: 1px solid var(--sembol-color-border);
+  background: var(--sembol-color-bg);
+  color: var(--sembol-color-fg);
+  box-shadow: var(--sembol-shadow);
+  font-family: var(--sembol-font);
+  outline: none;
+  animation: sembol-modal-in 140ms ease-out;
+}
+
+@keyframes sembol-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+.sembol-modal__header {
+  padding: 20px 20px 0;
+}
+
+.sembol-modal__title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.sembol-modal__description {
+  margin: 6px 0 0;
+  color: var(--sembol-color-fg-muted);
+  font-size: 0.875rem;
+}
+
+.sembol-modal__body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sembol-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 20px 20px;
+}
+
+.sembol-modal__status {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--sembol-color-fg-muted);
+}
+
+.sembol-modal__status--success {
+  color: var(--sembol-color-success);
+}
+
+.sembol-modal__status--error {
+  color: var(--sembol-color-danger);
+}
+
+/* ---------- Summary list ---------- */
+
+.sembol-summary {
+  margin: 0;
+  border: 1px solid var(--sembol-color-border);
+  border-radius: var(--sembol-radius);
+  background: var(--sembol-color-surface);
+  overflow: hidden;
+}
+
+.sembol-summary__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.sembol-summary__row + .sembol-summary__row {
+  border-top: 1px solid var(--sembol-color-border);
+}
+
+.sembol-summary__row dt {
+  color: var(--sembol-color-fg-muted);
+  font-size: 0.8125rem;
+  flex: none;
+}
+
+.sembol-summary__row dd {
+  margin: 0;
+  font-size: 0.8125rem;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.sembol-summary__row code {
+  font-family: var(--sembol-font-mono);
+  font-size: 0.8em;
+}
+
+.sembol-summary__row a {
+  color: var(--sembol-color-accent);
+  text-decoration: none;
+}
+
+.sembol-summary__row a:hover {
+  text-decoration: underline;
+}
+
+.sembol-badge {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: color-mix(in srgb, var(--sembol-color-accent) 14%, transparent);
+  color: var(--sembol-color-accent);
+}
+
+.sembol-badge[data-network="testnet"] {
+  background: color-mix(in srgb, var(--sembol-color-success) 14%, transparent);
+  color: var(--sembol-color-success);
+}
+
+.sembol-hash {
+  font-family: var(--sembol-font-mono);
+  color: inherit;
+}

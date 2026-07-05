@@ -1,0 +1,94 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Browser Compatibility" />
+
+# Browser compatibility
+
+Passkey support is broad but uneven at the edges. This page is the matrix we validate
+against (primary source: [passkeys.dev/device-support](https://passkeys.dev/device-support),
+last updated May 2026), plus the error taxonomy `@sembol/passkey-react` normalizes.
+
+## Core passkey operations
+
+| Capability | Chrome | Safari | Firefox | Edge |
+| --- | --- | --- | --- | --- |
+| **Create / sign in with platform passkeys** | 108+ (macOS, Windows, Android) | 16.1+ (macOS 13+), iOS 16+ | 122+ (delegates to OS credential manager) | 108+ |
+| **Conditional UI** (passkey autofill) | 108+ (Windows 11 22H2+) | 16.1+ | 122+ desktop, ❌ Android | 122+ |
+| **Conditional create** (passkey upgrades) | 136+ desktop, 142+ Android | 18+ (macOS 15 / iOS 18) | ❌ | ❌ |
+| **Cross-device sign-in** (hybrid / QR) | ✅ (Windows 23H2+, macOS 13+) | ✅ (macOS 13+, iOS 16+) | via OS on macOS 13+ / Win 23H2+ | ✅ |
+| **Related Origin Requests** | 128+ | 18+ (iOS 18 / macOS 15) | 152+ | 128+ |
+| `getClientCapabilities()` | 133+ | 17.4+ | 135+ | 133+ |
+| **Signal API** (`signalUnknownCredential` …) | 132+ | ❌ (WebKit bug #298951) | ❌ | 132+ |
+
+**iOS/iPadOS note:** every browser on iOS is WebKit, so capabilities follow the iOS version
+regardless of browser branding — e.g. conditional create works in "Chrome" on iOS 18 because
+it's Safari's engine underneath.
+
+**Phone as authenticator (QR flow):** Android 9+ and iOS 16+ can act as the cross-device
+authenticator for a desktop browser.
+
+## Known limitations we handle for you
+
+- **Firefox on Android** has no conditional UI — the library falls back to modal prompts.
+- **Windows** conditional UI requires Windows 11 22H2+; hybrid transport requires 23H2+.
+- **Embedded WebViews** (in-app browsers) are unreliable for passkeys — detect with
+  `detectWebAuthnCapabilities()` and steer users to the system browser.
+- **`NotAllowedError` is deliberately ambiguous** (spec anti-fingerprinting): it covers user
+  cancellation, timeout, and permission-policy denial. We map it to a friendly, retryable
+  `user_cancelled` error rather than alarming the user.
+
+## Feature detection
+
+The provider runs this automatically and exposes the result as `capabilities` on
+`usePasskeyWallet()` — built-in buttons disable themselves in unsupported browsers.
+
+```ts
+import { detectWebAuthnCapabilities } from "@sembol/passkey-react";
+
+const caps = await detectWebAuthnCapabilities();
+// {
+//   supported: boolean,               — WebAuthn API present
+//   platformAuthenticator: bool|null, — Face ID / Hello available (null = unknown)
+//   conditionalGet: bool|null,        — passkey autofill
+//   conditionalCreate: bool|null,
+//   hybridTransport: bool|null,       — cross-device QR flow
+//   relatedOrigins: bool|null,
+// }
+```
+
+Uses `PublicKeyCredential.getClientCapabilities()` where available (Safari 17.4+,
+Chrome/Edge 133+, Firefox 135+) with automatic fallback to
+`isUserVerifyingPlatformAuthenticatorAvailable()` + `isConditionalMediationAvailable()`.
+
+## WebAuthn error taxonomy
+
+Every error thrown by hooks/components is a `SembolError` with a stable `code`, a
+developer `message`, and a end-user-safe `userMessage`:
+
+| DOMException | `SembolError.code` | Meaning | Retry? |
+| --- | --- | --- | --- |
+| `NotAllowedError` | `user_cancelled` | User cancelled, timed out, or blocked by permissions policy | ✅ |
+| `InvalidStateError` | `credential_exists` | A passkey for this account already exists on this authenticator (`excludeCredentials` match) — success-adjacent, offer "connect instead" | — |
+| `NotSupportedError` | `webauthn_unsupported` | Requested parameters unsupported | ❌ |
+| `SecurityError` | `rp_mismatch` | `rpId` invalid for this origin (check Related Origin Requests) | ❌ |
+| `AbortError` | `user_cancelled` | Request aborted (e.g. superseded conditional UI) | ✅ |
+| `ConstraintError` | `authenticator_constraint` | e.g. user verification required but no screen lock configured | ❌ |
+
+Plus transaction-layer codes: `simulation_failed`, `submission_failed`, `timeout`,
+`wallet_not_connected`, `wallet_not_found`, `session_expired`, `invalid_input`,
+`storage_error`, `network_error`.
+
+```ts
+import { toSembolError } from "@sembol/passkey-react";
+
+try {
+  await createWallet();
+} catch (err) {
+  const e = toSembolError(err);
+  if (e.code === "credential_exists") {
+    // steer to connect flow
+  } else if (e.recoverable) {
+    toast(e.userMessage); // safe to show + retry
+  }
+}
+```

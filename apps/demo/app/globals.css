@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0b1220;
+  --color-mist: #f1f5f9;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 500px at 80% -10%, rgb(99 102 241 / 0.12), transparent 60%),
+    radial-gradient(900px 400px at 10% 110%, rgb(20 184 166 / 0.1), transparent 60%);
+}

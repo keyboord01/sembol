@@ -1,0 +1,77 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Theming" />
+
+# Theming
+
+Every visual decision in the default stylesheet is a **CSS custom property** — restyle
+without forking. Use the **Theme toolbar button** (🖌 top bar) to preview any story in
+light/dark.
+
+## Setup
+
+```ts
+import "@sembol/passkey-react/styles.css"; // once, app-wide
+```
+
+Prefer fully custom markup? Pass `unstyled` to any component to drop all `sembol-*`
+classes, or skip the stylesheet entirely and build on the headless hooks.
+
+## Design tokens
+
+Override in your own CSS after the import:
+
+```css
+:root {
+  --sembol-color-accent: #e11d48;        /* brand color */
+  --sembol-color-accent-hover: #be123c;
+  --sembol-radius: 6px;
+  --sembol-font: "Inter", sans-serif;
+}
+```
+
+| Variable | Purpose |
+| --- | --- |
+| `--sembol-color-accent` / `-hover` / `--sembol-color-on-accent` | Primary buttons, links, badges |
+| `--sembol-color-bg` / `--sembol-color-surface` | Modal + menu backgrounds, summary cards |
+| `--sembol-color-fg` / `--sembol-color-fg-muted` | Text |
+| `--sembol-color-border` | Borders, dividers |
+| `--sembol-color-success` / `--sembol-color-danger` | Status colors |
+| `--sembol-color-overlay` | Modal backdrop |
+| `--sembol-radius` / `--sembol-radius-lg` | Corner radii |
+| `--sembol-font` / `--sembol-font-mono` | Type stacks |
+| `--sembol-shadow` / `--sembol-focus-ring` | Elevation + focus outline |
+
+## Dark mode
+
+Automatic via `prefers-color-scheme` by default. To control it explicitly, set
+`data-sembol-theme` on `<html>` (or any ancestor):
+
+```html
+<html data-sembol-theme="dark">  <!-- or "light" -->
+```
+
+## Tailwind CSS v4
+
+The tokens are plain CSS variables, so they compose naturally with Tailwind v4's
+CSS-first theming — map them into your `@theme` to reuse Sembol's palette in utilities,
+or drive Sembol from your design system:
+
+```css
+@import "tailwindcss";
+@import "@sembol/passkey-react/styles.css";
+
+/* Drive Sembol from your Tailwind tokens */
+@theme {
+  --color-brand-600: oklch(0.55 0.2 275);
+}
+:root {
+  --sembol-color-accent: var(--color-brand-600);
+}
+```
+
+Components also accept `className`, so Tailwind utilities can be layered directly:
+
+```tsx
+<CreateWalletButton className="w-full shadow-lg" />
+```

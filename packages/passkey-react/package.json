@@ -1,0 +1,72 @@
+{
+  "name": "@sembol/passkey-react",
+  "version": "0.1.0",
+  "description": "React components and headless hooks for Stellar passkey smart wallets. Wraps passkey-kit and Launchtube so you can ship a passkey wallet flow in an afternoon.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "stellar",
+    "soroban",
+    "passkey",
+    "webauthn",
+    "smart-wallet",
+    "react",
+    "hooks",
+    "passkey-kit",
+    "launchtube"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keyboord01/sembol.git",
+    "directory": "packages/passkey-react"
+  },
+  "scripts": {
+    "build": "tsup && cp src/styles.css dist/styles.css",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^16.0.1",
+    "smart-account-kit": "^0.2.10"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^26.1.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.0",
+    "happy-dom": "^20.10.6",
+    "jsdom": "^29.1.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tsup": "^8.5.1",
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.9"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

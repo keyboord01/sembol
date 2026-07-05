@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+.next/
+out/
+storybook-static/
+*.tsbuildinfo
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# tooling
+.vercel/
+coverage/
+.turbo/
+
+# os / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
