@@ -112,21 +112,28 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
     setError(null);
 
     const baseWebAuthn = resolved.webAuthn ?? { startRegistration, startAuthentication };
+    // "done" only on success — a cancelled prompt must not read as progress.
     const instrumentedWebAuthn: NonNullable<SembolConfig["webAuthn"]> = {
       startRegistration: async (options) => {
         signals.emit("webauthn:start");
         try {
-          return await baseWebAuthn.startRegistration(options);
-        } finally {
+          const response = await baseWebAuthn.startRegistration(options);
           signals.emit("webauthn:done");
+          return response;
+        } catch (err) {
+          signals.emit("webauthn:fail");
+          throw err;
         }
       },
       startAuthentication: async (options) => {
         signals.emit("webauthn:start");
         try {
-          return await baseWebAuthn.startAuthentication(options);
-        } finally {
+          const response = await baseWebAuthn.startAuthentication(options);
           signals.emit("webauthn:done");
+          return response;
+        } catch (err) {
+          signals.emit("webauthn:fail");
+          throw err;
         }
       },
     };

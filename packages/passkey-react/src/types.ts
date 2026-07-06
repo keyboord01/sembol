@@ -108,7 +108,12 @@ export type TokenRef =
  * never emits them at runtime, so Sembol instruments the WebAuthn ceremony
  * and its own submission paths instead.
  */
-export type SembolSignal = "webauthn:start" | "webauthn:done" | "funding:start" | "tx:submitted";
+export type SembolSignal =
+  | "webauthn:start"
+  | "webauthn:done"
+  | "webauthn:fail"
+  | "funding:start"
+  | "tx:submitted";
 
 /** Subscribe/emit interface for {@link SembolSignal}s. */
 export interface SembolSignalBus {

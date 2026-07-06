@@ -213,6 +213,30 @@ describe("useTransfer", () => {
   });
 });
 
+describe("signal bus integration", () => {
+  it("auto-refreshes balances after a transfer through Sembol's own tx:submitted signal", async () => {
+    const kit = createFakeKit({ session: connectedSession });
+    const { result } = renderHook(
+      () => ({ transferHook: useTransfer(), balance: useWalletBalance() }),
+      { wrapper: wrapperFor(kit) },
+    );
+    await waitFor(() => expect(result.current.balance.formatted).toBe("12.5"));
+    const readsBefore = kit.rpc.getAssetBalance.mock.calls.length;
+
+    kit.rpc.getAssetBalance.mockResolvedValue({
+      latestLedger: 2,
+      balanceEntry: { amount: "250000000", authorized: true, clawback: false },
+    });
+    await act(async () => {
+      await result.current.transferHook.transfer({ to: CONTRACT_ID, amount: "1" });
+    });
+    // The fake kit emits no events — the refetch must come from the hook's
+    // own signals.emit("tx:submitted").
+    await waitFor(() => expect(result.current.balance.formatted).toBe("25"));
+    expect(kit.rpc.getAssetBalance.mock.calls.length).toBeGreaterThan(readsBefore);
+  });
+});
+
 describe("useWalletAddress", () => {
   it("exposes display helpers for the connected wallet", async () => {
     const kit = createFakeKit({ session: connectedSession });

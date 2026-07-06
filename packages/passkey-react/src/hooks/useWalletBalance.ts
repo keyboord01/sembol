@@ -69,6 +69,7 @@ export function useWalletBalance(options?: UseWalletBalanceOptions): UseWalletBa
     setDecimals(resolved.decimals);
     setSymbol(resolved.symbol);
     setError(null);
+    setIsRefreshing(false);
     setStatus(kit && target && enabled ? "loading" : "idle");
   }
 
@@ -81,8 +82,18 @@ export function useWalletBalance(options?: UseWalletBalanceOptions): UseWalletBa
       let amount: bigint;
       let meta = { decimals: resolved.decimals ?? 7, symbol: resolved.symbol ?? "" };
 
-      if (resolved.asset) {
+      // The ledger-entry fast path only works for contract holders — a G…
+      // account's native XLM lives on the account entry, not a trustline.
+      if (resolved.asset && target.startsWith("C")) {
         amount = await readAssetBalance(kit.rpc, config.networkPassphrase, resolved.asset, target);
+      } else if (resolved.asset) {
+        amount = await readTokenBalance(
+          kit.rpc,
+          config.networkPassphrase,
+          kit.deployerPublicKey,
+          resolved.contractId,
+          target,
+        );
       } else {
         [amount, meta] = await Promise.all([
           readTokenBalance(
@@ -119,8 +130,10 @@ export function useWalletBalance(options?: UseWalletBalanceOptions): UseWalletBa
   // Initial fetch + refetch on connection, token change, or any submitted tx.
   useEffect(() => {
     if (!kit || !target || !enabled) {
+      generation.current += 1; // in-flight reads must not land after this reset
       setStatus("idle");
       setRaw(null);
+      setIsRefreshing(false);
       return;
     }
     void fetchBalance();

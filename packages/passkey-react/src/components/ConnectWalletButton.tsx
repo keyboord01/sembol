@@ -34,7 +34,14 @@ export function ConnectWalletButton({
   const { displayAddress, explorerUrl, copy, copied } = useWalletAddress();
   const [menuOpen, setMenuOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const chipRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
+
+  /** Close the menu, returning focus to the chip for keyboard/AT users. */
+  const closeMenu = (restoreFocus: boolean) => {
+    setMenuOpen(false);
+    if (restoreFocus) chipRef.current?.focus();
+  };
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -46,11 +53,20 @@ export function ConnectWalletButton({
     const frame = requestAnimationFrame(() => menuItems()[0]?.focus());
 
     const onPointerDown = (event: PointerEvent) => {
+      // Clicked elsewhere on purpose — close without stealing focus.
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setMenuOpen(false);
+    };
+    const onFocusIn = (event: FocusEvent) => {
+      // Tabbing out of the menu closes it (otherwise the key handler below
+      // would keep intercepting arrow keys page-wide).
       if (rootRef.current && !rootRef.current.contains(event.target as Node)) setMenuOpen(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
+      // Only steer keys while focus is actually inside the menu widget.
+      if (!rootRef.current?.contains(document.activeElement)) return;
       if (event.key === "Escape") {
         setMenuOpen(false);
+        chipRef.current?.focus();
         return;
       }
       const items = menuItems();
@@ -67,10 +83,12 @@ export function ConnectWalletButton({
       }
     };
     document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("focusin", onFocusIn);
     document.addEventListener("keydown", onKeyDown);
     return () => {
       cancelAnimationFrame(frame);
       document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("focusin", onFocusIn);
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [menuOpen]);
@@ -79,7 +97,7 @@ export function ConnectWalletButton({
   const unsupported = capabilities !== null && !capabilities.supported;
 
   const handleConnect = async (fresh = false) => {
-    setMenuOpen(false);
+    closeMenu(true);
     try {
       const result = await connect(fresh ? { fresh: true } : undefined);
       if (result) onConnected?.(result);
@@ -92,6 +110,10 @@ export function ConnectWalletButton({
     setMenuOpen(false);
     await disconnect();
     onDisconnected?.();
+  };
+
+  const handleCopy = async () => {
+    await copy();
   };
 
   if (!isConnected) {
@@ -120,6 +142,7 @@ export function ConnectWalletButton({
   return (
     <div ref={rootRef} className={unstyled ? className : cx("sembol-chip-root", className)}>
       <button
+        ref={chipRef}
         type="button"
         className={unstyled ? undefined : "sembol-chip"}
         onClick={() => setMenuOpen((open) => !open)}
@@ -139,7 +162,7 @@ export function ConnectWalletButton({
             type="button"
             role="menuitem"
             className={unstyled ? undefined : "sembol-menu__item"}
-            onClick={() => void copy()}
+            onClick={() => void handleCopy()}
           >
             {copied ? "Copied!" : "Copy address"}
           </button>
@@ -150,7 +173,7 @@ export function ConnectWalletButton({
               href={explorerUrl}
               target="_blank"
               rel="noreferrer"
-              onClick={() => setMenuOpen(false)}
+              onClick={() => closeMenu(true)}
             >
               View on explorer ↗
             </a>

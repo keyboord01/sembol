@@ -129,9 +129,10 @@ export function SignTransactionModal({
     if (!open || !dialogRef.current) return;
     const active = document.activeElement;
     const inside = active instanceof Node && dialogRef.current.contains(active);
+    const parkedOnDialog = active === dialogRef.current;
     if (busy && !inside) {
       dialogRef.current.focus();
-    } else if ((status === "success" || status === "error") && !inside) {
+    } else if ((status === "success" || status === "error") && (!inside || parkedOnDialog)) {
       dialogRef.current.querySelector<HTMLElement>("[data-autofocus]")?.focus();
     }
   }, [open, busy, status]);
