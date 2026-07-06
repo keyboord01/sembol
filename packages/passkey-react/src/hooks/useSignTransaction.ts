@@ -16,7 +16,7 @@ export interface SignOptions {
 
 export interface UseSignTransactionResult {
   /**
-   * Sign auth entries only — no re-simulation, no submission. The returned
+   * Sign auth entries only - no re-simulation, no submission. The returned
    * transaction is NOT ready for direct RPC submission (WebAuthn signatures
    * change resource fees); prefer {@link signAndSubmit}.
    */
@@ -88,7 +88,7 @@ export function useSignTransaction(): UseSignTransactionResult {
       setError(null);
       setResult(null);
       // Flip to "submitting" once the passkey ceremony completes (the provider
-      // instruments the WebAuthn calls — the kit emits no transaction events).
+      // instruments the WebAuthn calls - the kit emits no transaction events).
       const offSignal = signals.on((signal) => {
         if (signal === "webauthn:done" && mounted.current) {
           setStatus((s) => (s === "signing" ? "submitting" : s));

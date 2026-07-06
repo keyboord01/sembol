@@ -6,7 +6,7 @@
  * `isUserVerifyingPlatformAuthenticatorAvailable()` +
  * `isConditionalMediationAvailable()` on older browsers.
  *
- * `null` values mean "unknown" — the browser gave no signal either way.
+ * `null` values mean "unknown" - the browser gave no signal either way.
  */
 export interface WebAuthnCapabilities {
   /** WebAuthn API is present at all. */

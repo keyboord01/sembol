@@ -13,7 +13,7 @@ export interface UseWalletAddressResult {
   explorerUrl: string | null;
   /** Copy the address to the clipboard. Resolves false when unavailable. */
   copy: () => Promise<boolean>;
-  /** True for ~2s after a successful copy — drive "Copied!" affordances. */
+  /** True for ~2s after a successful copy - drive "Copied!" affordances. */
   copied: boolean;
 }
 

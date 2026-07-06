@@ -52,7 +52,7 @@ type Story = StoryObj<typeof meta>;
 /** Creates a real testnet wallet. Watch the label walk through each phase. */
 export const Default: Story = {};
 
-/** Skip Friendbot funding (`fund={false}`) — wallet deploys with zero balance. */
+/** Skip Friendbot funding (`fund={false}`) - wallet deploys with zero balance. */
 export const WithoutFunding: Story = {
   args: { fund: false, label: "Create empty wallet" },
 };
@@ -62,7 +62,7 @@ export const WithNickname: Story = {
   args: { nickname: "My Storybook wallet", label: "Create named wallet" },
 };
 
-/** All visual variants — pick what fits your surface. */
+/** All visual variants - pick what fits your surface. */
 export const Variants: Story = {
   render: (args) => (
     <div className="sembol-story-row">

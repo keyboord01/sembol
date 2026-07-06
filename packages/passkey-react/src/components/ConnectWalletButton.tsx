@@ -66,7 +66,7 @@ export function ConnectWalletButton({
     const frame = requestAnimationFrame(() => menuItems()[0]?.focus());
 
     const onPointerDown = (event: PointerEvent) => {
-      // Clicked elsewhere on purpose — close without stealing focus.
+      // Clicked elsewhere on purpose - close without stealing focus.
       if (rootRef.current && !rootRef.current.contains(event.target as Node)) setMenuOpen(false);
     };
     const onFocusIn = (event: FocusEvent) => {

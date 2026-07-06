@@ -85,7 +85,7 @@ function toTransaction(
 
 /**
  * Produce a human-readable summary of a Soroban transaction for approval UIs.
- * Never throws — unparseable transactions yield `kind: "unknown"`.
+ * Never throws - unparseable transactions yield `kind: "unknown"`.
  */
 export function summarizeTransaction(
   input: SummarizableTransaction,

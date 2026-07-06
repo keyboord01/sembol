@@ -19,7 +19,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sembol — Stellar Passkey Wallet",
+  title: "Sembol - Stellar Passkey Wallet",
   description:
     "A complete Stellar smart-wallet experience built only with @sembol/passkey-react: create a passkey wallet, get testnet XLM, send payments, and browse history.",
 };

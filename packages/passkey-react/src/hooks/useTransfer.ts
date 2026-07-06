@@ -32,7 +32,7 @@ export interface UseTransferResult {
 
 /**
  * Headless token-transfer flow (the whole send-payment path in one call).
- * Uses the token's real decimals — including non-7-decimal SEP-41 tokens,
+ * Uses the token's real decimals - including non-7-decimal SEP-41 tokens,
  * whose metadata is read on-chain.
  */
 export function useTransfer(): UseTransferResult {
@@ -74,7 +74,7 @@ export function useTransfer(): UseTransferResult {
       let decimals = resolvedToken.decimals;
       try {
         if (decimals === null) {
-          // Arbitrary token contract — read its real decimals on-chain.
+          // Arbitrary token contract - read its real decimals on-chain.
           decimals = (
             await readTokenMeta(
               kit.rpc,

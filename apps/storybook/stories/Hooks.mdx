@@ -4,7 +4,7 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 # Headless hooks
 
-Every component in this library is a thin layer over these hooks — if the built-in styling
+Every component in this library is a thin layer over these hooks - if the built-in styling
 doesn't fit, drop to the hooks and keep 100% of the behavior (state machines, error
 normalization, session handling, balance invalidation).
 
@@ -68,7 +68,7 @@ const txResult = await signAndSubmit(assembledTransaction);
 
 `signAndSubmit` runs the full WebAuthn flow: sign auth entries → **re-simulate**
 (WebAuthn signatures are much larger than simulation placeholders, so resource fees change)
-→ submit via RPC or your configured relayer. `sign` only signs auth entries — you own
+→ submit via RPC or your configured relayer. `sign` only signs auth entries - you own
 re-simulation and submission.
 
 Build transactions with the included helpers:
@@ -103,7 +103,7 @@ useWalletBalance({ token: { contractId: "C…" } });    // any SEP-41 token
 useWalletBalance({ refreshInterval: 15_000 });        // polling
 ```
 
-Balances **auto-refresh after every transaction** submitted through the kit — no manual
+Balances **auto-refresh after every transaction** submitted through the kit - no manual
 invalidation needed. SAC balances use the fast ledger-entry path; arbitrary token contracts
 fall back to `balance()`/`decimals()`/`symbol()` simulation (metadata cached).
 

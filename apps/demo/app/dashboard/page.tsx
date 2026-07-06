@@ -8,6 +8,7 @@ import {
   useWalletAddress,
   useWalletBalance,
 } from "@sembol/passkey-react";
+import { ReceiveQr } from "../../components/ReceiveQr";
 import { RequireWallet } from "../../components/RequireWallet";
 import { toast } from "../../components/Toast";
 import { recordTransaction } from "../../lib/history";
@@ -17,6 +18,7 @@ function Dashboard() {
   const { explorerUrl, copy, copied } = useWalletAddress();
   const { formatted, symbol, status: balanceStatus, isRefreshing, refetch } = useWalletBalance();
   const [funding, setFunding] = useState(false);
+  const [showQr, setShowQr] = useState(false);
 
   const handleFund = async () => {
     setFunding(true);
@@ -40,14 +42,14 @@ function Dashboard() {
       <section className="grid gap-10 md:grid-cols-[1fr_280px]">
         <div>
           <p className="microlabel text-dim">Available balance</p>
-          <p className="font-display tnum mt-3 text-7xl font-semibold tracking-tight">
+          <p className="font-display tnum mt-3 text-5xl font-semibold tracking-tight sm:text-7xl">
             {balanceStatus === "success" ? (
               <>
                 {formatted}
                 <span className="ml-3 text-xl text-dim">{symbol}</span>
               </>
             ) : balanceStatus === "error" ? (
-              <span className="text-3xl text-short">unavailable</span>
+              <span className="text-2xl text-short sm:text-3xl">unavailable</span>
             ) : (
               <span className="text-dim">·····</span>
             )}
@@ -107,6 +109,14 @@ function Dashboard() {
           >
             {copied ? "✓ Copied" : "Copy address"}
           </button>
+          <button
+            type="button"
+            onClick={() => setShowQr((open) => !open)}
+            aria-expanded={showQr}
+            className="text-dim transition-colors hover:text-fg"
+          >
+            {showQr ? "Hide QR" : "Receive · QR"}
+          </button>
           {explorerUrl && (
             <a
               href={explorerUrl}
@@ -118,9 +128,14 @@ function Dashboard() {
             </a>
           )}
         </div>
+        {showQr && address && (
+          <div className="mt-5 border border-hairline bg-surface p-5">
+            <ReceiveQr address={address} />
+          </div>
+        )}
         <p className="mt-5 max-w-xl text-sm leading-relaxed text-dim">
           This is a smart-account <span className="text-fg">contract</span>, not a classic
-          account — controlled by the passkey on this device.
+          account - controlled by the passkey on this device.
         </p>
       </section>
     </div>

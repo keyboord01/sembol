@@ -10,6 +10,7 @@ import {
   useWalletBalance,
   type AssembledTransaction,
 } from "@sembol/passkey-react";
+import { QrScanner } from "../../components/QrScanner";
 import { RequireWallet } from "../../components/RequireWallet";
 import { toast } from "../../components/Toast";
 import { recordTransaction } from "../../lib/history";
@@ -26,6 +27,7 @@ function SendForm() {
   const [building, setBuilding] = useState(false);
   const [transaction, setTransaction] = useState<AssembledTransaction<unknown> | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   const setMax = () => {
     if (raw === null) return;
@@ -71,7 +73,7 @@ function SendForm() {
         <p className="microlabel text-dim">01 · Send XLM</p>
         <p className="microlabel tnum text-dim">
           Balance{" "}
-          <span className="text-fg">{balanceStatus === "success" ? formatted : "—"}</span> XLM
+          <span className="text-fg">{balanceStatus === "success" ? formatted : "-"}</span> XLM
         </p>
       </div>
 
@@ -83,7 +85,16 @@ function SendForm() {
         className="flex flex-col gap-7"
       >
         <label className="flex flex-col gap-2.5">
-          <span className="microlabel text-dim">Recipient — G… or C… address</span>
+          <span className="microlabel flex items-center justify-between text-dim">
+            <span>Recipient (G… or C… address)</span>
+            <button
+              type="button"
+              onClick={() => setScanning(true)}
+              className="border border-hairline px-3 py-1 transition-colors hover:border-long hover:text-long"
+            >
+              ▦ Scan QR
+            </button>
+          </span>
           <input
             value={recipient}
             onChange={(event) => setRecipient(event.target.value)}
@@ -94,8 +105,19 @@ function SendForm() {
           />
         </label>
 
+        {scanning && (
+          <QrScanner
+            onResult={(scanned) => {
+              setRecipient(scanned);
+              setScanning(false);
+              toast("ok", "Address scanned");
+            }}
+            onClose={() => setScanning(false)}
+          />
+        )}
+
         <label className="flex flex-col gap-2.5">
-          <span className="microlabel text-dim">Amount — XLM</span>
+          <span className="microlabel text-dim">Amount - XLM</span>
           <input
             value={amount}
             onChange={(event) => setAmount(event.target.value)}

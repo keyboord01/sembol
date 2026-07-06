@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Sembol demo — terminal as typography.
+ * Sembol demo - terminal as typography.
  * 90% monochrome; green in small doses; red in micro-doses; hairlines
  * divide everything; tabular numerals for anything that counts.
  */
@@ -23,7 +23,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Uppercase micro-label — the smallest text tier */
+/* Uppercase micro-label - the smallest text tier */
 @utility microlabel {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -46,7 +46,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Tailwind's preflight strips it — every interactive control is a pointer */
+/* Tailwind's preflight strips it - every interactive control is a pointer */
 button:not(:disabled),
 [role="button"]:not([aria-disabled="true"]) {
   cursor: pointer;
@@ -63,7 +63,7 @@ button:not(:disabled),
 }
 
 /*
- * Reskin the Sembol components to the terminal theme — pure variable
+ * Reskin the Sembol components to the terminal theme - pure variable
  * overrides, zero forked CSS. This is the library's theming story, live.
  */
 :root[data-sembol-theme="dark"] {

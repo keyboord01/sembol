@@ -4,7 +4,7 @@ import type { ResolvedSembolConfig, TokenRef } from "../types";
 export interface ResolvedToken {
   /** Contract address of the token (C…). */
   contractId: string;
-  /** Classic asset when the token is a SAC referenced by asset — enables the fast balance path. */
+  /** Classic asset when the token is a SAC referenced by asset - enables the fast balance path. */
   asset: Asset | null;
   /** Known decimals/symbol without an on-chain read, when derivable. */
   decimals: number | null;

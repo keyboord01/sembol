@@ -118,7 +118,7 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
       resolved.webAuthnHints && optionsJSON.hints === undefined
         ? { ...optionsJSON, hints: resolved.webAuthnHints }
         : optionsJSON;
-    // "done" only on success — a cancelled prompt must not read as progress.
+    // "done" only on success - a cancelled prompt must not read as progress.
     const instrumentedWebAuthn: NonNullable<SembolConfig["webAuthn"]> = {
       startRegistration: async (options) => {
         signals.emit("webauthn:start");
@@ -162,7 +162,7 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
         relayerUrl: resolved.relayerUrl,
         indexerUrl: resolved.indexerUrl,
         // The kit's own default is MemoryStorage, which loses sessions on
-        // reload — default to IndexedDB for real persistence.
+        // reload - default to IndexedDB for real persistence.
         storage:
           resolved.storage ??
           (typeof indexedDB !== "undefined" ? new IndexedDBStorage() : undefined),
@@ -204,7 +204,7 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
       setCredentialId(instance.credentialId);
       setStatus("connected");
     } else if (resolved.autoConnect !== false) {
-      // Silent session restore — never prompts.
+      // Silent session restore - never prompts.
       instance
         .connectWallet()
         .then((result) => {
@@ -234,7 +234,7 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
 
   const connect = useCallback(
     async (options?: ConnectOptions) => {
-      if (!kit) throw new SembolError("unknown", "Wallet is still initializing — try again in a moment");
+      if (!kit) throw new SembolError("unknown", "Wallet is still initializing - try again in a moment");
       setError(null);
       setStatus("connecting");
       try {
@@ -314,7 +314,7 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
 
   const createWallet = useCallback(
     async (options?: CreateWalletOptions) => {
-      if (!kit) throw new SembolError("unknown", "Wallet is still initializing — try again in a moment");
+      if (!kit) throw new SembolError("unknown", "Wallet is still initializing - try again in a moment");
       setError(null);
       setStatus("creating");
       try {
@@ -338,7 +338,7 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
           );
         }
         if (fund) {
-          // Friendbot funds contract addresses directly — more reliable than
+          // Friendbot funds contract addresses directly - more reliable than
           // the kit's temp-account + transfer dance (autoFund).
           signals.emit("funding:start");
           try {
@@ -376,20 +376,20 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
   }, [kit]);
 
   const fund = useCallback(async (): Promise<TransactionResult & { amount?: number }> => {
-    if (!kit) throw new SembolError("unknown", "Wallet is still initializing — try again in a moment");
+    if (!kit) throw new SembolError("unknown", "Wallet is still initializing - try again in a moment");
     if (!kit.isConnected || !kit.contractId) throw new SembolError("wallet_not_connected");
     if (resolved.network !== "testnet") {
       throw new SembolError("invalid_input", "Friendbot funding only works on testnet");
     }
     signals.emit("funding:start");
     try {
-      // Friendbot funds contract addresses directly — one call, no temp accounts.
+      // Friendbot funds contract addresses directly - one call, no temp accounts.
       const response = await kit.rpc.fundAddress(kit.contractId);
       await waitForFundsVisible(kit, kit.contractId);
       signals.emit("tx:submitted");
       return { success: true, hash: response.txHash ?? "", amount: 10000 };
     } catch {
-      // Already-funded addresses make Friendbot 400 — fall back to the kit's
+      // Already-funded addresses make Friendbot 400 - fall back to the kit's
       // temp-account transfer, which works repeatedly.
       try {
         const result = await kit.fundWallet(resolved.nativeTokenContract);

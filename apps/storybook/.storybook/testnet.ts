@@ -4,7 +4,7 @@ import type { SembolConfig } from "@sembol/passkey-react";
  * Live Stellar TESTNET configuration.
  *
  * IMPORTANT: the WASM hash + verifier must match the *installed kit version*
- * (smart-account-kit@0.2.x), not the repo's main branch — main tracks
+ * (smart-account-kit@0.2.x), not the repo's main branch - main tracks
  * unreleased contract surfaces. Values below are the 0.2.x testnet artifacts.
  * Testnet resets can also invalidate them.
  */

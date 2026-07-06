@@ -18,8 +18,8 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-ink/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-11 w-full max-w-4xl items-center gap-5 px-5">
-        <Link href="/" className="flex items-baseline gap-2">
+      <div className="mx-auto flex h-12 w-full max-w-4xl items-center gap-4 px-4 sm:gap-5 sm:px-6">
+        <Link href="/" className="flex min-w-0 items-baseline gap-2">
           <span aria-hidden className="text-long">
             ✳
           </span>
@@ -30,7 +30,7 @@ export function Nav() {
         </Link>
 
         {isConnected && (
-          <nav className="microlabel flex items-center gap-4" aria-label="Main">
+          <nav className="microlabel hidden items-center gap-4 md:flex" aria-label="Main">
             {LINKS.map(({ href, label }) => {
               const active = pathname === href;
               return (
@@ -38,7 +38,7 @@ export function Nav() {
                   key={href}
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  className={`border-b py-3 transition-colors ${
+                  className={`border-b py-3.5 transition-colors ${
                     active
                       ? "border-long text-fg"
                       : "border-transparent text-dim hover:text-fg"
@@ -51,11 +51,35 @@ export function Nav() {
           </nav>
         )}
 
-        <div className="ml-auto flex items-center gap-4">
+        <div className="ml-auto flex min-w-0 items-center gap-3 sm:gap-4">
           <LedgerReadout />
           <ConnectWalletButton size="sm" variant="outline" />
         </div>
       </div>
+
+      {/* Mobile section tabs: their own hairline row so nothing overflows */}
+      {isConnected && (
+        <nav
+          className="microlabel grid grid-cols-3 divide-x divide-hairline border-t border-hairline text-center md:hidden"
+          aria-label="Main"
+        >
+          {LINKS.map(({ href, label }) => {
+            const active = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`py-3 transition-colors ${
+                  active ? "bg-surface text-long" : "text-dim hover:text-fg"
+                }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </header>
   );
 }

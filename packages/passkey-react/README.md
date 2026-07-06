@@ -1,17 +1,17 @@
 # @sembol/passkey-react
 
 React components and headless hooks for **Stellar passkey smart wallets**. Users sign with
-Face ID / Touch ID / Windows Hello — no seed phrases, no extensions — and every wallet is an
+Face ID / Touch ID / Windows Hello - no seed phrases, no extensions - and every wallet is an
 audited [OpenZeppelin Smart Account](https://docs.openzeppelin.com/stellar-contracts/accounts/smart-account)
 contract, driven by [smart-account-kit](https://github.com/kalepail/smart-account-kit).
 
-- 🧩 **5 drop-in components** — provider, create/connect buttons, balance, signing modal
-- 🪝 **7 headless hooks** — every component is a thin layer over them; bring your own UI
-- 🌐 **WebAuthn edge cases handled** — capability detection, cancellations, timeouts,
+- 🧩 **5 drop-in components** - provider, create/connect buttons, balance, signing modal
+- 🪝 **7 headless hooks** - every component is a thin layer over them; bring your own UI
+- 🌐 **WebAuthn edge cases handled** - capability detection, cancellations, timeouts,
   duplicate credentials, rpId mismatches → one typed, user-presentable error taxonomy
-- 🎨 **CSS-variable theming** — light/dark included, Tailwind-v4-friendly, `unstyled` escape hatch
-- 🖥 **SSR-safe** — works in Next.js App Router out of the box (`"use client"` baked in)
-- 🧪 **Tested** — 64 unit + component smoke tests (vitest + testing-library)
+- 🎨 **CSS-variable theming** - light/dark included, Tailwind-v4-friendly, `unstyled` escape hatch
+- 🖥 **SSR-safe** - works in Next.js App Router out of the box (`"use client"` baked in)
+- 🧪 **Tested** - 64 unit + component smoke tests (vitest + testing-library)
 
 ## Install
 
@@ -37,7 +37,7 @@ const config = {
   rpcUrl: "https://soroban-testnet.stellar.org",
   networkPassphrase: "Test SDF Network ; September 2015",
   // Current smart-account-kit testnet deployment
-  // (testnet resets can invalidate these — see kalepail/smart-account-kit demo/.env.example):
+  // (testnet resets can invalidate these - see kalepail/smart-account-kit demo/.env.example):
   accountWasmHash: "a12e8fa9621efd20315753bd4007d974390e31fbcb4a7ddc4dd0a0dec728bf2e",
   webauthnVerifierAddress: "CBSHV66WG7UV6FQVUTB67P3DZUEJ2KJ5X6JKQH5MFRAAFNFJUAJVXJYV",
   appName: "My Stellar App",
@@ -109,7 +109,7 @@ Prefer one-call sends without an approval screen? `useTransfer()` wraps `kit.tra
 | `<WalletBalance />` | Live balance with skeleton, error state, auto + manual refresh. Props: `token`, `address`, `refreshInterval`, `showRefresh`, `unstyled`. |
 | `<SignTransactionModal />` | Accessible approval dialog (focus trap, Escape, `aria-modal`) driving `signAndSubmit`. Props: `open`, `transaction`, `title`, `description`, `signOptions`, `onClose`, `onSuccess`, `onError`, `unstyled`. |
 
-All components take `className` and `unstyled` — with `unstyled` they render bare, semantic
+All components take `className` and `unstyled` - with `unstyled` they render bare, semantic
 markup for your own styles.
 
 ## Hooks (headless layer)
@@ -117,11 +117,11 @@ markup for your own styles.
 | Hook | Returns |
 | --- | --- |
 | `usePasskeyWallet()` | `{ kit, status, address, credentialId, isConnected, error, capabilities, config, connect, createWallet, disconnect, fund }` |
-| `useCreateWallet()` | `{ createWallet, status, phase, error, result, reset }` — `phase`: `"passkey" \| "deploying" \| "funding"` |
+| `useCreateWallet()` | `{ createWallet, status, phase, error, result, reset }` - `phase`: `"passkey" \| "deploying" \| "funding"` |
 | `useConnectWallet()` | `{ connect, status, error, reset }` |
-| `useSignTransaction()` | `{ sign, signAndSubmit, status, error, result, reset }` — status: `signing → submitting → success` |
+| `useSignTransaction()` | `{ sign, signAndSubmit, status, error, result, reset }` - status: `signing → submitting → success` |
 | `useTransfer()` | `{ transfer({ to, amount, token? }), status, error, result, reset }` with address/amount validation |
-| `useWalletBalance(opts?)` | `{ raw, formatted, symbol, decimals, status, error, refetch, isRefreshing }` — auto-refetch after every submitted tx |
+| `useWalletBalance(opts?)` | `{ raw, formatted, symbol, decimals, status, error, refetch, isRefreshing }` - auto-refetch after every submitted tx |
 | `useWalletAddress()` | `{ address, displayAddress, explorerUrl, copy, copied }` |
 
 Utilities: `buildTransferTransaction`, `buildContractCallTransaction`, `summarizeTransaction`,
@@ -135,8 +135,8 @@ advanced use.
 interface SembolConfig {
   rpcUrl: string;                     // required
   networkPassphrase: string;          // required
-  accountWasmHash: string;            // required — smart-account WASM on your network
-  webauthnVerifierAddress: string;    // required — deployed secp256r1 verifier
+  accountWasmHash: string;            // required - smart-account WASM on your network
+  webauthnVerifierAddress: string;    // required - deployed secp256r1 verifier
   nativeTokenContract?: string;       // default: derived native SAC
   appName?: string;                   // WebAuthn rpName (passkey prompt)
   rpId?: string;                      // WebAuthn relying-party ID (default: current domain)
@@ -159,7 +159,7 @@ interface SembolConfig {
 ### Fee sponsoring (production)
 
 Without `relayerUrl`, transactions are submitted via RPC with the kit's deterministic deployer
-keypair as fee source — perfect for testnet, not for mainnet. For production, run an
+keypair as fee source - perfect for testnet, not for mainnet. For production, run an
 [OpenZeppelin Relayer](https://docs.openzeppelin.com/relayer) proxy that attaches your API key
 server-side and set `relayerUrl` to it. Testnet relayer keys are self-serve:
 `curl https://channels.openzeppelin.com/testnet/gen`. The reference app ships a ready-made
@@ -196,7 +196,7 @@ Storybook *Theming* page.
 ## Testing your integration
 
 Inject a fake kit through the provider's `kit` prop, or pass a custom `webAuthn` implementation
-in the config (this is how the library's own 64-test suite works — see `tests/helpers/fakeKit.ts`
+in the config (this is how the library's own 64-test suite works - see `tests/helpers/fakeKit.ts`
 in the repo). For E2E, Chromium's virtual-authenticator CDP works with real testnet flows.
 
 ## License

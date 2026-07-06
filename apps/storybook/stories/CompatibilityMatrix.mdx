@@ -21,7 +21,7 @@ last updated May 2026), plus the error taxonomy `@sembol/passkey-react` normaliz
 | **Signal API** (`signalUnknownCredential` …) | 132+ | ❌ (WebKit bug #298951) | ❌ | 132+ |
 
 **iOS/iPadOS note:** every browser on iOS is WebKit, so capabilities follow the iOS version
-regardless of browser branding — e.g. conditional create works in "Chrome" on iOS 18 because
+regardless of browser branding - e.g. conditional create works in "Chrome" on iOS 18 because
 it's Safari's engine underneath.
 
 **Phone as authenticator (QR flow):** Android 9+ and iOS 16+ can act as the cross-device
@@ -29,9 +29,9 @@ authenticator for a desktop browser.
 
 ## Known limitations we handle for you
 
-- **Firefox on Android** has no conditional UI — the library falls back to modal prompts.
+- **Firefox on Android** has no conditional UI - the library falls back to modal prompts.
 - **Windows** conditional UI requires Windows 11 22H2+; hybrid transport requires 23H2+.
-- **Embedded WebViews** (in-app browsers) are unreliable for passkeys — detect with
+- **Embedded WebViews** (in-app browsers) are unreliable for passkeys - detect with
   `detectWebAuthnCapabilities()` and steer users to the system browser.
 - **`NotAllowedError` is deliberately ambiguous** (spec anti-fingerprinting): it covers user
   cancellation, timeout, and permission-policy denial. We map it to a friendly, retryable
@@ -40,18 +40,18 @@ authenticator for a desktop browser.
 ## Feature detection
 
 The provider runs this automatically and exposes the result as `capabilities` on
-`usePasskeyWallet()` — built-in buttons disable themselves in unsupported browsers.
+`usePasskeyWallet()` - built-in buttons disable themselves in unsupported browsers.
 
 ```ts
 import { detectWebAuthnCapabilities } from "@sembol/passkey-react";
 
 const caps = await detectWebAuthnCapabilities();
 // {
-//   supported: boolean,               — WebAuthn API present
-//   platformAuthenticator: bool|null, — Face ID / Hello available (null = unknown)
-//   conditionalGet: bool|null,        — passkey autofill
+//   supported: boolean,               - WebAuthn API present
+//   platformAuthenticator: bool|null, - Face ID / Hello available (null = unknown)
+//   conditionalGet: bool|null,        - passkey autofill
 //   conditionalCreate: bool|null,
-//   hybridTransport: bool|null,       — cross-device QR flow
+//   hybridTransport: bool|null,       - cross-device QR flow
 //   relatedOrigins: bool|null,
 // }
 ```
@@ -68,7 +68,7 @@ developer `message`, and a end-user-safe `userMessage`:
 | DOMException | `SembolError.code` | Meaning | Retry? |
 | --- | --- | --- | --- |
 | `NotAllowedError` | `user_cancelled` | User cancelled, timed out, or blocked by permissions policy | ✅ |
-| `InvalidStateError` | `credential_exists` | A passkey for this account already exists on this authenticator (`excludeCredentials` match) — success-adjacent, offer "connect instead" | — |
+| `InvalidStateError` | `credential_exists` | A passkey for this account already exists on this authenticator (`excludeCredentials` match) - success-adjacent, offer "connect instead" | - |
 | `NotSupportedError` | `webauthn_unsupported` | Requested parameters unsupported | ❌ |
 | `SecurityError` | `rp_mismatch` | `rpId` invalid for this origin (check Related Origin Requests) | ❌ |
 | `AbortError` | `user_cancelled` | Request aborted (e.g. superseded conditional UI) | ✅ |

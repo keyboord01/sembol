@@ -34,7 +34,7 @@ export function Spinner({ className }: { className?: string }) {
 const TOAST_DISMISS_MS = 6000;
 
 /**
- * Error toast rendered in a portal — never affects the layout of the
+ * Error toast rendered in a portal - never affects the layout of the
  * component that raised it. Auto-dismisses; manual close included.
  */
 export function ErrorToast({

@@ -24,7 +24,7 @@ export function toast(kind: ToastKind, text: string): void {
 
 const DISMISS_MS = 5500;
 
-/** Fixed bottom-right toast stack — terminal-styled, never shifts layout. */
+/** Fixed bottom-right toast stack - terminal-styled, never shifts layout. */
 export function Toaster() {
   const [items, setItems] = useState<ToastItem[]>([]);
   const [mounted, setMounted] = useState(false);

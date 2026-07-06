@@ -2,16 +2,16 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 <Meta title="Introduction" />
 
-# Sembol — Passkey Wallet React Components for Stellar
+# Sembol - Passkey Wallet React Components for Stellar
 
 **`@sembol/passkey-react`** lets any React developer ship a production-quality Stellar
-passkey smart-wallet flow — create wallet, sign transactions, view balances — in under an hour.
+passkey smart-wallet flow - create wallet, sign transactions, view balances - in under an hour.
 No seed phrases, no browser extensions: users authenticate with Face ID / Touch ID / Windows Hello,
 and their wallet is an on-chain [OpenZeppelin Smart Account](https://docs.openzeppelin.com/stellar-contracts/accounts/smart-account) contract.
 
 > 🔴 **Everything in this Storybook runs live against Stellar testnet.**
 > You can create a real passkey wallet, fund it with Friendbot XLM, and submit real
-> transactions — right here, inside the stories. Head to **Live Playground** to try the full flow.
+> transactions - right here, inside the stories. Head to **Live Playground** to try the full flow.
 
 ## Install
 
@@ -63,7 +63,7 @@ prompts for sessions, and `WalletBalance` live-reads the XLM balance.
 | **Headless hooks** | `usePasskeyWallet`, `useConnectWallet`, `useCreateWallet`, `useSignTransaction`, `useTransfer`, `useWalletBalance`, `useWalletAddress` |
 | **Utilities** | `buildTransferTransaction`, `buildContractCallTransaction`, `summarizeTransaction`, `detectWebAuthnCapabilities`, `toSembolError`, formatting helpers |
 
-Every component is a thin, styled layer over the hooks — use the hooks directly for fully
+Every component is a thin, styled layer over the hooks - use the hooks directly for fully
 custom UI (see **Hooks**), and restyle the components with CSS variables (see **Theming**).
 
 ## Architecture
@@ -78,12 +78,12 @@ your React app
             └─ OpenZeppelin Relayer (optional)        (fee-sponsored submission)
 ```
 
-- **On testnet no backend is required** — transactions are submitted via RPC with the kit's
+- **On testnet no backend is required** - transactions are submitted via RPC with the kit's
   deployer keypair as fee payer, and wallets are funded by Friendbot.
 - **For production**, point `relayerUrl` at your [OpenZeppelin Relayer](https://docs.openzeppelin.com/relayer)
   proxy for fee-sponsored, channel-account submission.
 - A note on lineage: this library targets **smart-account-kit**, the successor of
-  [passkey-kit](https://github.com/kalepail/passkey-kit) (now legacy) — and Launchtube,
+  [passkey-kit](https://github.com/kalepail/passkey-kit) (now legacy) - and Launchtube,
   passkey-kit's fee-sponsorship service, has been replaced by OpenZeppelin Relayer.
   Migrating? See the migration note in the repo README.
 

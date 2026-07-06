@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Monorepo root — inference fails under `vercel build`, and both values must
+// Monorepo root - inference fails under `vercel build`, and both values must
 // agree or Next prefers (Vercel's injected) outputFileTracingRoot.
 const monorepoRoot = path.resolve(fileURLToPath(new URL(".", import.meta.url)), "../..");
 

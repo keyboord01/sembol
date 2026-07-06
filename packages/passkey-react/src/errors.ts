@@ -74,7 +74,7 @@ export class SembolError extends Error {
 
 function fromDomExceptionName(name: string, err: unknown): SembolError | null {
   switch (name) {
-    // Covers user-cancel, WebAuthn timeout, and permission-policy denial —
+    // Covers user-cancel, WebAuthn timeout, and permission-policy denial -
     // the spec intentionally collapses them into one name.
     case "NotAllowedError":
       return new SembolError("user_cancelled", "WebAuthn request not allowed (cancelled, timed out, or blocked by policy)", err);
@@ -170,7 +170,7 @@ export function toSembolError(err: unknown): SembolError {
   }
 
   // smart-account-kit throws a few plain Errors (not SmartAccountError) in
-  // its connect/deploy paths — recognize them by message.
+  // its connect/deploy paths - recognize them by message.
   if (err instanceof Error) {
     if (
       /not found on-chain|may not have been deployed|Could not determine (contract|credential) ID/i.test(
@@ -190,7 +190,7 @@ export function toSembolError(err: unknown): SembolError {
 
 /**
  * Extract the credential ID embedded in smart-account-kit's
- * "contract not found on-chain for credential …" error message —
+ * "contract not found on-chain for credential …" error message -
  * used to attempt indexer-based wallet discovery.
  */
 export function credentialIdFromError(err: unknown): string | null {

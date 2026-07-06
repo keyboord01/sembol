@@ -17,7 +17,7 @@ const SPECS = [
   {
     n: "01",
     title: "No seed phrases",
-    body: "The wallet is a passkey — Face ID, Touch ID, Windows Hello. Nothing to write down, nothing to lose.",
+    body: "The wallet is a passkey - Face ID, Touch ID, Windows Hello. Nothing to write down, nothing to lose.",
   },
   {
     n: "02",
@@ -72,13 +72,13 @@ export default function OnboardingPage() {
         </h1>
         <p className="mt-6 max-w-lg text-base leading-relaxed text-dim">
           Create a smart wallet with your fingerprint or face, receive test XLM, and send your
-          first payment — all in the browser.
+          first payment - all in the browser.
         </p>
 
         <div className="mt-10 max-w-lg">
           <label className="flex flex-col gap-2.5">
             <span className="microlabel text-dim">
-              Wallet name <span className="normal-case">— shown in your passkey manager</span>
+              Wallet name <span className="normal-case">- shown in your passkey manager</span>
             </span>
             <input
               value={walletName}
@@ -92,7 +92,7 @@ export default function OnboardingPage() {
             />
           </label>
 
-          {/* Deployment sequence — lights up phase by phase while creating */}
+          {/* Deployment sequence - lights up phase by phase while creating */}
           <ol className="mt-4 divide-y divide-hairline border border-hairline" aria-label="Creation steps">
             {STEPS.map((step, index) => {
               const done = creating && phaseIndex > index;
@@ -131,14 +131,14 @@ export default function OnboardingPage() {
 
           <details className="group mt-5">
             <summary className="microlabel cursor-pointer list-none text-dim transition-colors hover:text-fg">
-              <span aria-hidden className="text-long">?</span> Connect can't find your passkey —
+              <span aria-hidden className="text-long">?</span> Connect can't find your passkey -
               read this
             </summary>
             <div className="mt-3 flex flex-col gap-3 border-l-2 border-hairline pl-4 text-sm leading-relaxed text-dim">
               <p>
                 <span className="text-fg">Passkeys are per-domain.</span> A wallet created on{" "}
                 <code className="text-fg">localhost</code> (or any other site) will never show up
-                here — create one on this domain once, and Connect will find it from then on.
+                here - create one on this domain once, and Connect will find it from then on.
               </p>
               <p>
                 <span className="text-fg">Chrome + Apple Passwords:</span> Chrome only lists
@@ -147,7 +147,7 @@ export default function OnboardingPage() {
                   chrome://password-manager/settings → "Use passkeys and passwords from iCloud
                   Keychain"
                 </code>{" "}
-                is enabled. Saving works without it, listing doesn't — or just use Safari, which
+                is enabled. Saving works without it, listing doesn't - or just use Safari, which
                 reads them natively.
               </p>
             </div>

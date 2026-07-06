@@ -94,7 +94,7 @@ export interface BuildContractCallParams {
  * Build an arbitrary contract invocation as an `AssembledTransaction`
  * (simulated, with auth entries ready for passkey signing).
  * Throws `SembolError("simulation_failed")` when the on-chain simulation
- * reports an error — a transaction that would fail is never returned.
+ * reports an error - a transaction that would fail is never returned.
  */
 export async function buildContractCallTransaction(
   kit: SmartAccountKit,

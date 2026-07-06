@@ -27,7 +27,7 @@ export function formatTokenAmount(raw: bigint, decimals: number): string {
  */
 export function parseTokenAmount(value: string | number, decimals: number): bigint {
   const str = String(value).trim();
-  // Accepts "12", "12.5", ".5" and "1." — common user input shapes.
+  // Accepts "12", "12.5", ".5" and "1." - common user input shapes.
   if (!/^-?(\d+(\.\d*)?|\.\d+)$/.test(str)) {
     throw new Error(`Invalid amount: "${value}"`);
   }

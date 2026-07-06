@@ -1,10 +1,10 @@
 import type { SembolConfig } from "@sembol/passkey-react";
 
 /**
- * Testnet configuration with working defaults — the app runs with zero env.
+ * Testnet configuration with working defaults - the app runs with zero env.
  *
  * IMPORTANT: the WASM hash + verifier must match the *installed kit version*
- * (smart-account-kit@0.2.x), not the repo's main branch — main tracks
+ * (smart-account-kit@0.2.x), not the repo's main branch - main tracks
  * unreleased contract surfaces. Testnet resets can also invalidate them.
  */
 export const sembolConfig: SembolConfig = {
@@ -23,6 +23,6 @@ export const sembolConfig: SembolConfig = {
   relayerUrl: process.env.NEXT_PUBLIC_RELAYER_URL || undefined,
   appName: "Sembol Demo",
   // Surface the local platform passkey (Touch ID / Windows Hello) first on
-  // every prompt — some browsers otherwise bury it on connect.
+  // every prompt - some browsers otherwise bury it on connect.
   webAuthnHints: ["client-device", "hybrid"],
 };

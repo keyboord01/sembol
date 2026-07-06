@@ -56,7 +56,7 @@ export interface SembolConfig {
   /**
    * WebAuthn hints (L3), in preference order, injected into every passkey
    * prompt. `["client-device", "hybrid"]` asks the browser to surface the
-   * local platform authenticator (Touch ID / Windows Hello) first — useful
+   * local platform authenticator (Touch ID / Windows Hello) first - useful
    * because some browsers otherwise bury it on `get()` prompts.
    */
   webAuthnHints?: ("client-device" | "hybrid" | "security-key")[];
@@ -146,7 +146,7 @@ export interface PasskeyWalletContextValue {
   capabilities: WebAuthnCapabilities | null;
   /** Resolved configuration. */
   config: ResolvedSembolConfig;
-  /** Monotonic counter bumped after every submitted transaction — used for cache invalidation. */
+  /** Monotonic counter bumped after every submitted transaction - used for cache invalidation. */
   txEpoch: number;
   /** Internal progress signal bus (advanced; drives status transitions and balance invalidation). */
   signals: SembolSignalBus;

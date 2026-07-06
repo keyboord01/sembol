@@ -2,7 +2,7 @@
  * Sembol default theme.
  *
  * Every visual decision is a CSS custom property, so adopters can restyle
- * without forking — override the variables below in your own stylesheet, or
+ * without forking - override the variables below in your own stylesheet, or
  * map them to Tailwind v4 tokens:
  *
  *   @theme inline {

@@ -110,7 +110,7 @@ function LiveModalDemo() {
       <SignTransactionModal
         open={open}
         transaction={transaction}
-        description="Storybook live demo — sends 0.1 XLM from your test wallet to itself."
+        description="Storybook live demo - sends 0.1 XLM from your test wallet to itself."
         onClose={() => setOpen(false)}
         onSuccess={(result) => setLastHash(result.hash)}
       />

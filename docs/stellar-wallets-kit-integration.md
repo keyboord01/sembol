@@ -2,10 +2,10 @@
 
 This guide is for teams using [Stellar Wallets Kit](https://github.com/Creit-Tech/Stellar-Wallets-Kit)
 (`@creit.tech/stellar-wallets-kit`) who want passkey smart wallets alongside Freighter, xBull,
-Lobstr & co — and it documents the intended path for adopting Sembol's engine **into** the kit
+Lobstr & co - and it documents the intended path for adopting Sembol's engine **into** the kit
 as a first-party module.
 
-> Status as of July 2026: Stellar Wallets Kit v2.5.0 has **no passkey module** — v2.0 was a
+> Status as of July 2026: Stellar Wallets Kit v2.5.0 has **no passkey module** - v2.0 was a
 > breaking rewrite (static `StellarWalletsKit.init({ modules })` singleton, SEP-43-shaped
 > signing), and its module registry only covers extension/hardware/bridge wallets. That is the
 > adoption gap this document targets. The actual PR into the kit is a separate workstream; this
@@ -34,7 +34,7 @@ import { StellarWalletsKitAdapter } from "smart-account-kit";
 <PasskeyWalletProvider
   config={{
     ...networkConfig,
-    // ExternalWalletAdapter — smart-account-kit ships a ready adapter for SWK
+    // ExternalWalletAdapter - smart-account-kit ships a ready adapter for SWK
   }}
 />
 ```
@@ -84,7 +84,7 @@ export class SembolPasskeyModule implements ModuleInterface {
     // (WebAuthn signatures are larger than simulation placeholders).
     // Sembol/smart-account-kit encapsulate that as sign-and-submit; a pure
     // "sign and return XDR" flow needs the auth-entry route below, or the kit's
-    // optional signAndSubmitTransaction() member — see Open questions.
+    // optional signAndSubmitTransaction() member - see Open questions.
     throw { code: -2, message: "Use signAuthEntry / signAndSubmitTransaction for smart accounts" };
   }
 
@@ -131,19 +131,19 @@ StellarWalletsKit.init({
 1. **`signTransaction` semantics for contract wallets.** SEP-43's "XDR in, signed XDR out"
    assumes envelope signatures. Smart accounts sign *auth entries* and require re-simulation,
    so either (a) the module implements the optional `signAndSubmitTransaction()` member
-   (already in `ModuleInterface` for WalletConnect-style wallets — returns
+   (already in `ModuleInterface` for WalletConnect-style wallets - returns
    `{ status: "success" | "pending" }`), or (b) the kit grows an explicit smart-wallet signing
    capability. Option (a) works today and is what we propose.
 2. **C-addresses.** `getAddress()` returns a contract address; consuming dapps must not assume
    `G…`. The kit itself is agnostic, but downstream SDK calls (e.g. sequence-number lookups)
    are not.
-3. **Availability timing.** `isAvailable()` must answer in <1s — our capability detection is
+3. **Availability timing.** `isAvailable()` must answer in <1s - our capability detection is
    a few ms (no network), so passkeys can even sit in `defaultModules()` (no polyfills needed).
 4. **Fee sponsoring.** Smart-account submissions need a fee payer (RPC deployer account on
-   testnet, OpenZeppelin Relayer in production) — configuration the kit modal doesn't model
+   testnet, OpenZeppelin Relayer in production) - configuration the kit modal doesn't model
    today; it stays in the module constructor.
 
 ## Try it
 
-Everything above runs against the live testnet in this repo's Storybook and reference app —
+Everything above runs against the live testnet in this repo's Storybook and reference app -
 `pnpm storybook` / `pnpm demo`.

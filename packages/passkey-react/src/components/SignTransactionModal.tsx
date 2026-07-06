@@ -123,7 +123,7 @@ export function SignTransactionModal({
     return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [open, close]);
 
-  // While busy the footer buttons disable, dropping focus to <body> — park it
+  // While busy the footer buttons disable, dropping focus to <body> - park it
   // on the dialog; when finished, move it to the primary action.
   useEffect(() => {
     if (!open || !dialogRef.current) return;
@@ -245,7 +245,7 @@ export function SignTransactionModal({
               ✓ Transaction confirmed
               {explorerTxUrl && (
                 <>
-                  {" — "}
+                  {" - "}
                   <a href={explorerTxUrl} target="_blank" rel="noreferrer" className={unstyled ? undefined : "sembol-hash"}>
                     {truncateAddress(result.hash, 8, 8)} ↗
                   </a>

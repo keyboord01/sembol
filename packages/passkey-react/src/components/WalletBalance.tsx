@@ -40,7 +40,7 @@ export function WalletBalance({
           role="img"
           aria-label={`Balance unavailable: ${error?.userMessage ?? "unknown error"}`}
         >
-          —
+          -
         </span>
       )}
       {status === "idle" && <span className={unstyled ? undefined : "sembol-balance__value"}>–</span>}

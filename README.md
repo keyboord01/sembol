@@ -1,6 +1,6 @@
-# Sembol — Passkey Wallet React Component Library for Stellar
+# Sembol - Passkey Wallet React Component Library for Stellar
 
-**Ship a Stellar passkey smart-wallet flow — create wallet, sign transactions, view balances —
+**Ship a Stellar passkey smart-wallet flow - create wallet, sign transactions, view balances -
 in under an hour.** No seed phrases, no extensions: users authenticate with Face ID / Touch ID /
 Windows Hello, and every wallet is an audited
 [OpenZeppelin Smart Account](https://docs.openzeppelin.com/stellar-contracts/accounts/smart-account)
@@ -23,10 +23,10 @@ import "@sembol/passkey-react/styles.css";
 | **Reference app** | **https://sembol-demo.vercel.app** | ✅ Live on Stellar testnet |
 | **Storybook** | **https://sembol-storybook.vercel.app** | ✅ Live (interactive testnet stories) |
 | Source (private) | https://github.com/keyboord01/sembol | ✅ Live |
-| **npm package** | **https://www.npmjs.com/package/@sembol/passkey-react** | ✅ Published — `npm install @sembol/passkey-react` |
+| **npm package** | **https://www.npmjs.com/package/@sembol/passkey-react** | ✅ Published - `npm install @sembol/passkey-react` |
 | CI | `.github/workflows/ci.yml` | ✅ Build + typecheck + 65 tests on every push |
 
-**Demo video:** [docs/media/sembol-demo-video.mp4](docs/media/sembol-demo-video.mp4) —
+**Demo video:** [docs/media/sembol-demo-video.mp4](docs/media/sembol-demo-video.mp4) -
 72s covering both flows end-to-end against the live sites: the reference app (create a named
 wallet → funded balance → send 2.5 XLM → approval modal → history with the on-chain hash
 [`1649643d…736f`](https://stellar.expert/explorer/testnet/tx/1649643d4bd4e1331387ef5611158927ed579e50befbf73fa477912204b6736f))
@@ -45,7 +45,7 @@ created wallet
 
 | Path | What it is |
 | --- | --- |
-| [`packages/passkey-react`](packages/passkey-react) | **`@sembol/passkey-react`** — the component library + headless hooks (TypeScript, MIT). 5 components, 7 hooks, WebAuthn edge-case handling, typed errors, CSS-variable theming, 64 unit/smoke tests. |
+| [`packages/passkey-react`](packages/passkey-react) | **`@sembol/passkey-react`** - the component library + headless hooks (TypeScript, MIT). 5 components, 7 hooks, WebAuthn edge-case handling, typed errors, CSS-variable theming, 64 unit/smoke tests. |
 | [`apps/storybook`](apps/storybook) | Public Storybook: every component/hook documented with **live Stellar-testnet examples**, a browser-compatibility matrix, theming guide, and a full wallet playground. |
 | [`apps/demo`](apps/demo) | Reference app (Next.js 16 + Tailwind 4) built **only** with the published library: onboarding → dashboard → send payment → history, on Stellar testnet. |
 | [`docs/`](docs) | Integration guide for [Stellar Wallets Kit](https://github.com/Creit-Tech/Stellar-Wallets-Kit) adopters and a migration note for teams on passkey-kit/Launchtube. |
@@ -67,7 +67,7 @@ in early 2026:
   [`smart-account-kit`](https://github.com/kalepail/smart-account-kit), built on audited
   OpenZeppelin smart-account contracts. **Sembol wraps smart-account-kit.**
 - **Launchtube is dead** (domains no longer resolve). Fee sponsoring now runs through the
-  [OpenZeppelin Relayer Channels service](https://docs.openzeppelin.com/relayer) —
+  [OpenZeppelin Relayer Channels service](https://docs.openzeppelin.com/relayer) -
   testnet API keys are self-serve (`curl https://channels.openzeppelin.com/testnet/gen`).
   The library treats the relayer as optional; on testnet everything works via plain RPC.
 - Migrating from the old stack? See [docs/migrating-from-passkey-kit.md](docs/migrating-from-passkey-kit.md).
@@ -89,9 +89,9 @@ zero configuration (Friendbot funds wallets; fees paid via the kit's deployer ac
 
 | Deliverable | Where |
 | --- | --- |
-| **1 · Component library + hooks** | `packages/passkey-react` — `PasskeyWalletProvider`, `CreateWalletButton`, `ConnectWalletButton`, `SignTransactionModal`, `WalletBalance`; hooks `usePasskeyWallet`, `useCreateWallet`, `useConnectWallet`, `useSignTransaction`, `useTransfer`, `useWalletBalance`, `useWalletAddress`; WebAuthn capability detection + normalized error taxonomy; CSS-variable theming (Tailwind-v4-friendly); passing test suite (`pnpm test`). |
-| **2 · Public Storybook with live testnet flows** | `apps/storybook` — one story per component with code snippets, auto prop tables, and a11y notes (`addon-a11y` runs on every story); *Browser Compatibility* page with the full matrix + known limitations; *Live Playground* completes a real create → fund → sign → submit flow in the browser. |
-| **3 · Reference app + developer docs** | `apps/demo` (uses only the library) — onboarding, dashboard with faucet, send-payment with approval modal, transaction history with stellar.expert links; docs: package README (install/quickstart/API), [wallets-kit integration guide](docs/stellar-wallets-kit-integration.md), [migration note](docs/migrating-from-passkey-kit.md). |
+| **1 · Component library + hooks** | `packages/passkey-react` - `PasskeyWalletProvider`, `CreateWalletButton`, `ConnectWalletButton`, `SignTransactionModal`, `WalletBalance`; hooks `usePasskeyWallet`, `useCreateWallet`, `useConnectWallet`, `useSignTransaction`, `useTransfer`, `useWalletBalance`, `useWalletAddress`; WebAuthn capability detection + normalized error taxonomy; CSS-variable theming (Tailwind-v4-friendly); passing test suite (`pnpm test`). |
+| **2 · Public Storybook with live testnet flows** | `apps/storybook` - one story per component with code snippets, auto prop tables, and a11y notes (`addon-a11y` runs on every story); *Browser Compatibility* page with the full matrix + known limitations; *Live Playground* completes a real create → fund → sign → submit flow in the browser. |
+| **3 · Reference app + developer docs** | `apps/demo` (uses only the library) - onboarding, dashboard with faucet, send-payment with approval modal, transaction history with stellar.expert links; docs: package README (install/quickstart/API), [wallets-kit integration guide](docs/stellar-wallets-kit-integration.md), [migration note](docs/migrating-from-passkey-kit.md). |
 
 Out of scope, as agreed: new Soroban contracts, mainnet deployment, native mobile SDKs,
 multi-signer/recovery UX (the kit exposes the primitives; UI is phase 2), non-React ports,
@@ -100,9 +100,9 @@ and the actual stellar-wallet-kit PR (the integration guide opens that conversat
 **Documented deviations from the SOW text** (the ecosystem moved between writing and building):
 
 1. The SOW names **passkey-kit + Launchtube**; both are legacy/dead as of 2026. Sembol wraps
-   their successors — **smart-account-kit** (audited OpenZeppelin contracts) and the
-   **OpenZeppelin Relayer** — with a [migration note](docs/migrating-from-passkey-kit.md).
-2. The faucet dispenses **testnet XLM via Friendbot** rather than "testnet USDC" — no
+   their successors - **smart-account-kit** (audited OpenZeppelin contracts) and the
+   **OpenZeppelin Relayer** - with a [migration note](docs/migrating-from-passkey-kit.md).
+2. The faucet dispenses **testnet XLM via Friendbot** rather than "testnet USDC" - no
    canonical testnet USDC/faucet exists; Friendbot is Stellar's standard test faucet.
 3. **Conditional UI**: capability detection ships (`detectWebAuthnCapabilities().conditionalGet`)
    and the matrix documents support; the full autofill sign-in flow needs upstream kit support
@@ -135,17 +135,17 @@ from the self-serve `/gen` endpoint.)
 
 > **Before pointing a custom domain at the demo:** passkeys are bound to their origin
 > (WebAuthn rpId). Wallets created on `sembol-demo.vercel.app` will not be visible on the
-> custom domain and vice versa — switch domains *before* sharing the app, not after.
+> custom domain and vice versa - switch domains *before* sharing the app, not after.
 
 ## Testnet configuration
 
 The default config uses the smart-account-kit **v0.2.x** testnet artifacts
-(WASM hash `a12e8fa9…`, WebAuthn verifier `CBSHV66W…`) — verified live on-chain, end to end.
+(WASM hash `a12e8fa9…`, WebAuthn verifier `CBSHV66W…`) - verified live on-chain, end to end.
 
 Two gotchas worth knowing:
 
 1. **Artifacts must match the installed kit version.** The smart-account-kit repo's `main`
-   branch tracks *unreleased* contract surfaces — its current env values deploy wallets that
+   branch tracks *unreleased* contract surfaces - its current env values deploy wallets that
    the published npm kit cannot sign for (`__check_auth` calls `get_context_rules`, which the
    newer wasm renamed/moved). Take values from the repo state matching the npm release.
 2. **Stellar testnet resets quarterly.** If wallet creation starts failing after a reset,
@@ -153,4 +153,4 @@ Two gotchas worth knowing:
 
 ## License
 
-[MIT](LICENSE) — © 2026 Ahmed Murshed and Sembol contributors.
+[MIT](LICENSE) - © 2026 Ahmed Murshed and Sembol contributors.

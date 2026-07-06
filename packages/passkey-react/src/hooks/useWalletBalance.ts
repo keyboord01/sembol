@@ -59,7 +59,7 @@ export function useWalletBalance(options?: UseWalletBalanceOptions): UseWalletBa
   const generation = useRef(0);
 
   // When the token or target address changes, the previous reading must not
-  // linger as "success" — reset synchronously (render-time state adjustment).
+  // linger as "success" - reset synchronously (render-time state adjustment).
   const identity = `${resolved.key}|${target ?? ""}`;
   const [prevIdentity, setPrevIdentity] = useState(identity);
   if (identity !== prevIdentity) {
@@ -82,7 +82,7 @@ export function useWalletBalance(options?: UseWalletBalanceOptions): UseWalletBa
       let amount: bigint;
       let meta = { decimals: resolved.decimals ?? 7, symbol: resolved.symbol ?? "" };
 
-      // The ledger-entry fast path only works for contract holders — a G…
+      // The ledger-entry fast path only works for contract holders - a G…
       // account's native XLM lives on the account entry, not a trustline.
       if (resolved.asset && target.startsWith("C")) {
         amount = await readAssetBalance(kit.rpc, config.networkPassphrase, resolved.asset, target);

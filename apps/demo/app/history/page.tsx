@@ -51,9 +51,9 @@ function HistoryList() {
             return (
               <li
                 key={`${entry.hash}-${entry.timestamp}`}
-                className="group grid grid-cols-[2.75rem_5rem_1fr_auto] items-baseline gap-4 px-5 py-4 transition-colors hover:bg-surface"
+                className="group grid grid-cols-[4.25rem_1fr_auto] items-baseline gap-3 px-4 py-4 transition-colors hover:bg-surface sm:grid-cols-[2.75rem_5rem_1fr_auto] sm:gap-4 sm:px-5"
               >
-                <span className="microlabel tnum text-dim">
+                <span className="microlabel tnum hidden text-dim sm:block">
                   #{pad2(entries.length - index)}
                 </span>
                 <span className={`microlabel ${meta.tone}`}>{meta.label}</span>

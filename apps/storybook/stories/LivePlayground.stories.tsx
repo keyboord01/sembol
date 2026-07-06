@@ -80,12 +80,12 @@ function Playground() {
           <p className="sembol-story-note">
             Creates a <strong>real</strong> passkey and deploys a smart-account contract on
             Stellar testnet, funded with free XLM. The name is what your passkey manager
-            displays. Note: passkeys are per-domain — Connect only finds wallets created on{" "}
+            displays. Note: passkeys are per-domain - Connect only finds wallets created on{" "}
             <em>this</em> Storybook's domain.
           </p>
           <input
             className="sembol-story-input"
-            placeholder="Wallet name — e.g. my-first-wallet"
+            placeholder="Wallet name - e.g. my-first-wallet"
             value={walletName}
             onChange={(event) => setWalletName(event.target.value)}
             maxLength={40}
@@ -154,7 +154,7 @@ function Playground() {
           <div className="sembol-story-card__body">
             <input
               className="sembol-story-input"
-              placeholder="Recipient (G… or C…) — empty = send to yourself"
+              placeholder="Recipient (G… or C…) - empty = send to yourself"
               value={recipient}
               onChange={(event) => setRecipient(event.target.value)}
               aria-label="Recipient address"

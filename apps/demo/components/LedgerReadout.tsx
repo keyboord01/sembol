@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePasskeyWallet } from "@sembol/passkey-react";
 
-/** Live testnet ledger counter — proof of life in the status strip. */
+/** Live testnet ledger counter - proof of life in the status strip. */
 export function LedgerReadout() {
   const { kit } = usePasskeyWallet();
   const [ledger, setLedger] = useState<number | null>(null);
@@ -37,7 +37,7 @@ export function LedgerReadout() {
         aria-hidden
         className={`inline-block h-1.5 w-1.5 ${stale ? "bg-amber" : "bg-long"}`}
       />
-      {ledger === null ? "RPC —" : `LEDGER ${ledger.toLocaleString("en-US")}`}
+      {ledger === null ? "RPC -" : `LEDGER ${ledger.toLocaleString("en-US")}`}
     </span>
   );
 }

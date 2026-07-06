@@ -6,7 +6,7 @@
  * forwards to your relayer with the key attached server-side.
  *
  * NOTE: once NEXT_PUBLIC_RELAYER_URL is set, smart-account-kit routes ALL
- * submissions through the relayer (no automatic RPC fallback) — a failing
+ * submissions through the relayer (no automatic RPC fallback) - a failing
  * proxy is a hard failure. Leave it unset on testnet unless you want
  * sponsored fees; individual calls can still force `forceMethod: "rpc"`.
  *
