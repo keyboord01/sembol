@@ -20,19 +20,19 @@ import "@sembol/passkey-react/styles.css";
 
 | Deliverable | Where | Status |
 | --- | --- | --- |
+| **Reference app** | **https://sembol-demo.vercel.app** | ✅ Live on Stellar testnet |
+| **Storybook** | **https://sembol-storybook.vercel.app** | ✅ Live (interactive testnet stories) |
 | Source (private) | https://github.com/keyboord01/sembol | ✅ Live |
 | npm package `@sembol/passkey-react` | `packages/passkey-react` | 📦 Publish-ready — `cd packages/passkey-react && npm publish --access public` (needs `npm login`) |
-| Storybook site | `apps/storybook` (`pnpm storybook:build` → `storybook-static/`) | 🚀 Deploy-ready — `vercel deploy storybook-static --prod` (needs `vercel login`) |
-| Reference app | `apps/demo` | 🚀 Deploy-ready — `vercel deploy --prod` from `apps/demo` (needs `vercel login`) |
-| CI | `.github/workflows/ci.yml` | ✅ Build + typecheck + 64 tests on every push |
+| CI | `.github/workflows/ci.yml` | ✅ Build + typecheck + 65 tests on every push |
 
-**Verified end-to-end on live testnet** (automated browser with a virtual passkey authenticator,
-`scripts/e2e-testnet.mjs`): created wallet
-[`CCGLSSAK…VUSP`](https://stellar.expert/explorer/testnet/contract/CCGLSSAK3W437BF2VTOMFO2YWIS2ZHJNEDKXFOU5V63MZYWF34JAVUSP)
-→ funded 10,000 XLM via Friendbot → session restored after full reload → passkey-approved
+**Verified end-to-end against the live public deployment** (automated browser with a virtual
+passkey authenticator, `scripts/e2e-testnet.mjs` with `APP_URL=https://sembol-demo.vercel.app`):
+created wallet
+[`CBECGZ3R…LRWL`](https://stellar.expert/explorer/testnet/contract/CBECGZ3RLJMLUBFU3SWEISFWLCJEVLG23KRY2OURDVHFSHLGUKHDLRWL)
+→ funded 10,000 XLM via Friendbot → session restored after full page reload → passkey-approved
 1 XLM transfer confirmed on-chain:
-[`1e009574…1f87`](https://stellar.expert/explorer/testnet/tx/1e00957496a9a076dc975a21b1e7d2a9041c578383388a024da0642de0d41f87)
-(status `SUCCESS`, ledger 3460520).
+[`1fff1028…bded`](https://stellar.expert/explorer/testnet/tx/1fff1028b81a0720ae02691dfad6fd681beddf933012ed78883ecd8be8c7bded).
 
 ## What's in this repo
 

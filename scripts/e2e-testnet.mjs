@@ -2,7 +2,7 @@
 // using Chrome's virtual authenticator (CDP WebAuthn domain) for passkeys.
 import { chromium } from "playwright";
 
-const APP = "http://localhost:3100";
+const APP = process.env.APP_URL ?? "http://localhost:3100";
 const browser = await chromium.launch();
 const context = await browser.newContext();
 const page = await context.newPage();
