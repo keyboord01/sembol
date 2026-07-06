@@ -58,6 +58,20 @@ export function useWalletBalance(options?: UseWalletBalanceOptions): UseWalletBa
   const [isRefreshing, setIsRefreshing] = useState(false);
   const generation = useRef(0);
 
+  // When the token or target address changes, the previous reading must not
+  // linger as "success" — reset synchronously (render-time state adjustment).
+  const identity = `${resolved.key}|${target ?? ""}`;
+  const [prevIdentity, setPrevIdentity] = useState(identity);
+  if (identity !== prevIdentity) {
+    setPrevIdentity(identity);
+    generation.current += 1; // invalidate in-flight reads for the old identity
+    setRaw(null);
+    setDecimals(resolved.decimals);
+    setSymbol(resolved.symbol);
+    setError(null);
+    setStatus(kit && target && enabled ? "loading" : "idle");
+  }
+
   const fetchBalance = useCallback(async () => {
     if (!kit || !target || !enabled) return;
     const requestId = ++generation.current;

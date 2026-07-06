@@ -119,6 +119,30 @@
   color: var(--sembol-color-fg);
 }
 
+.sembol-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sembol-btn-root {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 320px;
+}
+
+.sembol-inline-error {
+  font: 400 0.8125rem/1.4 var(--sembol-font);
+  color: var(--sembol-color-danger);
+}
+
 /* ---------- Spinner ---------- */
 
 .sembol-spinner {

@@ -16,11 +16,29 @@ import "@sembol/passkey-react/styles.css";
 </PasskeyWalletProvider>
 ```
 
+## Links & status
+
+| Deliverable | Where | Status |
+| --- | --- | --- |
+| Source (private) | https://github.com/keyboord01/sembol | ✅ Live |
+| npm package `@sembol/passkey-react` | `packages/passkey-react` | 📦 Publish-ready — `cd packages/passkey-react && npm publish --access public` (needs `npm login`) |
+| Storybook site | `apps/storybook` (`pnpm storybook:build` → `storybook-static/`) | 🚀 Deploy-ready — `vercel deploy storybook-static --prod` (needs `vercel login`) |
+| Reference app | `apps/demo` | 🚀 Deploy-ready — `vercel deploy --prod` from `apps/demo` (needs `vercel login`) |
+| CI | `.github/workflows/ci.yml` | ✅ Build + typecheck + 64 tests on every push |
+
+**Verified end-to-end on live testnet** (automated browser with a virtual passkey authenticator,
+`scripts/e2e-testnet.mjs`): created wallet
+[`CCGLSSAK…VUSP`](https://stellar.expert/explorer/testnet/contract/CCGLSSAK3W437BF2VTOMFO2YWIS2ZHJNEDKXFOU5V63MZYWF34JAVUSP)
+→ funded 10,000 XLM via Friendbot → session restored after full reload → passkey-approved
+1 XLM transfer confirmed on-chain:
+[`1e009574…1f87`](https://stellar.expert/explorer/testnet/tx/1e00957496a9a076dc975a21b1e7d2a9041c578383388a024da0642de0d41f87)
+(status `SUCCESS`, ledger 3460520).
+
 ## What's in this repo
 
 | Path | What it is |
 | --- | --- |
-| [`packages/passkey-react`](packages/passkey-react) | **`@sembol/passkey-react`** — the component library + headless hooks (TypeScript, MIT). 5 components, 7 hooks, WebAuthn edge-case handling, typed errors, CSS-variable theming, 59 unit/smoke tests. |
+| [`packages/passkey-react`](packages/passkey-react) | **`@sembol/passkey-react`** — the component library + headless hooks (TypeScript, MIT). 5 components, 7 hooks, WebAuthn edge-case handling, typed errors, CSS-variable theming, 64 unit/smoke tests. |
 | [`apps/storybook`](apps/storybook) | Public Storybook: every component/hook documented with **live Stellar-testnet examples**, a browser-compatibility matrix, theming guide, and a full wallet playground. |
 | [`apps/demo`](apps/demo) | Reference app (Next.js 16 + Tailwind 4) built **only** with the published library: onboarding → dashboard → send payment → history, on Stellar testnet. |
 | [`docs/`](docs) | Integration guide for [Stellar Wallets Kit](https://github.com/Creit-Tech/Stellar-Wallets-Kit) adopters and a migration note for teams on passkey-kit/Launchtube. |
@@ -52,7 +70,7 @@ in early 2026:
 ```bash
 pnpm install
 pnpm build          # builds @sembol/passkey-react
-pnpm test           # 59 vitest unit + component smoke tests
+pnpm test           # 64 vitest unit + component smoke tests
 pnpm storybook      # Storybook on :6006 (live testnet stories)
 pnpm demo           # reference app on :3000
 ```
@@ -99,11 +117,17 @@ from the self-serve `/gen` endpoint.)
 
 ## Testnet configuration
 
-The default config tracks smart-account-kit's current testnet deployment
-(WASM hash `8537b816…`, verifier `CCMR63YE…`) — verified live on-chain at build time.
-Stellar **testnet resets quarterly**; if wallet creation starts failing after a reset, refresh
-the values from [kalepail/smart-account-kit](https://github.com/kalepail/smart-account-kit)'s
-`demo/.env.example`.
+The default config uses the smart-account-kit **v0.2.x** testnet artifacts
+(WASM hash `a12e8fa9…`, WebAuthn verifier `CBSHV66W…`) — verified live on-chain, end to end.
+
+Two gotchas worth knowing:
+
+1. **Artifacts must match the installed kit version.** The smart-account-kit repo's `main`
+   branch tracks *unreleased* contract surfaces — its current env values deploy wallets that
+   the published npm kit cannot sign for (`__check_auth` calls `get_context_rules`, which the
+   newer wasm renamed/moved). Take values from the repo state matching the npm release.
+2. **Stellar testnet resets quarterly.** If wallet creation starts failing after a reset,
+   the artifacts need re-uploading or refreshed values.
 
 ## License
 

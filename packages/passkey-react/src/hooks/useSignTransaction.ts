@@ -38,7 +38,7 @@ export interface UseSignTransactionResult {
 
 /** Headless transaction signing/submission with a status machine. */
 export function useSignTransaction(): UseSignTransactionResult {
-  const { kit } = usePasskeyWalletContext();
+  const { kit, signals } = usePasskeyWalletContext();
   const [status, setStatus] = useState<SignStatus>("idle");
   const [error, setError] = useState<SembolError | null>(null);
   const [result, setResult] = useState<TransactionResult | null>(null);
@@ -87,9 +87,12 @@ export function useSignTransaction(): UseSignTransactionResult {
       setStatus("signing");
       setError(null);
       setResult(null);
-      // Flip to "submitting" once the passkey ceremony completes.
-      const offSigned = instance.events.once("transactionSigned", () => {
-        if (mounted.current) setStatus((s) => (s === "signing" ? "submitting" : s));
+      // Flip to "submitting" once the passkey ceremony completes (the provider
+      // instruments the WebAuthn calls — the kit emits no transaction events).
+      const offSignal = signals.on((signal) => {
+        if (signal === "webauthn:done" && mounted.current) {
+          setStatus((s) => (s === "signing" ? "submitting" : s));
+        }
       });
       try {
         const txResult = await instance.signAndSubmit(transaction, options);
@@ -100,6 +103,7 @@ export function useSignTransaction(): UseSignTransactionResult {
             txResult,
           );
         }
+        signals.emit("tx:submitted");
         if (mounted.current) {
           setResult(txResult);
           setStatus("success");
@@ -113,10 +117,10 @@ export function useSignTransaction(): UseSignTransactionResult {
         }
         throw sembolError;
       } finally {
-        offSigned();
+        offSignal();
       }
     },
-    [requireKit],
+    [requireKit, signals],
   );
 
   const reset = useCallback(() => {

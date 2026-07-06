@@ -27,7 +27,8 @@ export function formatTokenAmount(raw: bigint, decimals: number): string {
  */
 export function parseTokenAmount(value: string | number, decimals: number): bigint {
   const str = String(value).trim();
-  if (!/^-?\d+(\.\d+)?$/.test(str)) {
+  // Accepts "12", "12.5", ".5" and "1." — common user input shapes.
+  if (!/^-?(\d+(\.\d*)?|\.\d+)$/.test(str)) {
     throw new Error(`Invalid amount: "${value}"`);
   }
   const negative = str.startsWith("-");
@@ -36,7 +37,8 @@ export function parseTokenAmount(value: string | number, decimals: number): bigi
     throw new Error(`Amount "${value}" has more than ${decimals} decimal places`);
   }
   const raw =
-    BigInt(wholeRaw) * 10n ** BigInt(decimals) + BigInt(fracRaw.padEnd(decimals, "0") || "0");
+    BigInt(wholeRaw || "0") * 10n ** BigInt(decimals) +
+    BigInt(fracRaw.padEnd(decimals, "0") || "0");
   return negative ? -raw : raw;
 }
 

@@ -64,18 +64,22 @@ function formatScVal(val: xdr.ScVal): string {
 function toTransaction(
   input: SummarizableTransaction,
   networkPassphrase: string,
-): Transaction | null {
+): { tx: Transaction | null; outerFee: string | null } {
   try {
     if (typeof input === "string") {
       const parsed = TransactionBuilder.fromXDR(input, networkPassphrase);
-      return "innerTransaction" in parsed ? parsed.innerTransaction : parsed;
+      if ("innerTransaction" in parsed) {
+        // Fee-bump: the *outer* fee is what actually gets charged.
+        return { tx: parsed.innerTransaction, outerFee: parsed.fee };
+      }
+      return { tx: parsed, outerFee: null };
     }
     if (typeof input === "object" && input !== null && "built" in input) {
-      return (input as { built?: Transaction }).built ?? null;
+      return { tx: (input as { built?: Transaction }).built ?? null, outerFee: null };
     }
-    return input as Transaction;
+    return { tx: input as Transaction, outerFee: null };
   } catch {
-    return null;
+    return { tx: null, outerFee: null };
   }
 }
 
@@ -96,11 +100,11 @@ export function summarizeTransaction(
     headline: "Transaction",
   };
 
-  const tx = toTransaction(input, networkPassphrase);
+  const { tx, outerFee } = toTransaction(input, networkPassphrase);
   if (!tx || !Array.isArray(tx.operations) || tx.operations.length === 0) return base;
 
   try {
-    base.feeXlm = formatTokenAmount(BigInt(tx.fee), 7);
+    base.feeXlm = formatTokenAmount(BigInt(outerFee ?? tx.fee), 7);
   } catch {
     /* leave null */
   }

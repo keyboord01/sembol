@@ -118,6 +118,8 @@ describe("CreateWalletButton", () => {
     await waitFor(() =>
       expect(onError).toHaveBeenCalledWith(expect.objectContaining({ code: "user_cancelled" })),
     );
+    // The failure must be visible, not tooltip-only.
+    expect(screen.getByRole("alert")).toHaveTextContent(/cancelled or timed out/i);
   });
 });
 

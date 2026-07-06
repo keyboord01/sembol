@@ -3,7 +3,9 @@ import type { TransactionResult } from "smart-account-kit";
 import { usePasskeyWalletContext } from "../context";
 import { SembolError, toSembolError } from "../errors";
 import { parseTokenAmount } from "../format";
+import { readTokenMeta } from "../internal/balance";
 import { resolveToken } from "../internal/tokens";
+import { buildTransferTransaction } from "../transactions";
 import type { TokenRef } from "../types";
 
 export type TransferStatus = "idle" | "signing" | "submitting" | "success" | "error";
@@ -28,9 +30,13 @@ export interface UseTransferResult {
   reset: () => void;
 }
 
-/** Headless token-transfer flow (the whole send-payment path in one call). */
+/**
+ * Headless token-transfer flow (the whole send-payment path in one call).
+ * Uses the token's real decimals — including non-7-decimal SEP-41 tokens,
+ * whose metadata is read on-chain.
+ */
 export function useTransfer(): UseTransferResult {
-  const { kit, config } = usePasskeyWalletContext();
+  const { kit, config, signals } = usePasskeyWalletContext();
   const [status, setStatus] = useState<TransferStatus>("idle");
   const [error, setError] = useState<SembolError | null>(null);
   const [result, setResult] = useState<TransactionResult | null>(null);
@@ -43,48 +49,62 @@ export function useTransfer(): UseTransferResult {
     };
   }, []);
 
+  const fail = useCallback((sembolError: SembolError) => {
+    if (mounted.current) {
+      setError(sembolError);
+      setStatus("error");
+    }
+    return sembolError;
+  }, []);
+
   const transfer = useCallback(
     async ({ to, amount, token = "native", forceMethod }: TransferParams) => {
-      if (!kit) throw new SembolError("wallet_not_connected", "Wallet is still initializing");
-      if (!kit.isConnected) throw new SembolError("wallet_not_connected");
-      if (!/^[GC][A-Z2-7]{55}$/.test(to.trim())) {
-        const err = new SembolError("invalid_input", `"${to}" is not a valid Stellar address`);
-        setError(err);
-        setStatus("error");
-        throw err;
-      }
-
-      const resolvedToken = resolveToken(token, config);
-      const decimals = resolvedToken.decimals ?? 7;
-      let numericAmount: number;
-      try {
-        // Validates format and decimal-place count; kit.transfer takes token units.
-        parseTokenAmount(amount, decimals);
-        numericAmount = Number(amount);
-        if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-          throw new Error("Amount must be positive");
-        }
-      } catch (err) {
-        const sembolError = new SembolError(
-          "invalid_input",
-          err instanceof Error ? err.message : "Invalid amount",
-          err,
-        );
-        setError(sembolError);
-        setStatus("error");
-        throw sembolError;
+      if (!kit) throw fail(new SembolError("wallet_not_connected", "Wallet is still initializing"));
+      if (!kit.isConnected) throw fail(new SembolError("wallet_not_connected"));
+      const recipient = to.trim();
+      if (!/^[GC][A-Z2-7]{55}$/.test(recipient)) {
+        throw fail(new SembolError("invalid_input", `"${to}" is not a valid Stellar address`));
       }
 
       setStatus("signing");
       setError(null);
       setResult(null);
-      const offSigned = kit.events.once("transactionSigned", () => {
-        if (mounted.current) setStatus((s) => (s === "signing" ? "submitting" : s));
+
+      const resolvedToken = resolveToken(token, config);
+      let decimals = resolvedToken.decimals;
+      try {
+        if (decimals === null) {
+          // Arbitrary token contract — read its real decimals on-chain.
+          decimals = (
+            await readTokenMeta(
+              kit.rpc,
+              config.networkPassphrase,
+              kit.deployerPublicKey,
+              resolvedToken.contractId,
+            )
+          ).decimals;
+        }
+        const parsed = parseTokenAmount(amount, decimals);
+        if (parsed <= 0n) throw new Error("Amount must be positive");
+      } catch (err) {
+        throw fail(
+          new SembolError("invalid_input", err instanceof Error ? err.message : "Invalid amount", err),
+        );
+      }
+
+      const offSignal = signals.on((signal) => {
+        if (signal === "webauthn:done" && mounted.current) {
+          setStatus((s) => (s === "signing" ? "submitting" : s));
+        }
       });
       try {
-        const txResult = await kit.transfer(resolvedToken.contractId, to.trim(), numericAmount, {
-          forceMethod,
+        const transaction = await buildTransferTransaction(kit, {
+          tokenContract: resolvedToken.contractId,
+          to: recipient,
+          amount,
+          decimals,
         });
+        const txResult = await kit.signAndSubmit(transaction, { forceMethod });
         if (!txResult.success) {
           throw new SembolError(
             "submission_failed",
@@ -92,23 +112,19 @@ export function useTransfer(): UseTransferResult {
             txResult,
           );
         }
+        signals.emit("tx:submitted");
         if (mounted.current) {
           setResult(txResult);
           setStatus("success");
         }
         return txResult;
       } catch (err) {
-        const sembolError = toSembolError(err);
-        if (mounted.current) {
-          setError(sembolError);
-          setStatus("error");
-        }
-        throw sembolError;
+        throw fail(toSembolError(err));
       } finally {
-        offSigned();
+        offSignal();
       }
     },
-    [kit, config],
+    [kit, config, signals, fail],
   );
 
   const reset = useCallback(() => {

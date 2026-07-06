@@ -97,13 +97,24 @@ export function SignTransactionModal({
       }
       if (event.key !== "Tab" || !dialogRef.current) return;
       const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
-      if (focusable.length === 0) return;
+      if (focusable.length === 0) {
+        // Everything is disabled (busy): keep focus on the dialog itself so
+        // Tab can't escape behind the aria-modal overlay.
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
       const first = focusable[0]!;
       const last = focusable[focusable.length - 1]!;
-      if (event.shiftKey && document.activeElement === first) {
+      const active = document.activeElement;
+      const inside = active instanceof Node && dialogRef.current.contains(active);
+      if (!inside) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && active === first) {
         event.preventDefault();
         last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (!event.shiftKey && active === last) {
         event.preventDefault();
         first.focus();
       }
@@ -111,6 +122,19 @@ export function SignTransactionModal({
     document.addEventListener("keydown", onKeyDown, true);
     return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [open, close]);
+
+  // While busy the footer buttons disable, dropping focus to <body> — park it
+  // on the dialog; when finished, move it to the primary action.
+  useEffect(() => {
+    if (!open || !dialogRef.current) return;
+    const active = document.activeElement;
+    const inside = active instanceof Node && dialogRef.current.contains(active);
+    if (busy && !inside) {
+      dialogRef.current.focus();
+    } else if ((status === "success" || status === "error") && !inside) {
+      dialogRef.current.querySelector<HTMLElement>("[data-autofocus]")?.focus();
+    }
+  }, [open, busy, status]);
 
   if (!open || typeof document === "undefined") return null;
 
@@ -120,6 +144,9 @@ export function SignTransactionModal({
       const txResult = await signAndSubmit(transaction, signOptions);
       onSuccess?.(txResult);
     } catch (err) {
+      // The on-screen message is user-friendly; keep the technical detail
+      // reachable for developers.
+      console.error("[sembol] signAndSubmit failed:", err);
       onError?.(err as SembolError);
     }
   };

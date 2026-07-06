@@ -86,6 +86,8 @@ export type {
   PasskeyWalletContextValue,
   ResolvedSembolConfig,
   SembolConfig,
+  SembolSignal,
+  SembolSignalBus,
   TokenRef,
   WalletStatus,
 } from "./types";

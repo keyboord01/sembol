@@ -1,7 +1,24 @@
-import { Address, Operation, contract, nativeToScVal, xdr } from "@stellar/stellar-sdk";
+import {
+  Address,
+  Operation,
+  contract,
+  nativeToScVal,
+  rpc as StellarRpc,
+  xdr,
+} from "@stellar/stellar-sdk";
 import type { SmartAccountKit } from "smart-account-kit";
 import { SembolError } from "./errors";
 import { parseTokenAmount } from "./format";
+
+const ADDRESS_RE = /^[GC][A-Z2-7]{55}$/;
+
+function requireAddress(value: string, label: string): string {
+  const trimmed = value.trim();
+  if (!ADDRESS_RE.test(trimmed)) {
+    throw new SembolError("invalid_input", `${label} ("${value}") is not a valid Stellar address`);
+  }
+  return trimmed;
+}
 
 export interface BuildTransferParams {
   /** Token contract address (SAC or SEP-41). */
@@ -34,15 +51,28 @@ export async function buildTransferTransaction(
   if (!from) {
     throw new SembolError("wallet_not_connected", "No sender: connect a wallet or pass `from`");
   }
-  const stroops = parseTokenAmount(params.amount, params.decimals ?? 7);
+  const sender = requireAddress(from, "Sender");
+  const recipient = requireAddress(params.to, "Recipient");
+  const token = requireAddress(params.tokenContract, "Token contract");
+
+  let stroops: bigint;
+  try {
+    stroops = parseTokenAmount(params.amount, params.decimals ?? 7);
+  } catch (err) {
+    throw new SembolError(
+      "invalid_input",
+      err instanceof Error ? err.message : "Invalid amount",
+      err,
+    );
+  }
   if (stroops <= 0n) throw new SembolError("invalid_input", "Amount must be positive");
 
   return buildContractCallTransaction(kit, {
-    contractId: params.tokenContract,
+    contractId: token,
     method: "transfer",
     args: [
-      new Address(from).toScVal(),
-      new Address(params.to).toScVal(),
+      new Address(sender).toScVal(),
+      new Address(recipient).toScVal(),
       nativeToScVal(stroops, { type: "i128" }),
     ],
     timeoutInSeconds: params.timeoutInSeconds,
@@ -63,24 +93,28 @@ export interface BuildContractCallParams {
 /**
  * Build an arbitrary contract invocation as an `AssembledTransaction`
  * (simulated, with auth entries ready for passkey signing).
+ * Throws `SembolError("simulation_failed")` when the on-chain simulation
+ * reports an error — a transaction that would fail is never returned.
  */
 export async function buildContractCallTransaction(
   kit: SmartAccountKit,
   params: BuildContractCallParams,
 ): Promise<contract.AssembledTransaction<unknown>> {
+  const contractId = requireAddress(params.contractId, "Contract");
   const func = xdr.HostFunction.hostFunctionTypeInvokeContract(
     new xdr.InvokeContractArgs({
-      contractAddress: Address.fromString(params.contractId).toScAddress(),
+      contractAddress: Address.fromString(contractId).toScAddress(),
       functionName: params.method,
       args: params.args,
     }),
   );
 
+  let transaction: contract.AssembledTransaction<unknown>;
   try {
-    return await contract.AssembledTransaction.buildWithOp(
+    transaction = await contract.AssembledTransaction.buildWithOp(
       Operation.invokeHostFunction({ func }),
       {
-        contractId: params.contractId,
+        contractId,
         networkPassphrase: kit.networkPassphrase,
         rpcUrl: kit.rpcUrl,
         publicKey: kit.deployerPublicKey,
@@ -96,4 +130,16 @@ export async function buildContractCallTransaction(
       err,
     );
   }
+
+  // buildWithOp resolves even when the simulation itself reported an error.
+  const simulation = transaction.simulation;
+  if (simulation && StellarRpc.Api.isSimulationError(simulation)) {
+    throw new SembolError(
+      "simulation_failed",
+      `Simulation failed for ${params.method}() on ${contractId}: ${simulation.error}`,
+      simulation,
+    );
+  }
+
+  return transaction;
 }

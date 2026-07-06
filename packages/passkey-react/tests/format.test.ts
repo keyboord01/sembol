@@ -24,6 +24,11 @@ describe("parseTokenAmount", () => {
     expect(parseTokenAmount(3, 7)).toBe(30000000n);
   });
 
+  it("accepts bare-dot user input", () => {
+    expect(parseTokenAmount(".5", 7)).toBe(5000000n);
+    expect(parseTokenAmount("1.", 7)).toBe(10000000n);
+  });
+
   it("rejects malformed input", () => {
     expect(() => parseTokenAmount("abc", 7)).toThrow();
     expect(() => parseTokenAmount("1.2.3", 7)).toThrow();

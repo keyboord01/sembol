@@ -38,15 +38,38 @@ export function ConnectWalletButton({
 
   useEffect(() => {
     if (!menuOpen) return;
+
+    const menuItems = () =>
+      Array.from(rootRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
+
+    // Move focus into the menu so keyboard users can operate it.
+    const frame = requestAnimationFrame(() => menuItems()[0]?.focus());
+
     const onPointerDown = (event: PointerEvent) => {
       if (rootRef.current && !rootRef.current.contains(event.target as Node)) setMenuOpen(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        return;
+      }
+      const items = menuItems();
+      if (items.length === 0) return;
+      const index = items.findIndex((item) => item === document.activeElement);
+      let next = -1;
+      if (event.key === "ArrowDown") next = index < 0 ? 0 : (index + 1) % items.length;
+      else if (event.key === "ArrowUp") next = index < 0 ? items.length - 1 : (index - 1 + items.length) % items.length;
+      else if (event.key === "Home") next = 0;
+      else if (event.key === "End") next = items.length - 1;
+      if (next >= 0) {
+        event.preventDefault();
+        items[next]?.focus();
+      }
     };
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
     return () => {
+      cancelAnimationFrame(frame);
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
@@ -73,23 +96,24 @@ export function ConnectWalletButton({
 
   if (!isConnected) {
     return (
-      <button
-        type="button"
-        className={unstyled ? className : cx("sembol-btn", "sembol-btn--primary", className)}
-        onClick={() => void handleConnect()}
-        disabled={busy || status === "initializing" || unsupported}
-        data-loading={busy || undefined}
-        title={
-          unsupported
-            ? "This browser doesn't support passkeys"
-            : error
-              ? error.userMessage
-              : undefined
-        }
-      >
-        {busy && <Spinner />}
-        <span>{busy ? "Connecting…" : label}</span>
-      </button>
+      <span className={unstyled ? undefined : "sembol-btn-root"}>
+        <button
+          type="button"
+          className={unstyled ? className : cx("sembol-btn", "sembol-btn--primary", className)}
+          onClick={() => void handleConnect()}
+          disabled={busy || status === "initializing" || unsupported}
+          data-loading={busy || undefined}
+          title={unsupported ? "This browser doesn't support passkeys" : undefined}
+        >
+          {busy && <Spinner />}
+          <span>{busy ? "Connecting…" : label}</span>
+        </button>
+        {error && !busy && (
+          <span role="alert" className={unstyled ? undefined : "sembol-inline-error"}>
+            {error.userMessage}
+          </span>
+        )}
+      </span>
     );
   }
 

@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Asset } from "@stellar/stellar-sdk";
-import { SmartAccountKit, type TransactionResult } from "smart-account-kit";
+import { startAuthentication, startRegistration } from "@simplewebauthn/browser";
+import { IndexedDBStorage, SmartAccountKit, type TransactionResult } from "smart-account-kit";
 import { PasskeyWalletContext } from "../context";
-import { SembolError, toSembolError } from "../errors";
+import { credentialIdFromError, SembolError, toSembolError } from "../errors";
 import { explorerBaseUrl, networkFromPassphrase } from "../format";
 import type {
   ConnectOptions,
@@ -10,6 +11,8 @@ import type {
   PasskeyWalletContextValue,
   ResolvedSembolConfig,
   SembolConfig,
+  SembolSignal,
+  SembolSignalBus,
   WalletStatus,
 } from "../types";
 import { detectWebAuthnCapabilities, type WebAuthnCapabilities } from "../webauthn";
@@ -42,6 +45,9 @@ function resolveConfig(config: SembolConfig): ResolvedSembolConfig {
  *
  * SSR-safe: the kit is only constructed after mount, so this can wrap a
  * Next.js App Router tree directly.
+ *
+ * Unlike raw smart-account-kit (which defaults to in-memory storage),
+ * sessions persist in IndexedDB by default, so reloads silently reconnect.
  */
 export function PasskeyWalletProvider({ config, kit: injectedKit, children }: PasskeyWalletProviderProps) {
   const resolved = useMemo(
@@ -69,9 +75,61 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
   const [capabilities, setCapabilities] = useState<WebAuthnCapabilities | null>(null);
   const [txEpoch, setTxEpoch] = useState(0);
 
+  // Internal signal bus. smart-account-kit declares transaction events in its
+  // type map but never emits them at runtime (verified against 0.2.10), so
+  // Sembol drives progress/invalidation from its own instrumentation.
+  const listenersRef = useRef(new Set<(signal: SembolSignal) => void>());
+  const signals = useMemo<SembolSignalBus>(
+    () => ({
+      on(listener) {
+        listenersRef.current.add(listener);
+        return () => {
+          listenersRef.current.delete(listener);
+        };
+      },
+      emit(signal) {
+        listenersRef.current.forEach((listener) => {
+          try {
+            listener(signal);
+          } catch {
+            /* one bad listener must not break the rest */
+          }
+        });
+        if (signal === "tx:submitted") setTxEpoch((epoch) => epoch + 1);
+      },
+    }),
+    [],
+  );
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     let cancelled = false;
+
+    // A new kit means a fresh connection state (config change, StrictMode remount).
+    setStatus("initializing");
+    setAddress(null);
+    setCredentialId(null);
+    setError(null);
+
+    const baseWebAuthn = resolved.webAuthn ?? { startRegistration, startAuthentication };
+    const instrumentedWebAuthn: NonNullable<SembolConfig["webAuthn"]> = {
+      startRegistration: async (options) => {
+        signals.emit("webauthn:start");
+        try {
+          return await baseWebAuthn.startRegistration(options);
+        } finally {
+          signals.emit("webauthn:done");
+        }
+      },
+      startAuthentication: async (options) => {
+        signals.emit("webauthn:start");
+        try {
+          return await baseWebAuthn.startAuthentication(options);
+        } finally {
+          signals.emit("webauthn:done");
+        }
+      },
+    };
 
     const instance =
       injectedKit ??
@@ -84,12 +142,16 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
         rpName: resolved.appName,
         relayerUrl: resolved.relayerUrl,
         indexerUrl: resolved.indexerUrl,
-        storage: resolved.storage,
+        // The kit's own default is MemoryStorage, which loses sessions on
+        // reload — default to IndexedDB for real persistence.
+        storage:
+          resolved.storage ??
+          (typeof indexedDB !== "undefined" ? new IndexedDBStorage() : undefined),
         sessionExpiryMs: resolved.sessionExpiryMs,
         timeoutInSeconds: resolved.timeoutInSeconds,
         signatureExpirationLedgers: resolved.signatureExpirationLedgers,
         defaultPolicies: resolved.defaultPolicies,
-        webAuthn: resolved.webAuthn,
+        webAuthn: instrumentedWebAuthn,
       });
 
     setKit(instance);
@@ -107,9 +169,10 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
       setCredentialId(null);
       setStatus("disconnected");
     });
+    // Bridge for future kit versions that do emit transaction events.
     const offSubmitted = instance.events.on("transactionSubmitted", () => {
       if (cancelled) return;
-      setTxEpoch((epoch) => epoch + 1);
+      signals.emit("tx:submitted");
     });
 
     detectWebAuthnCapabilities().then((caps) => {
@@ -148,7 +211,7 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
       offDisconnected();
       offSubmitted();
     };
-  }, [resolved, injectedKit]);
+  }, [resolved, injectedKit, signals]);
 
   const connect = useCallback(
     async (options?: ConnectOptions) => {
@@ -172,12 +235,62 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
         return { contractId: result.contractId, credentialId: result.credentialId };
       } catch (err) {
         const sembolError = toSembolError(err);
+
+        // The kit only *derives* the contract address from the credential. For
+        // passkeys whose wallet was created elsewhere (other device/app config),
+        // fall back to the public indexer to discover the contract.
+        if (sembolError.code === "wallet_not_found" && kit.indexer) {
+          const failedCredentialId = credentialIdFromError(err);
+          if (failedCredentialId) {
+            try {
+              const contracts = await kit.discoverContractsByCredential(failedCredentialId);
+              const discovered = contracts?.[0]?.contract_id;
+              if (discovered) {
+                const recovered = await kit.connectWallet({
+                  credentialId: failedCredentialId,
+                  contractId: discovered,
+                });
+                if (recovered) {
+                  setAddress(recovered.contractId);
+                  setCredentialId(recovered.credentialId);
+                  setStatus("connected");
+                  return {
+                    contractId: recovered.contractId,
+                    credentialId: recovered.credentialId,
+                  };
+                }
+              }
+            } catch {
+              // fall through to the original error
+            }
+          }
+        }
+
         setError(sembolError);
         setStatus(kit.isConnected ? "connected" : "disconnected");
         throw sembolError;
       }
     },
     [kit],
+  );
+
+  const waitForFundsVisible = useCallback(
+    async (instance: SmartAccountKit, contractId: string) => {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        try {
+          const balance = await instance.rpc.getAssetBalance(
+            contractId,
+            Asset.native(),
+            resolved.networkPassphrase,
+          );
+          if (balance.balanceEntry) return;
+        } catch {
+          /* keep waiting */
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+      }
+    },
+    [resolved.networkPassphrase],
   );
 
   const createWallet = useCallback(
@@ -197,8 +310,6 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
               userVerification: "preferred",
             },
             autoSubmit: true,
-            autoFund: fund,
-            nativeTokenContract: resolved.nativeTokenContract,
           },
         );
         if (result.submitResult && !result.submitResult.success) {
@@ -207,6 +318,18 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
             result.submitResult.error ?? "Wallet deployment transaction failed",
           );
         }
+        if (fund) {
+          // Friendbot funds contract addresses directly — more reliable than
+          // the kit's temp-account + transfer dance (autoFund).
+          signals.emit("funding:start");
+          try {
+            await kit.rpc.fundAddress(result.contractId);
+            await waitForFundsVisible(kit, result.contractId);
+          } catch {
+            // Non-fatal: the wallet exists, it's just unfunded.
+          }
+        }
+        signals.emit("tx:submitted");
         setAddress(result.contractId);
         setCredentialId(result.credentialId);
         setStatus("connected");
@@ -218,7 +341,7 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
         throw sembolError;
       }
     },
-    [kit, resolved],
+    [kit, resolved, signals, waitForFundsVisible],
   );
 
   const disconnect = useCallback(async () => {
@@ -235,16 +358,32 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
 
   const fund = useCallback(async (): Promise<TransactionResult & { amount?: number }> => {
     if (!kit) throw new SembolError("unknown", "Wallet is still initializing — try again in a moment");
-    if (!kit.isConnected) throw new SembolError("wallet_not_connected");
+    if (!kit.isConnected || !kit.contractId) throw new SembolError("wallet_not_connected");
     if (resolved.network !== "testnet") {
       throw new SembolError("invalid_input", "Friendbot funding only works on testnet");
     }
+    signals.emit("funding:start");
     try {
-      return await kit.fundWallet(resolved.nativeTokenContract);
-    } catch (err) {
-      throw toSembolError(err);
+      // Friendbot funds contract addresses directly — one call, no temp accounts.
+      const response = await kit.rpc.fundAddress(kit.contractId);
+      await waitForFundsVisible(kit, kit.contractId);
+      signals.emit("tx:submitted");
+      return { success: true, hash: response.txHash ?? "", amount: 10000 };
+    } catch {
+      // Already-funded addresses make Friendbot 400 — fall back to the kit's
+      // temp-account transfer, which works repeatedly.
+      try {
+        const result = await kit.fundWallet(resolved.nativeTokenContract);
+        if (!result.success) {
+          throw new SembolError("submission_failed", result.error ?? "Funding transaction failed");
+        }
+        signals.emit("tx:submitted");
+        return result;
+      } catch (err) {
+        throw toSembolError(err);
+      }
     }
-  }, [kit, resolved]);
+  }, [kit, resolved, signals, waitForFundsVisible]);
 
   const value = useMemo<PasskeyWalletContextValue>(
     () => ({
@@ -257,12 +396,13 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
       capabilities,
       config: resolved,
       txEpoch,
+      signals,
       connect,
       createWallet,
       disconnect,
       fund,
     }),
-    [kit, status, address, credentialId, error, capabilities, resolved, txEpoch, connect, createWallet, disconnect, fund],
+    [kit, status, address, credentialId, error, capabilities, resolved, txEpoch, signals, connect, createWallet, disconnect, fund],
   );
 
   return <PasskeyWalletContext.Provider value={value}>{children}</PasskeyWalletContext.Provider>;

@@ -90,6 +90,9 @@ importers:
 
   packages/passkey-react:
     dependencies:
+      '@simplewebauthn/browser':
+        specifier: ^13.3.0
+        version: 13.3.0
       '@stellar/stellar-sdk':
         specifier: ^16.0.1
         version: 16.0.1

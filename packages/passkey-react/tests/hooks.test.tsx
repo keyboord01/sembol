@@ -1,7 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { AssembledTransaction } from "smart-account-kit";
+
+// useTransfer builds real (simulated) transactions — stub the builder so
+// tests stay offline. The kit interactions themselves remain observable.
+vi.mock("../src/transactions", () => ({
+  buildTransferTransaction: vi.fn(async () => ({ built: undefined })),
+  buildContractCallTransaction: vi.fn(),
+}));
+import { buildTransferTransaction } from "../src/transactions";
 import { PasskeyWalletProvider } from "../src/components/PasskeyWalletProvider";
 import { useCreateWallet } from "../src/hooks/useCreateWallet";
 import { useSignTransaction } from "../src/hooks/useSignTransaction";
@@ -65,11 +73,6 @@ describe("useCreateWallet", () => {
     });
     expect(result.current.phase).toBe("deploying");
 
-    act(() => {
-      kit.events.emit("transactionSubmitted", { hash: "h", success: true });
-    });
-    expect(result.current.phase).toBe("funding");
-
     await act(async () => {
       finishCreate({
         rawResponse: {},
@@ -84,6 +87,8 @@ describe("useCreateWallet", () => {
     expect(result.current.status).toBe("success");
     expect(result.current.phase).toBeNull();
     expect(result.current.result?.contractId).toBe(CONTRACT_ID);
+    // Provider funds via Friendbot's direct contract funding.
+    expect(kit.rpc.fundAddress).toHaveBeenCalledWith(CONTRACT_ID);
   });
 
   it("captures errors and stays resettable", async () => {
@@ -171,7 +176,7 @@ describe("useTransfer", () => {
     expect(kit.transfer).not.toHaveBeenCalled();
   });
 
-  it("transfers native XLM by default", async () => {
+  it("transfers native XLM by default via build + signAndSubmit", async () => {
     const kit = createFakeKit({ session: connectedSession });
     const { result } = renderHook(() => useTransfer(), { wrapper: wrapperFor(kit) });
     await waitFor(() => expect(kit.isConnected).toBe(true));
@@ -180,13 +185,31 @@ describe("useTransfer", () => {
       const txResult = await result.current.transfer({ to: CONTRACT_ID, amount: "12.5" });
       expect(txResult.success).toBe(true);
     });
-    expect(kit.transfer).toHaveBeenCalledWith(
-      expect.stringMatching(/^C[A-Z2-7]{55}$/), // native SAC derived from passphrase
-      CONTRACT_ID,
-      12.5,
-      expect.any(Object),
+    expect(buildTransferTransaction).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        tokenContract: expect.stringMatching(/^C[A-Z2-7]{55}$/), // native SAC
+        to: CONTRACT_ID,
+        amount: "12.5",
+        decimals: 7,
+      }),
     );
+    expect(kit.signAndSubmit).toHaveBeenCalled();
     expect(result.current.status).toBe("success");
+  });
+
+  it("rejects success:false submissions", async () => {
+    const kit = createFakeKit({ session: connectedSession });
+    kit.signAndSubmit.mockResolvedValue({ success: false, hash: "x", error: "underfunded" });
+    const { result } = renderHook(() => useTransfer(), { wrapper: wrapperFor(kit) });
+    await waitFor(() => expect(kit.isConnected).toBe(true));
+
+    await act(async () => {
+      await expect(result.current.transfer({ to: CONTRACT_ID, amount: "1" })).rejects.toMatchObject(
+        { code: "submission_failed" },
+      );
+    });
+    expect(result.current.status).toBe("error");
   });
 });
 

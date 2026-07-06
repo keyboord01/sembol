@@ -6,7 +6,7 @@ import {
   WalletNotConnectedError,
   SimulationError,
 } from "smart-account-kit";
-import { SembolError, toSembolError } from "../src/errors";
+import { credentialIdFromError, SembolError, toSembolError } from "../src/errors";
 
 function domException(name: string): Error {
   const err = new Error(`fake ${name}`);
@@ -61,6 +61,31 @@ describe("toSembolError", () => {
       toSembolError(new SmartAccountError("submit", SmartAccountErrorCode.TRANSACTION_SUBMISSION_FAILED))
         .code,
     ).toBe("submission_failed");
+  });
+
+  it("maps the kit's plain connect/deploy errors by message", () => {
+    expect(
+      toSembolError(
+        new Error(
+          "Smart account contract not found on-chain for credential abc-123_XYZ. The wallet may not have been deployed yet.",
+        ),
+      ).code,
+    ).toBe("wallet_not_found");
+    expect(toSembolError(new Error("Could not determine contract ID")).code).toBe(
+      "wallet_not_found",
+    );
+    expect(toSembolError(new Error("Failed to sign deployment transaction")).code).toBe(
+      "submission_failed",
+    );
+  });
+
+  it("extracts credential IDs from kit error messages", () => {
+    expect(
+      credentialIdFromError(
+        new Error("Smart account contract not found on-chain for credential abc-123_XYZ. More."),
+      ),
+    ).toBe("abc-123_XYZ");
+    expect(credentialIdFromError(new Error("some other error"))).toBeNull();
   });
 
   it("falls back to unknown for arbitrary values", () => {

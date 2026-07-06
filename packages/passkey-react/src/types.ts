@@ -102,6 +102,20 @@ export type TokenRef =
   | { code: string; issuer: string }
   | { contractId: string };
 
+/**
+ * Internal progress signals emitted by the provider and hooks.
+ * smart-account-kit@0.2.x declares transaction events in its type map but
+ * never emits them at runtime, so Sembol instruments the WebAuthn ceremony
+ * and its own submission paths instead.
+ */
+export type SembolSignal = "webauthn:start" | "webauthn:done" | "funding:start" | "tx:submitted";
+
+/** Subscribe/emit interface for {@link SembolSignal}s. */
+export interface SembolSignalBus {
+  on(listener: (signal: SembolSignal) => void): () => void;
+  emit(signal: SembolSignal): void;
+}
+
 /** Value shared through the Sembol context. */
 export interface PasskeyWalletContextValue {
   /** The underlying smart-account-kit instance (null until client mount). */
@@ -122,6 +136,8 @@ export interface PasskeyWalletContextValue {
   config: ResolvedSembolConfig;
   /** Monotonic counter bumped after every submitted transaction — used for cache invalidation. */
   txEpoch: number;
+  /** Internal progress signal bus (advanced; drives status transitions and balance invalidation). */
+  signals: SembolSignalBus;
   /** Connect to an existing wallet. Prompts for a passkey when no session/credential is given. */
   connect: (options?: ConnectOptions) => Promise<{ contractId: string; credentialId: string } | null>;
   /** Create a passkey + deploy a smart account. Resolves when the wallet is live on-chain. */

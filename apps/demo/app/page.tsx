@@ -25,7 +25,8 @@ export default function OnboardingPage() {
   const { status, isConnected, capabilities, error } = usePasskeyWallet();
 
   useEffect(() => {
-    if (isConnected) router.push("/dashboard");
+    // replace, not push: Back must not bounce connected users to onboarding.
+    if (isConnected) router.replace("/dashboard");
   }, [isConnected, router]);
 
   const unsupported = capabilities !== null && !capabilities.supported;

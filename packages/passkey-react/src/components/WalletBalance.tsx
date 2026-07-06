@@ -29,7 +29,9 @@ export function WalletBalance({
       aria-live="polite"
     >
       {status === "loading" && (
-        <span className={unstyled ? undefined : "sembol-skeleton"} aria-label="Loading balance" />
+        <span className={unstyled ? undefined : "sembol-skeleton"} role="status">
+          <span className={unstyled ? undefined : "sembol-visually-hidden"}>Loading balance…</span>
+        </span>
       )}
       {status === "error" && (
         <span

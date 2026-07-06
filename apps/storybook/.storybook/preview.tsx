@@ -1,17 +1,24 @@
+import { useEffect } from "react";
 import type { Decorator, Preview } from "@storybook/react-vite";
 import { PasskeyWalletProvider } from "@sembol/passkey-react";
 import "@sembol/passkey-react/styles.css";
 import "./preview.css";
 import { TESTNET_CONFIG } from "./testnet";
 
-const withProviderAndTheme: Decorator = (Story, context) => {
-  const theme = (context.globals.theme as string) ?? "light";
-  if (typeof document !== "undefined") {
+function ThemeSync({ theme }: { theme: string }) {
+  // DOM mutation belongs in an effect, not the render phase.
+  useEffect(() => {
     document.documentElement.setAttribute("data-sembol-theme", theme);
     document.documentElement.style.colorScheme = theme;
-  }
+  }, [theme]);
+  return null;
+}
+
+const withProviderAndTheme: Decorator = (Story, context) => {
+  const theme = (context.globals.theme as string) ?? "light";
   return (
     <PasskeyWalletProvider config={TESTNET_CONFIG}>
+      <ThemeSync theme={theme} />
       <div className="sembol-story-canvas" data-sembol-theme={theme}>
         <Story />
       </div>

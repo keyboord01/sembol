@@ -26,7 +26,7 @@ export interface UseCreateWalletResult {
 
 /** Headless wallet-creation flow with per-phase progress. */
 export function useCreateWallet(): UseCreateWalletResult {
-  const { kit, createWallet: contextCreate } = usePasskeyWalletContext();
+  const { kit, signals, createWallet: contextCreate } = usePasskeyWalletContext();
   const [status, setStatus] = useState<CreateWalletStatus>("idle");
   const [phase, setPhase] = useState<CreateWalletPhase>(null);
   const [error, setError] = useState<SembolError | null>(null);
@@ -47,16 +47,18 @@ export function useCreateWallet(): UseCreateWalletResult {
       setError(null);
       setResult(null);
 
-      // The kit performs passkey → deploy → fund inside one call; its events
-      // let us surface phase transitions without changing the call shape.
-      const unsubscribers: Array<() => void> = [];
+      // Phase transitions: `credentialCreated` is a real kit event (passkey
+      // registered → deployment starting); funding is driven by the
+      // provider's own signal (the kit emits no transaction events).
+      const unsubscribers: Array<() => void> = [
+        signals.on((signal) => {
+          if (signal === "funding:start" && mounted.current) setPhase("funding");
+        }),
+      ];
       if (kit) {
         unsubscribers.push(
           kit.events.once("credentialCreated", () => {
             if (mounted.current) setPhase("deploying");
-          }),
-          kit.events.once("transactionSubmitted", () => {
-            if (mounted.current) setPhase("funding");
           }),
         );
       }
@@ -81,7 +83,7 @@ export function useCreateWallet(): UseCreateWalletResult {
         unsubscribers.forEach((off) => off());
       }
     },
-    [kit, contextCreate],
+    [kit, signals, contextCreate],
   );
 
   const reset = useCallback(() => {

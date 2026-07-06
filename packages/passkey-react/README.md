@@ -11,7 +11,7 @@ contract, driven by [smart-account-kit](https://github.com/kalepail/smart-accoun
   duplicate credentials, rpId mismatches → one typed, user-presentable error taxonomy
 - 🎨 **CSS-variable theming** — light/dark included, Tailwind-v4-friendly, `unstyled` escape hatch
 - 🖥 **SSR-safe** — works in Next.js App Router out of the box (`"use client"` baked in)
-- 🧪 **Tested** — 59 unit + component smoke tests (vitest + testing-library)
+- 🧪 **Tested** — 64 unit + component smoke tests (vitest + testing-library)
 
 ## Install
 
@@ -38,8 +38,8 @@ const config = {
   networkPassphrase: "Test SDF Network ; September 2015",
   // Current smart-account-kit testnet deployment
   // (testnet resets can invalidate these — see kalepail/smart-account-kit demo/.env.example):
-  accountWasmHash: "8537b8166c0078440a5324c12f6db48d6340d157c306a54c5ea81405abcc2611",
-  webauthnVerifierAddress: "CCMR63YE5T7MPWREF3PC5XNTTGXFSB4GYUGUIT5POHP2UGCS65TBIUUU",
+  accountWasmHash: "a12e8fa9621efd20315753bd4007d974390e31fbcb4a7ddc4dd0a0dec728bf2e",
+  webauthnVerifierAddress: "CBSHV66WG7UV6FQVUTB67P3DZUEJ2KJ5X6JKQH5MFRAAFNFJUAJVXJYV",
   appName: "My Stellar App",
 };
 
@@ -192,7 +192,7 @@ Storybook *Theming* page.
 ## Testing your integration
 
 Inject a fake kit through the provider's `kit` prop, or pass a custom `webAuthn` implementation
-in the config (this is how the library's own 59-test suite works — see `tests/helpers/fakeKit.ts`
+in the config (this is how the library's own 64-test suite works — see `tests/helpers/fakeKit.ts`
 in the repo). For E2E, Chromium's virtual-authenticator CDP works with real testnet flows.
 
 ## License

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { PasskeyWalletProvider } from "../src/components/PasskeyWalletProvider";
@@ -72,6 +72,38 @@ describe("PasskeyWalletProvider", () => {
     expect(result.current.error?.recoverable).toBe(true);
   });
 
+  it("recovers via the indexer when a passkey's wallet isn't derivable", async () => {
+    const kit = createFakeKit();
+    (kit as unknown as { indexer: object }).indexer = {};
+    (kit as unknown as { discoverContractsByCredential: unknown }).discoverContractsByCredential =
+      vi.fn(async () => [{ contract_id: CONTRACT_ID }]);
+    kit.connectWallet.mockImplementation(
+      async (opts?: { prompt?: boolean; credentialId?: string; contractId?: string }) => {
+        if (opts?.credentialId && opts?.contractId) {
+          kit.simulateConnected(opts.contractId, opts.credentialId);
+          return { contractId: opts.contractId, credentialId: opts.credentialId };
+        }
+        if (opts?.prompt) {
+          throw new Error(
+            `Smart account contract not found on-chain for credential ${CREDENTIAL_ID}. ` +
+              "The wallet may not have been deployed yet.",
+          );
+        }
+        return null;
+      },
+    );
+
+    const { result } = renderHook(() => usePasskeyWallet(), { wrapper: wrapperFor(kit) });
+    await waitFor(() => expect(result.current.status).toBe("disconnected"));
+
+    await act(async () => {
+      const connected = await result.current.connect();
+      expect(connected).toEqual({ contractId: CONTRACT_ID, credentialId: CREDENTIAL_ID });
+    });
+    expect(result.current.status).toBe("connected");
+    expect(result.current.error).toBeNull();
+  });
+
   it("createWallet() connects and clears errors", async () => {
     const kit = createFakeKit();
     const { result } = renderHook(() => usePasskeyWallet(), { wrapper: wrapperFor(kit) });
@@ -85,8 +117,10 @@ describe("PasskeyWalletProvider", () => {
     expect(kit.createWallet).toHaveBeenCalledWith(
       "Sembol Test",
       "tester",
-      expect.objectContaining({ autoSubmit: true, autoFund: true }),
+      expect.objectContaining({ autoSubmit: true }),
     );
+    // Funding is Sembol's own Friendbot call, not the kit's autoFund.
+    expect(kit.rpc.fundAddress).toHaveBeenCalledWith(CONTRACT_ID);
   });
 
   it("disconnect() clears connection state", async () => {

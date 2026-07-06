@@ -31,7 +31,8 @@ const USER_MESSAGES: Record<SembolErrorCode, string> = {
   authenticator_constraint:
     "Your authenticator can't satisfy the verification requirements (e.g. no screen lock is set up).",
   wallet_not_connected: "No wallet is connected. Connect or create a wallet first.",
-  wallet_not_found: "No wallet was found for this passkey.",
+  wallet_not_found:
+    "No wallet exists for this passkey on this network. Create a wallet first, or pick a different passkey.",
   session_expired: "Your session expired. Please connect again.",
   simulation_failed: "The transaction could not be simulated. It would likely fail on-chain.",
   submission_failed: "The transaction could not be submitted to the network.",
@@ -115,7 +116,16 @@ function fromSmartAccountCode(err: SmartAccountError): SembolError {
       return new SembolError("wallet_not_connected", err.message, err);
     case C.WALLET_NOT_FOUND:
     case C.CREDENTIAL_NOT_FOUND:
+    case C.SIGNER_NOT_FOUND:
       return new SembolError("wallet_not_found", err.message, err);
+    case C.WALLET_ALREADY_EXISTS:
+    case C.CREDENTIAL_ALREADY_EXISTS:
+      return new SembolError("credential_exists", err.message, err);
+    case C.CREDENTIAL_INVALID:
+    case C.SIGNER_INVALID:
+      return new SembolError("invalid_input", err.message, err);
+    case C.TRANSACTION_SIGNING_FAILED:
+      return new SembolError("submission_failed", err.message, err);
     case C.SESSION_EXPIRED:
     case C.SESSION_INVALID:
       return new SembolError("session_expired", err.message, err);
@@ -159,6 +169,31 @@ export function toSembolError(err: unknown): SembolError {
     return new SembolError("network_error", err.message, err);
   }
 
+  // smart-account-kit throws a few plain Errors (not SmartAccountError) in
+  // its connect/deploy paths — recognize them by message.
+  if (err instanceof Error) {
+    if (
+      /not found on-chain|may not have been deployed|Could not determine (contract|credential) ID/i.test(
+        err.message,
+      )
+    ) {
+      return new SembolError("wallet_not_found", err.message, err);
+    }
+    if (/Failed to sign deployment transaction/i.test(err.message)) {
+      return new SembolError("submission_failed", err.message, err);
+    }
+  }
+
   const message = err instanceof Error ? err.message : String(err);
   return new SembolError("unknown", message, err);
+}
+
+/**
+ * Extract the credential ID embedded in smart-account-kit's
+ * "contract not found on-chain for credential …" error message —
+ * used to attempt indexer-based wallet discovery.
+ */
+export function credentialIdFromError(err: unknown): string | null {
+  const message = err instanceof Error ? err.message : typeof err === "string" ? err : "";
+  return /for credential ([A-Za-z0-9_-]+)/.exec(message)?.[1] ?? null;
 }

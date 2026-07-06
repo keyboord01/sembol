@@ -49,6 +49,7 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^13.3.0",
     "@stellar/stellar-sdk": "^16.0.1",
     "smart-account-kit": "^0.2.10"
   },

@@ -50,22 +50,23 @@ export function CreateWalletButton({
   };
 
   return (
-    <button
-      type="button"
-      className={unstyled ? className : cx("sembol-btn", "sembol-btn--primary", className)}
-      onClick={() => void handleClick()}
-      disabled={disabled || busy || walletStatus === "initializing" || unsupported}
-      data-loading={busy || undefined}
-      title={
-        unsupported
-          ? "This browser doesn't support passkeys"
-          : error
-            ? error.userMessage
-            : undefined
-      }
-    >
-      {busy && <Spinner />}
-      <span>{busy && phase ? PHASE_LABELS[phase] : label}</span>
-    </button>
+    <span className={unstyled ? undefined : "sembol-btn-root"}>
+      <button
+        type="button"
+        className={unstyled ? className : cx("sembol-btn", "sembol-btn--primary", className)}
+        onClick={() => void handleClick()}
+        disabled={disabled || busy || walletStatus === "initializing" || unsupported}
+        data-loading={busy || undefined}
+        title={unsupported ? "This browser doesn't support passkeys" : undefined}
+      >
+        {busy && <Spinner />}
+        <span>{busy && phase ? PHASE_LABELS[phase] : label}</span>
+      </button>
+      {error && !busy && (
+        <span role="alert" className={unstyled ? undefined : "sembol-inline-error"}>
+          {error.userMessage}
+        </span>
+      )}
+    </span>
   );
 }

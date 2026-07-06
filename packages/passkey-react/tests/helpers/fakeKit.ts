@@ -24,8 +24,8 @@ export const TX_HASH = "d3adbeefd3adbeefd3adbeefd3adbeefd3adbeefd3adbeefd3adbeef
 export const TEST_CONFIG: SembolConfig = {
   rpcUrl: "https://soroban-testnet.stellar.org",
   networkPassphrase: TESTNET_PASSPHRASE,
-  accountWasmHash: "8537b8166c0078440a5324c12f6db48d6340d157c306a54c5ea81405abcc2611",
-  webauthnVerifierAddress: "CCMR63YE5T7MPWREF3PC5XNTTGXFSB4GYUGUIT5POHP2UGCS65TBIUUU",
+  accountWasmHash: "a12e8fa9621efd20315753bd4007d974390e31fbcb4a7ddc4dd0a0dec728bf2e",
+  webauthnVerifierAddress: "CBSHV66WG7UV6FQVUTB67P3DZUEJ2KJ5X6JKQH5MFRAAFNFJUAJVXJYV",
   appName: "Sembol Test",
 };
 
@@ -33,7 +33,11 @@ export interface FakeKit {
   events: SmartAccountEventEmitter;
   rpcUrl: string;
   networkPassphrase: string;
-  rpc: { getAssetBalance: ReturnType<typeof vi.fn>; simulateTransaction: ReturnType<typeof vi.fn> };
+  rpc: {
+    getAssetBalance: ReturnType<typeof vi.fn>;
+    simulateTransaction: ReturnType<typeof vi.fn>;
+    fundAddress: ReturnType<typeof vi.fn>;
+  };
   deployerPublicKey: string;
   isConnected: boolean;
   contractId: string | undefined;
@@ -72,6 +76,7 @@ export function createFakeKit(options?: {
         balanceEntry: { amount: "125000000", authorized: true, clawback: false },
       })),
       simulateTransaction: vi.fn(),
+      fundAddress: vi.fn(async () => ({ txHash: "friendbot-hash" })),
     },
     deployerPublicKey: "GBDEPLOYERDEPLOYERDEPLOYERDEPLOYERDEPLOYERDEPLOYERDEPLO",
     isConnected: false,
@@ -86,6 +91,9 @@ export function createFakeKit(options?: {
       return { ...target };
     }),
 
+    // NOTE: the real kit only ever emits credentialCreated / walletConnected /
+    // sessionExpired / walletDisconnected — transaction events exist in its
+    // type map but are never emitted. The fake mirrors that.
     createWallet: vi.fn(async () => {
       events.emit("credentialCreated", {
         credential: {
@@ -95,7 +103,6 @@ export function createFakeKit(options?: {
           createdAt: 0,
         },
       });
-      events.emit("transactionSubmitted", { hash: TX_HASH, success: true });
       kit.simulateConnected(CONTRACT_ID, CREDENTIAL_ID);
       return {
         rawResponse: {},
@@ -120,19 +127,9 @@ export function createFakeKit(options?: {
 
     sign: vi.fn(async (tx: unknown) => tx),
 
-    signAndSubmit: vi.fn(async () => {
-      events.emit("transactionSigned", { contractId: CONTRACT_ID, credentialId: CREDENTIAL_ID });
-      const result = { success: true, hash: TX_HASH, ledger: 42 };
-      events.emit("transactionSubmitted", { hash: TX_HASH, success: true });
-      return result;
-    }),
+    signAndSubmit: vi.fn(async () => ({ success: true, hash: TX_HASH, ledger: 42 })),
 
-    transfer: vi.fn(async () => {
-      events.emit("transactionSigned", { contractId: CONTRACT_ID, credentialId: CREDENTIAL_ID });
-      const result = { success: true, hash: TX_HASH, ledger: 42 };
-      events.emit("transactionSubmitted", { hash: TX_HASH, success: true });
-      return result;
-    }),
+    transfer: vi.fn(async () => ({ success: true, hash: TX_HASH, ledger: 42 })),
 
     simulateConnected(contractId = CONTRACT_ID, credentialId = CREDENTIAL_ID) {
       kit.isConnected = true;

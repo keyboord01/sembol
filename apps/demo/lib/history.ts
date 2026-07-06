@@ -43,7 +43,13 @@ function getSnapshot(address: string | null): HistoryEntry[] {
   const raw = window.localStorage.getItem(storageKey(address));
   const cached = cache.get(address);
   if (cached && cached.raw === raw) return cached.parsed;
-  const parsed = raw ? (JSON.parse(raw) as HistoryEntry[]) : EMPTY;
+  let parsed: HistoryEntry[] = EMPTY;
+  try {
+    parsed = raw ? (JSON.parse(raw) as HistoryEntry[]) : EMPTY;
+    if (!Array.isArray(parsed)) parsed = EMPTY;
+  } catch {
+    parsed = EMPTY; // corrupt storage must not crash the page
+  }
   cache.set(address, { raw, parsed });
   return parsed;
 }
