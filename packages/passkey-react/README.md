@@ -11,7 +11,7 @@ contract, driven by [smart-account-kit](https://github.com/kalepail/smart-accoun
   duplicate credentials, rpId mismatches → one typed, user-presentable error taxonomy
 - 🎨 **CSS-variable theming** - light/dark included, Tailwind-v4-friendly, `unstyled` escape hatch
 - 🖥 **SSR-safe** - works in Next.js App Router out of the box (`"use client"` baked in)
-- 🧪 **Tested** - 64 unit + component smoke tests (vitest + testing-library)
+- 🧪 **Tested** - 66 unit + component smoke tests (vitest + testing-library)
 
 ## Install
 
@@ -19,7 +19,8 @@ contract, driven by [smart-account-kit](https://github.com/kalepail/smart-accoun
 npm install @sembol/passkey-react
 ```
 
-Peer deps: `react` / `react-dom` 18 or 19.
+Peer deps: `react` / `react-dom` 18 or 19. Use with a bundler (Next.js, Vite, webpack, etc.) -
+the underlying `smart-account-kit` ships ESM that a bundler resolves but bare Node ESM does not.
 
 ## Quickstart
 
@@ -196,7 +197,7 @@ Storybook *Theming* page.
 ## Testing your integration
 
 Inject a fake kit through the provider's `kit` prop, or pass a custom `webAuthn` implementation
-in the config (this is how the library's own 64-test suite works - see `tests/helpers/fakeKit.ts`
+in the config (this is how the library's own 66-test suite works - see `tests/helpers/fakeKit.ts`
 in the repo). For E2E, Chromium's virtual-authenticator CDP works with real testnet flows.
 
 ## License

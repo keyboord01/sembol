@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 - 2026-07-06
+
+### Changed
+- Ship `CHANGELOG.md` and `LICENSE` in the published tarball; README notes the bundler
+  requirement (the underlying smart-account-kit ships bundler-resolved ESM).
+
 ## 0.2.1 - 2026-07-06
 
 ### Added
