@@ -26,6 +26,10 @@ export function RequireWallet({ children }: { children: React.ReactNode }) {
           </Link>
           .
         </p>
+        <p className="microlabel mx-auto mt-6 max-w-md text-dim/70">
+          Passkeys are per-domain — a wallet created on localhost or another site won't appear
+          here.
+        </p>
       </div>
     );
   }

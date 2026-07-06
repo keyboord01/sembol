@@ -1,7 +1,7 @@
 {
   "name": "@sembol/passkey-react",
-  "version": "0.1.0",
-  "description": "React components and headless hooks for Stellar passkey smart wallets. Wraps passkey-kit and Launchtube so you can ship a passkey wallet flow in an afternoon.",
+  "version": "0.2.0",
+  "description": "React components and headless hooks for Stellar passkey smart wallets. Wraps smart-account-kit (OpenZeppelin Smart Accounts) so you can ship a passkey wallet flow in an afternoon.",
   "license": "MIT",
   "type": "module",
   "sideEffects": [

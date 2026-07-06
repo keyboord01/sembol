@@ -80,7 +80,8 @@ function Playground() {
           <p className="sembol-story-note">
             Creates a <strong>real</strong> passkey and deploys a smart-account contract on
             Stellar testnet, funded with free XLM. The name is what your passkey manager
-            displays.
+            displays. Note: passkeys are per-domain — Connect only finds wallets created on{" "}
+            <em>this</em> Storybook's domain.
           </p>
           <input
             className="sembol-story-input"

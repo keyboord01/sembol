@@ -83,7 +83,7 @@ export default function OnboardingPage() {
             <input
               value={walletName}
               onChange={(event) => setWalletName(event.target.value)}
-              placeholder="e.g. ahmed·main"
+              placeholder="my-wallet"
               maxLength={40}
               disabled={creating}
               autoComplete="off"
@@ -128,6 +128,30 @@ export default function OnboardingPage() {
           <p className="microlabel mt-4 text-dim">
             Already have one? Connect wallet, top right.
           </p>
+
+          <details className="group mt-5">
+            <summary className="microlabel cursor-pointer list-none text-dim transition-colors hover:text-fg">
+              <span aria-hidden className="text-long">?</span> Connect can't find your passkey —
+              read this
+            </summary>
+            <div className="mt-3 flex flex-col gap-3 border-l-2 border-hairline pl-4 text-sm leading-relaxed text-dim">
+              <p>
+                <span className="text-fg">Passkeys are per-domain.</span> A wallet created on{" "}
+                <code className="text-fg">localhost</code> (or any other site) will never show up
+                here — create one on this domain once, and Connect will find it from then on.
+              </p>
+              <p>
+                <span className="text-fg">Chrome + Apple Passwords:</span> Chrome only lists
+                passkeys stored in iCloud Keychain when{" "}
+                <code className="text-fg">
+                  chrome://password-manager/settings → "Use passkeys and passwords from iCloud
+                  Keychain"
+                </code>{" "}
+                is enabled. Saving works without it, listing doesn't — or just use Safari, which
+                reads them natively.
+              </p>
+            </div>
+          </details>
 
           {unsupported && (
             <p

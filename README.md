@@ -90,6 +90,17 @@ Out of scope, as agreed: new Soroban contracts, mainnet deployment, native mobil
 multi-signer/recovery UX (the kit exposes the primitives; UI is phase 2), non-React ports,
 and the actual stellar-wallet-kit PR (the integration guide opens that conversation).
 
+**Documented deviations from the SOW text** (the ecosystem moved between writing and building):
+
+1. The SOW names **passkey-kit + Launchtube**; both are legacy/dead as of 2026. Sembol wraps
+   their successors — **smart-account-kit** (audited OpenZeppelin contracts) and the
+   **OpenZeppelin Relayer** — with a [migration note](docs/migrating-from-passkey-kit.md).
+2. The faucet dispenses **testnet XLM via Friendbot** rather than "testnet USDC" — no
+   canonical testnet USDC/faucet exists; Friendbot is Stellar's standard test faucet.
+3. **Conditional UI**: capability detection ships (`detectWebAuthnCapabilities().conditionalGet`)
+   and the matrix documents support; the full autofill sign-in flow needs upstream kit support
+   and is noted as Phase 2.
+
 ## Publishing
 
 The package is publish-ready (`pnpm --filter @sembol/passkey-react build` produces `dist/` with
@@ -114,6 +125,10 @@ cd apps/demo && vercel deploy --prod
 (Optional fee sponsoring for the demo: set `NEXT_PUBLIC_RELAYER_URL=/api/relayer`,
 `RELAYER_UPSTREAM_URL=https://channels.openzeppelin.com/testnet/`, and `RELAYER_API_KEY`
 from the self-serve `/gen` endpoint.)
+
+> **Before pointing a custom domain at the demo:** passkeys are bound to their origin
+> (WebAuthn rpId). Wallets created on `sembol-demo.vercel.app` will not be visible on the
+> custom domain and vice versa — switch domains *before* sharing the app, not after.
 
 ## Testnet configuration
 
