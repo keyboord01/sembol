@@ -153,4 +153,19 @@ describe("PasskeyWalletProvider", () => {
     await waitFor(() => expect(result.current.status).toBe("disconnected"));
     await expect(result.current.fund()).rejects.toMatchObject({ code: "wallet_not_connected" });
   });
+
+  it("maps Friendbot 'already funded' to a friendly already_funded error", async () => {
+    const kit = createFakeKit({ session: { contractId: CONTRACT_ID, credentialId: CREDENTIAL_ID } });
+    kit.rpc.fundAddress.mockRejectedValue(new Error("account already funded to starting balance"));
+    kit.fundWallet.mockRejectedValue(new Error("account already funded to starting balance"));
+    const { result } = renderHook(() => usePasskeyWallet(), { wrapper: wrapperFor(kit) });
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+
+    await act(async () => {
+      await expect(result.current.fund()).rejects.toMatchObject({
+        code: "already_funded",
+        recoverable: false,
+      });
+    });
+  });
 });

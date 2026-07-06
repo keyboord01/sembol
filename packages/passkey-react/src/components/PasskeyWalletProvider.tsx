@@ -388,9 +388,15 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
       await waitForFundsVisible(kit, kit.contractId);
       signals.emit("tx:submitted");
       return { success: true, hash: response.txHash ?? "", amount: 10000 };
-    } catch {
-      // Already-funded addresses make Friendbot 400 - fall back to the kit's
-      // temp-account transfer, which works repeatedly.
+    } catch (friendbotErr) {
+      // Friendbot 400s an address it has already topped up to the starting
+      // balance - that's not a failure, the wallet simply can't be topped up
+      // more right now.
+      if (/already funded|starting balance/i.test(String((friendbotErr as Error)?.message ?? ""))) {
+        throw new SembolError("already_funded");
+      }
+      // Otherwise fall back to the kit's temp-account transfer, which can add
+      // more even to a funded wallet.
       try {
         const result = await kit.fundWallet(resolved.nativeTokenContract);
         if (!result.success) {
@@ -399,6 +405,9 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
         signals.emit("tx:submitted");
         return result;
       } catch (err) {
+        if (/already funded|starting balance/i.test(String((err as Error)?.message ?? ""))) {
+          throw new SembolError("already_funded");
+        }
         throw toSembolError(err);
       }
     }

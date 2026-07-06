@@ -32,12 +32,18 @@ export function LedgerReadout() {
   }, [kit]);
 
   return (
-    <span className="microlabel tnum hidden items-center gap-2 text-dim sm:inline-flex" role="status">
+    <span
+      className="microlabel tnum hidden items-center gap-2 text-dim sm:inline-flex"
+      role="status"
+      title="The current Stellar testnet ledger (block) number - updates every ~5 seconds, so a moving number means the network connection is live."
+    >
       <span
         aria-hidden
         className={`inline-block h-1.5 w-1.5 ${stale ? "bg-amber" : "bg-long"}`}
       />
-      {ledger === null ? "RPC -" : `LEDGER ${ledger.toLocaleString("en-US")}`}
+      {ledger === null
+        ? "RPC OFFLINE"
+        : `TESTNET · BLOCK ${ledger.toLocaleString("en-US")}`}
     </span>
   );
 }

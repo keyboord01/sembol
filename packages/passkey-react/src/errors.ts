@@ -17,6 +17,7 @@ export type SembolErrorCode =
   | "submission_failed"
   | "timeout"
   | "invalid_input"
+  | "already_funded"
   | "storage_error"
   | "network_error"
   | "unknown";
@@ -38,6 +39,7 @@ const USER_MESSAGES: Record<SembolErrorCode, string> = {
   submission_failed: "The transaction could not be submitted to the network.",
   timeout: "The network request timed out. Please try again.",
   invalid_input: "Some of the provided values are invalid.",
+  already_funded: "This wallet already holds the maximum testnet balance from Friendbot.",
   storage_error: "Could not read or write local wallet storage.",
   network_error: "A network error occurred. Check your connection and try again.",
   unknown: "Something went wrong. Please try again.",

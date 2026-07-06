@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 - 2026-07-06
+
+### Added
+- `already_funded` error code: Friendbot's "account already funded to starting balance" 400 is
+  now a distinct, friendly (non-recoverable) error instead of a scary `submission_failed`.
+
 ## 0.2.0 - 2026-07-06
 
 ### Added

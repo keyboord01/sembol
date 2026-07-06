@@ -15,11 +15,14 @@ const LINKS = [
 export function Nav() {
   const pathname = usePathname();
   const { isConnected } = usePasskeyWallet();
+  // Connected users have no onboarding page to return to - point the wordmark
+  // at the dashboard so it never bounces through a redirect.
+  const home = isConnected ? "/dashboard" : "/";
 
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-ink/95 backdrop-blur-sm">
       <div className="mx-auto flex h-12 w-full max-w-4xl items-center gap-4 px-4 sm:gap-5 sm:px-6">
-        <Link href="/" className="flex min-w-0 items-baseline gap-2">
+        <Link href={home} className="flex min-w-0 items-baseline gap-2">
           <span aria-hidden className="text-long">
             ✳
           </span>

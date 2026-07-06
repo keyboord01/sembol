@@ -18,10 +18,17 @@ function Dashboard() {
   const { explorerUrl, copy, copied } = useWalletAddress();
   const { formatted, symbol, status: balanceStatus, isRefreshing, refetch } = useWalletBalance();
   const [funding, setFunding] = useState(false);
+  const [fundStep, setFundStep] = useState<string | null>(null);
   const [showQr, setShowQr] = useState(false);
 
   const handleFund = async () => {
     setFunding(true);
+    setFundStep("Requesting XLM from Friendbot…");
+    // The provider emits funding:start then tx:submitted; reflect the wait.
+    const stepTimer = setTimeout(
+      () => setFundStep("Waiting for the deposit to confirm on-chain…"),
+      2500,
+    );
     try {
       const result = await fund();
       toast("ok", `Received ${result.amount ?? "test"} XLM from Friendbot`);
@@ -29,9 +36,13 @@ function Dashboard() {
         recordTransaction(address, { hash: result.hash, kind: "fund" });
       }
     } catch (err) {
-      toast("err", toSembolError(err).userMessage);
+      const sembolError = toSembolError(err);
+      // "Already funded" is information, not a failure.
+      toast(sembolError.code === "already_funded" ? "ok" : "err", sembolError.userMessage);
     } finally {
+      clearTimeout(stepTimer);
       setFunding(false);
+      setFundStep(null);
     }
   };
 
@@ -76,9 +87,16 @@ function Dashboard() {
               disabled={funding}
               className="inline-flex h-12 items-center border border-hairline px-6 font-mono text-sm tracking-[0.1em] text-fg uppercase transition-colors hover:border-long hover:text-long disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {funding ? "Requesting…" : "Get test XLM"}
+              {funding ? "Working…" : "Get test XLM"}
             </button>
           </div>
+
+          {fundStep && (
+            <p className="microlabel mt-4 flex items-center gap-2 text-dim" role="status">
+              <span aria-hidden className="h-1.5 w-1.5 animate-pulse bg-long" />
+              {fundStep}
+            </p>
+          )}
         </div>
 
         <dl className="h-fit divide-y divide-hairline border border-hairline">
