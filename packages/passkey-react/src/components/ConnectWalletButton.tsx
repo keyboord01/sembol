@@ -3,11 +3,15 @@ import { usePasskeyWalletContext } from "../context";
 import type { SembolError } from "../errors";
 import { useConnectWallet } from "../hooks/useConnectWallet";
 import { useWalletAddress } from "../hooks/useWalletAddress";
-import { cx, Spinner } from "../internal/ui";
+import { buttonClasses, cx, Spinner, type ButtonSize, type ButtonVariant } from "../internal/ui";
 
 export interface ConnectWalletButtonProps {
   /** Button label while disconnected. @default "Connect wallet" */
   label?: string;
+  /** Visual style while disconnected. @default "primary" */
+  variant?: ButtonVariant;
+  /** Button size while disconnected. @default "md" */
+  size?: ButtonSize;
   /** Extra class names for the root element. */
   className?: string;
   /** Drop all built-in `sembol-*` classes and style from scratch. */
@@ -23,6 +27,8 @@ export interface ConnectWalletButtonProps {
  */
 export function ConnectWalletButton({
   label = "Connect wallet",
+  variant = "primary",
+  size = "md",
   className,
   unstyled,
   onConnected,
@@ -121,7 +127,7 @@ export function ConnectWalletButton({
       <span className={unstyled ? undefined : "sembol-btn-root"}>
         <button
           type="button"
-          className={unstyled ? className : cx("sembol-btn", "sembol-btn--primary", className)}
+          className={unstyled ? className : buttonClasses(variant, size, className)}
           onClick={() => void handleConnect()}
           disabled={busy || status === "initializing" || unsupported}
           data-loading={busy || undefined}

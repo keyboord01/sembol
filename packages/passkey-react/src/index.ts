@@ -50,6 +50,9 @@ export {
 // Errors
 export { SembolError, toSembolError, type SembolErrorCode } from "./errors";
 
+// Styling primitives
+export type { ButtonSize, ButtonVariant } from "./internal/ui";
+
 // WebAuthn capability detection
 export {
   detectWebAuthnCapabilities,

@@ -1,12 +1,16 @@
 import { usePasskeyWalletContext } from "../context";
 import type { SembolError } from "../errors";
 import { useCreateWallet, type CreateWalletPhase } from "../hooks/useCreateWallet";
-import { cx, Spinner } from "../internal/ui";
+import { buttonClasses, Spinner, type ButtonSize, type ButtonVariant } from "../internal/ui";
 import type { CreateWalletOptions } from "../types";
 
 export interface CreateWalletButtonProps extends CreateWalletOptions {
   /** Button label. @default "Create wallet" */
   label?: string;
+  /** Visual style. @default "primary" */
+  variant?: ButtonVariant;
+  /** Button size. @default "md" */
+  size?: ButtonSize;
   className?: string;
   /** Drop all built-in `sembol-*` classes and style from scratch. */
   unstyled?: boolean;
@@ -27,6 +31,8 @@ const PHASE_LABELS: Record<Exclude<CreateWalletPhase, null>, string> = {
  */
 export function CreateWalletButton({
   label = "Create wallet",
+  variant = "primary",
+  size = "md",
   className,
   unstyled,
   disabled,
@@ -53,7 +59,7 @@ export function CreateWalletButton({
     <span className={unstyled ? undefined : "sembol-btn-root"}>
       <button
         type="button"
-        className={unstyled ? className : cx("sembol-btn", "sembol-btn--primary", className)}
+        className={unstyled ? className : buttonClasses(variant, size, className)}
         onClick={() => void handleClick()}
         disabled={disabled || busy || walletStatus === "initializing" || unsupported}
         data-loading={busy || undefined}

@@ -11,6 +11,16 @@ const meta = {
     onDisconnected: fn(),
     onError: fn(),
   },
+  argTypes: {
+    variant: {
+      control: "select",
+      options: ["primary", "secondary", "outline", "ghost", "destructive"],
+    },
+    size: {
+      control: "select",
+      options: ["sm", "md", "lg"],
+    },
+  },
   parameters: {
     docs: {
       description: {
@@ -44,6 +54,30 @@ export const Default: Story = {};
 /** Custom label via the `label` prop. */
 export const CustomLabel: Story = {
   args: { label: "Sign in with passkey" },
+};
+
+/** All visual variants: `primary`, `secondary`, `outline`, `ghost`, `destructive`. */
+export const Variants: Story = {
+  render: (args) => (
+    <div className="sembol-story-row">
+      <ConnectWalletButton {...args} variant="primary" label="Primary" />
+      <ConnectWalletButton {...args} variant="secondary" label="Secondary" />
+      <ConnectWalletButton {...args} variant="outline" label="Outline" />
+      <ConnectWalletButton {...args} variant="ghost" label="Ghost" />
+      <ConnectWalletButton {...args} variant="destructive" label="Destructive" />
+    </div>
+  ),
+};
+
+/** Sizes: `sm`, `md` (default), `lg`. */
+export const Sizes: Story = {
+  render: (args) => (
+    <div className="sembol-story-row">
+      <ConnectWalletButton {...args} size="sm" label="Small" />
+      <ConnectWalletButton {...args} size="md" label="Medium" />
+      <ConnectWalletButton {...args} size="lg" label="Large" />
+    </div>
+  ),
 };
 
 /**

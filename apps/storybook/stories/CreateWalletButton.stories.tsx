@@ -11,6 +11,16 @@ const meta = {
     onSuccess: fn(),
     onError: fn(),
   },
+  argTypes: {
+    variant: {
+      control: "select",
+      options: ["primary", "secondary", "outline", "ghost", "destructive"],
+    },
+    size: {
+      control: "select",
+      options: ["sm", "md", "lg"],
+    },
+  },
   parameters: {
     docs: {
       description: {
@@ -50,4 +60,27 @@ export const WithoutFunding: Story = {
 /** Custom nickname stored alongside the credential for later display. */
 export const WithNickname: Story = {
   args: { nickname: "My Storybook wallet", label: "Create named wallet" },
+};
+
+/** All visual variants — pick what fits your surface. */
+export const Variants: Story = {
+  render: (args) => (
+    <div className="sembol-story-row">
+      <CreateWalletButton {...args} variant="primary" label="Primary" />
+      <CreateWalletButton {...args} variant="secondary" label="Secondary" />
+      <CreateWalletButton {...args} variant="outline" label="Outline" />
+      <CreateWalletButton {...args} variant="ghost" label="Ghost" />
+    </div>
+  ),
+};
+
+/** Sizes: `sm`, `md` (default), `lg`. */
+export const Sizes: Story = {
+  render: (args) => (
+    <div className="sembol-story-row">
+      <CreateWalletButton {...args} size="sm" label="Small" />
+      <CreateWalletButton {...args} size="md" label="Medium" />
+      <CreateWalletButton {...args} size="lg" label="Large" />
+    </div>
+  ),
 };

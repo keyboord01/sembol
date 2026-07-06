@@ -32,15 +32,29 @@ Override in your own CSS after the import:
 
 | Variable | Purpose |
 | --- | --- |
-| `--sembol-color-accent` / `-hover` / `--sembol-color-on-accent` | Primary buttons, links, badges |
-| `--sembol-color-bg` / `--sembol-color-surface` | Modal + menu backgrounds, summary cards |
+| `--sembol-color-accent` / `-hover` / `-active` / `-muted` / `--sembol-color-on-accent` | Primary buttons, links, badges |
+| `--sembol-color-bg` / `--sembol-color-surface` / `--sembol-color-surface-hover` | Backgrounds: page, cards, hover states |
 | `--sembol-color-fg` / `--sembol-color-fg-muted` | Text |
-| `--sembol-color-border` | Borders, dividers |
-| `--sembol-color-success` / `--sembol-color-danger` | Status colors |
+| `--sembol-color-border` / `--sembol-color-border-strong` | Borders, dividers, hover borders |
+| `--sembol-color-success` / `-strong` / `-muted`, `--sembol-color-danger` / `-strong` / `-muted` | Status text + tinted status panels |
 | `--sembol-color-overlay` | Modal backdrop |
-| `--sembol-radius` / `--sembol-radius-lg` | Corner radii |
+| `--sembol-radius-sm` / `--sembol-radius` / `--sembol-radius-lg` / `--sembol-radius-full` | Corner radii |
 | `--sembol-font` / `--sembol-font-mono` | Type stacks |
-| `--sembol-shadow` / `--sembol-focus-ring` | Elevation + focus outline |
+| `--sembol-shadow-sm` / `--sembol-shadow` / `--sembol-shadow-lg` / `--sembol-shadow-xl` | Elevation scale |
+| `--sembol-focus-ring` | Focus outline |
+| `--sembol-ease` / `--sembol-duration` | Motion (respects `prefers-reduced-motion`) |
+
+## Button variants & sizes
+
+The built-in buttons take `variant` and `size` props:
+
+```tsx
+<CreateWalletButton variant="primary" size="lg" />
+<ConnectWalletButton variant="outline" size="sm" />
+```
+
+Variants: `primary` · `secondary` · `outline` · `ghost` · `destructive` — see the
+*Variants* and *Sizes* stories under each button component.
 
 ## Dark mode
 
