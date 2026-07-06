@@ -84,9 +84,9 @@ function SendForm() {
         }}
         className="flex flex-col gap-7"
       >
-        <label className="flex flex-col gap-2.5">
-          <span className="microlabel flex items-center justify-between text-dim">
-            <span>Recipient (G… or C… address)</span>
+        <div className="flex flex-col gap-2.5">
+          <div className="microlabel flex items-center justify-between text-dim">
+            <label htmlFor="recipient">Recipient (G… or C… address)</label>
             <button
               type="button"
               onClick={() => setScanning(true)}
@@ -94,8 +94,9 @@ function SendForm() {
             >
               ▦ Scan QR
             </button>
-          </span>
+          </div>
           <input
+            id="recipient"
             value={recipient}
             onChange={(event) => setRecipient(event.target.value)}
             placeholder="GAAH4OT3…"
@@ -103,7 +104,7 @@ function SendForm() {
             autoComplete="off"
             className="tnum h-13 border border-hairline bg-surface px-4 text-base text-fg placeholder:text-dim/50 focus:border-long focus:outline-none"
           />
-        </label>
+        </div>
 
         {scanning && (
           <QrScanner
