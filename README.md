@@ -26,6 +26,13 @@ import "@sembol/passkey-react/styles.css";
 | **npm package** | **https://www.npmjs.com/package/@sembol/passkey-react** | ✅ Published — `npm install @sembol/passkey-react` |
 | CI | `.github/workflows/ci.yml` | ✅ Build + typecheck + 65 tests on every push |
 
+**Demo video:** [docs/media/sembol-demo-video.mp4](docs/media/sembol-demo-video.mp4) —
+72s covering both flows end-to-end against the live sites: the reference app (create a named
+wallet → funded balance → send 2.5 XLM → approval modal → history with the on-chain hash
+[`1649643d…736f`](https://stellar.expert/explorer/testnet/tx/1649643d4bd4e1331387ef5611158927ed579e50befbf73fa477912204b6736f))
+followed by a Storybook tour (docs, Live Playground creating a second real wallet,
+compatibility matrix, variants, theming).
+
 **Verified end-to-end against the live public deployment** (automated browser with a virtual
 passkey authenticator, `scripts/e2e-testnet.mjs` with `APP_URL=https://sembol-demo.vercel.app`):
 created wallet
