@@ -29,7 +29,6 @@ export function Nav() {
           <span className="font-display text-sm font-semibold tracking-[0.18em] uppercase">
             Sembol
           </span>
-          <span className="microlabel hidden text-dim md:inline">Testnet</span>
         </Link>
 
         {isConnected && (

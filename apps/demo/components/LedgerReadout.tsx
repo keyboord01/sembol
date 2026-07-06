@@ -31,19 +31,25 @@ export function LedgerReadout() {
     };
   }, [kit]);
 
+  const label = ledger === null ? "OFFLINE" : `BLOCK ${ledger.toLocaleString("en-US")}`;
+
   return (
     <span
-      className="microlabel tnum hidden items-center gap-2 text-dim sm:inline-flex"
+      className="microlabel tnum inline-flex items-center gap-2 text-dim"
       role="status"
-      title="The current Stellar testnet ledger (block) number - updates every ~5 seconds, so a moving number means the network connection is live."
+      title={
+        ledger === null
+          ? "Not connected to the Stellar testnet RPC."
+          : "Live Stellar testnet block height - it ticks every ~5 seconds while the network connection is healthy."
+      }
     >
       <span
         aria-hidden
-        className={`inline-block h-1.5 w-1.5 ${stale ? "bg-amber" : "bg-long"}`}
+        className={`inline-block h-1.5 w-1.5 ${stale || ledger === null ? "bg-amber" : "bg-long"}`}
       />
-      {ledger === null
-        ? "RPC OFFLINE"
-        : `TESTNET · BLOCK ${ledger.toLocaleString("en-US")}`}
+      {/* Dot + block number on mobile; full label from sm up. */}
+      <span className="hidden sm:inline">{label}</span>
+      <span className="sr-only">Testnet {label}</span>
     </span>
   );
 }
