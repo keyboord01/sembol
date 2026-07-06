@@ -23,7 +23,7 @@ import "@sembol/passkey-react/styles.css";
 | **Reference app** | **https://sembol-demo.vercel.app** | ✅ Live on Stellar testnet |
 | **Storybook** | **https://sembol-storybook.vercel.app** | ✅ Live (interactive testnet stories) |
 | Source (private) | https://github.com/keyboord01/sembol | ✅ Live |
-| npm package `@sembol/passkey-react` | `packages/passkey-react` | 📦 Publish-ready — `cd packages/passkey-react && npm publish --access public` (needs `npm login`) |
+| **npm package** | **https://www.npmjs.com/package/@sembol/passkey-react** | ✅ Published — `npm install @sembol/passkey-react` |
 | CI | `.github/workflows/ci.yml` | ✅ Build + typecheck + 65 tests on every push |
 
 **Verified end-to-end against the live public deployment** (automated browser with a virtual
