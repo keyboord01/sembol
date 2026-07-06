@@ -27,11 +27,13 @@ import "@sembol/passkey-react/styles.css";
 | CI | `.github/workflows/ci.yml` | ✅ Build + typecheck + 65 tests on every push |
 
 **Demo video:** [docs/media/sembol-demo-video.mp4](docs/media/sembol-demo-video.mp4) -
-72s covering both flows end-to-end against the live sites: the reference app (create a named
-wallet → funded balance → send 2.5 XLM → approval modal → history with the on-chain hash
-[`1649643d…736f`](https://stellar.expert/explorer/testnet/tx/1649643d4bd4e1331387ef5611158927ed579e50befbf73fa477912204b6736f))
-followed by a Storybook tour (docs, Live Playground creating a second real wallet,
-compatibility matrix, variants, theming).
+end-to-end against the live sites, in three parts: (1) desktop reference app - create a named
+wallet, funded balance, send 2.5 XLM, approval modal, history
+([tx `bdbd55a6…377a`](https://stellar.expert/explorer/testnet/tx/bdbd55a6c71fd06ff9be2209236c1564859912d2985ab8ba97eea7c68c9c377a));
+(2) the same flow on a mobile viewport, showing the responsive nav and the QR receive panel
+([tx `02547040…5d53`](https://stellar.expert/explorer/testnet/tx/02547040fbb6b38abf86e05551a24d436734018499ff628b7fc2a14487f85d53));
+(3) a Storybook tour - docs, Live Playground creating a third real wallet, compatibility matrix,
+variants, theming.
 
 **Verified end-to-end against the live public deployment** (automated browser with a virtual
 passkey authenticator, `scripts/e2e-testnet.mjs` with `APP_URL=https://sembol-demo.vercel.app`):
