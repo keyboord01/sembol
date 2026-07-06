@@ -112,12 +112,21 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
     setError(null);
 
     const baseWebAuthn = resolved.webAuthn ?? { startRegistration, startAuthentication };
+    // Inject preference hints so browsers surface the platform authenticator
+    // consistently on both create() and get() prompts.
+    const withHints = <T extends { hints?: unknown }>(optionsJSON: T): T =>
+      resolved.webAuthnHints && optionsJSON.hints === undefined
+        ? { ...optionsJSON, hints: resolved.webAuthnHints }
+        : optionsJSON;
     // "done" only on success — a cancelled prompt must not read as progress.
     const instrumentedWebAuthn: NonNullable<SembolConfig["webAuthn"]> = {
       startRegistration: async (options) => {
         signals.emit("webauthn:start");
         try {
-          const response = await baseWebAuthn.startRegistration(options);
+          const response = await baseWebAuthn.startRegistration({
+            ...options,
+            optionsJSON: withHints(options.optionsJSON),
+          });
           signals.emit("webauthn:done");
           return response;
         } catch (err) {
@@ -128,7 +137,10 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
       startAuthentication: async (options) => {
         signals.emit("webauthn:start");
         try {
-          const response = await baseWebAuthn.startAuthentication(options);
+          const response = await baseWebAuthn.startAuthentication({
+            ...options,
+            optionsJSON: withHints(options.optionsJSON),
+          });
           signals.emit("webauthn:done");
           return response;
         } catch (err) {

@@ -173,6 +173,72 @@
   max-width: 34ch;
 }
 
+/* ---------- Error toast ---------- */
+
+.sembol-toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 200;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: min(380px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border-radius: var(--sembol-radius);
+  border: 1px solid color-mix(in srgb, var(--sembol-color-danger) 35%, var(--sembol-color-border));
+  background: var(--sembol-color-bg);
+  box-shadow: var(--sembol-shadow-lg);
+  font-family: var(--sembol-font);
+  animation: sembol-toast-in 200ms var(--sembol-ease);
+}
+
+@keyframes sembol-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.sembol-toast__message {
+  flex: 1;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--sembol-color-danger);
+}
+
+.sembol-toast__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: -2px -4px 0 0;
+  border: none;
+  border-radius: var(--sembol-radius-sm);
+  background: transparent;
+  color: var(--sembol-color-fg-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.sembol-toast__close:hover {
+  background: var(--sembol-color-surface-hover);
+  color: var(--sembol-color-fg);
+}
+
+.sembol-toast__close:focus-visible {
+  outline: none;
+  box-shadow: var(--sembol-focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sembol-toast {
+    animation: none;
+  }
+}
+
 /* ---------- Buttons ---------- */
 
 .sembol-btn {

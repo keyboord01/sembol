@@ -15,4 +15,5 @@ export const TESTNET_CONFIG: SembolConfig = {
   webauthnVerifierAddress: "CBSHV66WG7UV6FQVUTB67P3DZUEJ2KJ5X6JKQH5MFRAAFNFJUAJVXJYV",
   nativeTokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
   appName: "Sembol Storybook",
+  webAuthnHints: ["client-device", "hybrid"],
 };

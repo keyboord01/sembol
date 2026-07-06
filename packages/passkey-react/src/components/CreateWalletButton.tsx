@@ -1,7 +1,13 @@
 import { usePasskeyWalletContext } from "../context";
 import type { SembolError } from "../errors";
 import { useCreateWallet, type CreateWalletPhase } from "../hooks/useCreateWallet";
-import { buttonClasses, Spinner, type ButtonSize, type ButtonVariant } from "../internal/ui";
+import {
+  buttonClasses,
+  ErrorToast,
+  Spinner,
+  type ButtonSize,
+  type ButtonVariant,
+} from "../internal/ui";
 import type { CreateWalletOptions } from "../types";
 
 export interface CreateWalletButtonProps extends CreateWalletOptions {
@@ -41,7 +47,7 @@ export function CreateWalletButton({
   ...createOptions
 }: CreateWalletButtonProps) {
   const { status: walletStatus, capabilities } = usePasskeyWalletContext();
-  const { createWallet, status, phase, error } = useCreateWallet();
+  const { createWallet, status, phase, error, reset } = useCreateWallet();
 
   const busy = status === "creating";
   const unsupported = capabilities !== null && !capabilities.supported;
@@ -56,7 +62,7 @@ export function CreateWalletButton({
   };
 
   return (
-    <span className={unstyled ? undefined : "sembol-btn-root"}>
+    <>
       <button
         type="button"
         className={unstyled ? className : buttonClasses(variant, size, className)}
@@ -68,11 +74,7 @@ export function CreateWalletButton({
         {busy && <Spinner />}
         <span>{busy && phase ? PHASE_LABELS[phase] : label}</span>
       </button>
-      {error && !busy && (
-        <span role="alert" className={unstyled ? undefined : "sembol-inline-error"}>
-          {error.userMessage}
-        </span>
-      )}
-    </span>
+      <ErrorToast error={busy ? null : error} onDismiss={reset} unstyled={unstyled} />
+    </>
   );
 }

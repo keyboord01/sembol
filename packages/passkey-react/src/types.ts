@@ -54,6 +54,13 @@ export interface SembolConfig {
   /** Custom WebAuthn implementation (used by tests and virtual authenticators). */
   webAuthn?: SmartAccountConfig["webAuthn"];
   /**
+   * WebAuthn hints (L3), in preference order, injected into every passkey
+   * prompt. `["client-device", "hybrid"]` asks the browser to surface the
+   * local platform authenticator (Touch ID / Windows Hello) first — useful
+   * because some browsers otherwise bury it on `get()` prompts.
+   */
+  webAuthnHints?: ("client-device" | "hybrid" | "security-key")[];
+  /**
    * Silently restore the previous session on mount (no passkey prompt).
    * @default true
    */

@@ -1,22 +1,23 @@
 .sembol-story-canvas {
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: var(--sembol-font, ui-sans-serif, system-ui, sans-serif);
   color: var(--sembol-color-fg);
+  font-size: 15px;
 }
 
 .sembol-story-canvas[data-sembol-theme="dark"] {
   color-scheme: dark;
 }
 
-/* Simple layout helpers used by stories */
+.sembol-story-canvas button:not(:disabled) {
+  cursor: pointer;
+}
+
+/* Layout helpers used by stories */
 .sembol-story-stack {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-width: 320px;
+  gap: 20px;
+  min-width: 340px;
 }
 
 .sembol-story-row {
@@ -29,42 +30,142 @@
 .sembol-story-card {
   border: 1px solid var(--sembol-color-border);
   background: var(--sembol-color-bg);
-  border-radius: 16px;
+  border-radius: var(--sembol-radius-lg);
+  overflow: hidden;
+}
+
+.sembol-story-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--sembol-color-border);
+  background: var(--sembol-color-surface);
+}
+
+.sembol-story-card__step {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sembol-color-fg-muted);
+}
+
+.sembol-story-card__step b {
+  color: var(--sembol-color-accent);
+  font-weight: 650;
+}
+
+.sembol-story-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   padding: 20px;
-  max-width: 460px;
 }
 
 .sembol-story-note {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
   color: var(--sembol-color-fg-muted);
   margin: 0;
-  max-width: 420px;
+  max-width: 52ch;
 }
 
 .sembol-story-kv {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 4px 16px;
-  font-size: 0.875rem;
+  gap: 10px 20px;
+  font-size: 0.9375rem;
+  align-items: baseline;
 }
 
 .sembol-story-kv dt {
   color: var(--sembol-color-fg-muted);
+  font-size: 0.8125rem;
 }
 
 .sembol-story-kv dd {
   margin: 0;
-  font-family: ui-monospace, monospace;
+  font-family: var(--sembol-font-mono, ui-monospace, monospace);
   overflow-wrap: anywhere;
 }
 
 .sembol-story-input {
-  padding: 0.5em 0.75em;
-  border-radius: 10px;
+  height: 2.75rem;
+  padding: 0 0.875rem;
+  border-radius: var(--sembol-radius);
   border: 1px solid var(--sembol-color-border);
   background: var(--sembol-color-bg);
   color: var(--sembol-color-fg);
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
+  font-family: inherit;
   width: 100%;
   box-sizing: border-box;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.sembol-story-input::placeholder {
+  color: color-mix(in srgb, var(--sembol-color-fg-muted) 70%, transparent);
+}
+
+.sembol-story-input:focus {
+  outline: none;
+  border-color: var(--sembol-color-accent);
+  box-shadow: var(--sembol-focus-ring);
+}
+
+.sembol-story-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.3em 0.75em;
+  border-radius: var(--sembol-radius-full);
+  border: 1px solid var(--sembol-color-border);
+  background: var(--sembol-color-surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sembol-color-fg-muted);
+}
+
+.sembol-story-pill[data-on="true"] {
+  color: var(--sembol-color-success-strong);
+  border-color: color-mix(in srgb, var(--sembol-color-success) 35%, var(--sembol-color-border));
+  background: var(--sembol-color-success-muted);
+}
+
+.sembol-story-pill__dot {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.sembol-story-txlist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.sembol-story-txlist li {
+  padding: 10px 0;
+  font-size: 0.875rem;
+}
+
+.sembol-story-txlist li + li {
+  border-top: 1px solid var(--sembol-color-border);
+}
+
+.sembol-story-txlist a {
+  color: var(--sembol-color-accent);
+  text-decoration: none;
+  font-family: var(--sembol-font-mono, monospace);
+}
+
+.sembol-story-txlist a:hover {
+  text-decoration: underline;
 }

@@ -20,7 +20,7 @@ function HistoryList() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-baseline justify-between border-b border-hairline pb-3">
+      <div className="flex items-baseline justify-between border-b border-hairline pb-4">
         <p className="microlabel text-dim">01 · Execution log</p>
         {explorerUrl && (
           <a
@@ -51,14 +51,14 @@ function HistoryList() {
             return (
               <li
                 key={`${entry.hash}-${entry.timestamp}`}
-                className="group grid grid-cols-[2.5rem_5rem_1fr_auto] items-baseline gap-3 px-4 py-3 transition-colors hover:bg-surface"
+                className="group grid grid-cols-[2.75rem_5rem_1fr_auto] items-baseline gap-4 px-5 py-4 transition-colors hover:bg-surface"
               >
                 <span className="microlabel tnum text-dim">
                   #{pad2(entries.length - index)}
                 </span>
                 <span className={`microlabel ${meta.tone}`}>{meta.label}</span>
                 <span className="min-w-0">
-                  <span className="tnum block truncate text-xs text-fg">
+                  <span className="tnum block truncate text-sm text-fg">
                     {entry.kind === "send" && entry.amount ? (
                       <>
                         {entry.amount} XLM

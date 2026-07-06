@@ -22,4 +22,7 @@ export const sembolConfig: SembolConfig = {
     "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
   relayerUrl: process.env.NEXT_PUBLIC_RELAYER_URL || undefined,
   appName: "Sembol Demo",
+  // Surface the local platform passkey (Touch ID / Windows Hello) first on
+  // every prompt — some browsers otherwise bury it on connect.
+  webAuthnHints: ["client-device", "hybrid"],
 };

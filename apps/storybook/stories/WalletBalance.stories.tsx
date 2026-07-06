@@ -33,7 +33,9 @@ const meta = {
           <ConnectWalletButton />
         </div>
         <div className="sembol-story-card">
-          <Story />
+          <div className="sembol-story-card__body">
+            <Story />
+          </div>
         </div>
         <p className="sembol-story-note">
           Connect (or create a wallet in the Live Playground) to see a real testnet balance.

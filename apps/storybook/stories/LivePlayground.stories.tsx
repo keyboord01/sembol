@@ -12,8 +12,18 @@ import {
   type AssembledTransaction,
 } from "@sembol/passkey-react";
 
+function StatusPill() {
+  const { status } = usePasskeyWallet();
+  return (
+    <span className="sembol-story-pill" data-on={status === "connected"}>
+      <span className="sembol-story-pill__dot" aria-hidden />
+      {status}
+    </span>
+  );
+}
+
 function Playground() {
-  const { kit, status, isConnected, config, fund } = usePasskeyWallet();
+  const { kit, isConnected, config, fund } = usePasskeyWallet();
   const { address, displayAddress, explorerUrl, copy, copied } = useWalletAddress();
   const [walletName, setWalletName] = useState("");
   const [recipient, setRecipient] = useState("");
@@ -58,77 +68,92 @@ function Playground() {
   };
 
   return (
-    <div className="sembol-story-stack" style={{ minWidth: 420 }}>
+    <div className="sembol-story-stack" style={{ maxWidth: 520 }}>
       <div className="sembol-story-card">
-        <h3 style={{ marginTop: 0 }}>1 · Create or connect</h3>
-        <p className="sembol-story-note">
-          Creates a real passkey and deploys a real smart-account contract on Stellar testnet
-          (auto-funded with test XLM by Friendbot). The name below is what your OS passkey
-          manager will display.
-        </p>
-        <input
-          className="sembol-story-input"
-          style={{ marginBottom: 12 }}
-          placeholder="Wallet name (shown in your passkey manager)"
-          value={walletName}
-          onChange={(event) => setWalletName(event.target.value)}
-          maxLength={40}
-          aria-label="Wallet name"
-        />
-        <div className="sembol-story-row">
-          <CreateWalletButton
-            userName={walletName.trim() || "storybook-visitor"}
-            nickname={walletName.trim() || undefined}
-          />
-          <ConnectWalletButton variant="secondary" />
+        <div className="sembol-story-card__header">
+          <span className="sembol-story-card__step">
+            <b>01</b> · Create or connect
+          </span>
+          <StatusPill />
         </div>
-        <p className="sembol-story-note">status: {status}</p>
+        <div className="sembol-story-card__body">
+          <p className="sembol-story-note">
+            Creates a <strong>real</strong> passkey and deploys a smart-account contract on
+            Stellar testnet, funded with free XLM. The name is what your passkey manager
+            displays.
+          </p>
+          <input
+            className="sembol-story-input"
+            placeholder="Wallet name — e.g. my-first-wallet"
+            value={walletName}
+            onChange={(event) => setWalletName(event.target.value)}
+            maxLength={40}
+            aria-label="Wallet name"
+          />
+          <div className="sembol-story-row">
+            <CreateWalletButton
+              userName={walletName.trim() || "storybook-visitor"}
+              nickname={walletName.trim() || undefined}
+            />
+            <ConnectWalletButton variant="outline" />
+          </div>
+        </div>
       </div>
 
       {isConnected && (
         <div className="sembol-story-card">
-          <h3 style={{ marginTop: 0 }}>2 · Your wallet</h3>
-          <dl className="sembol-story-kv">
-            <dt>Address</dt>
-            <dd>
-              {displayAddress}{" "}
-              <button type="button" className="sembol-icon-btn" onClick={() => void copy()}>
-                {copied ? "✓" : "⧉"}
+          <div className="sembol-story-card__header">
+            <span className="sembol-story-card__step">
+              <b>02</b> · Your wallet
+            </span>
+          </div>
+          <div className="sembol-story-card__body">
+            <dl className="sembol-story-kv">
+              <dt>Address</dt>
+              <dd>
+                {displayAddress}{" "}
+                <button type="button" className="sembol-icon-btn" onClick={() => void copy()}>
+                  {copied ? "✓" : "⧉"}
+                </button>
+                {explorerUrl && (
+                  <>
+                    {" "}
+                    <a href={explorerUrl} target="_blank" rel="noreferrer">
+                      explorer ↗
+                    </a>
+                  </>
+                )}
+              </dd>
+              <dt>Balance</dt>
+              <dd>
+                <WalletBalance />
+              </dd>
+            </dl>
+            <div className="sembol-story-row">
+              <button
+                type="button"
+                className="sembol-btn sembol-btn--secondary"
+                onClick={() => void handleFund()}
+                disabled={busy}
+              >
+                Get test XLM
               </button>
-              {explorerUrl && (
-                <>
-                  {" "}
-                  <a href={explorerUrl} target="_blank" rel="noreferrer">
-                    explorer ↗
-                  </a>
-                </>
-              )}
-            </dd>
-            <dt>Balance</dt>
-            <dd>
-              <WalletBalance />
-            </dd>
-          </dl>
-          <div className="sembol-story-row" style={{ marginTop: 12 }}>
-            <button
-              type="button"
-              className="sembol-btn sembol-btn--secondary"
-              onClick={() => void handleFund()}
-              disabled={busy}
-            >
-              Get test XLM (Friendbot)
-            </button>
+            </div>
           </div>
         </div>
       )}
 
       {isConnected && (
         <div className="sembol-story-card">
-          <h3 style={{ marginTop: 0 }}>3 · Send a payment</h3>
-          <div className="sembol-story-stack">
+          <div className="sembol-story-card__header">
+            <span className="sembol-story-card__step">
+              <b>03</b> · Send a payment
+            </span>
+          </div>
+          <div className="sembol-story-card__body">
             <input
               className="sembol-story-input"
-              placeholder={`Recipient (G… or C…) — empty = send to yourself`}
+              placeholder="Recipient (G… or C…) — empty = send to yourself"
               value={recipient}
               onChange={(event) => setRecipient(event.target.value)}
               aria-label="Recipient address"
@@ -154,22 +179,29 @@ function Playground() {
       )}
 
       {feedback && <p className="sembol-story-note">{feedback}</p>}
+
       {hashes.length > 0 && (
         <div className="sembol-story-card">
-          <h3 style={{ marginTop: 0 }}>Transactions this session</h3>
-          <ul style={{ margin: 0, paddingLeft: 18, fontSize: "0.8125rem" }}>
-            {hashes.map((hash) => (
-              <li key={hash}>
-                <a
-                  href={`https://stellar.expert/explorer/testnet/tx/${hash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {hash.slice(0, 8)}…{hash.slice(-8)} ↗
-                </a>
-              </li>
-            ))}
-          </ul>
+          <div className="sembol-story-card__header">
+            <span className="sembol-story-card__step">
+              <b>04</b> · Transactions this session
+            </span>
+          </div>
+          <div className="sembol-story-card__body">
+            <ul className="sembol-story-txlist">
+              {hashes.map((hash) => (
+                <li key={hash}>
+                  <a
+                    href={`https://stellar.expert/explorer/testnet/tx/${hash}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {hash.slice(0, 8)}…{hash.slice(-8)} ↗
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
 

@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, Tektur } from "next/font/google";
 import "@sembol/passkey-react/styles.css";
 import "./globals.css";
 import { Nav } from "../components/Nav";
+import { Toaster } from "../components/Toast";
 import { Providers } from "./providers";
 
 const tektur = Tektur({
@@ -33,9 +34,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body>
         <Providers>
+          <Toaster />
           <div className="flex min-h-screen flex-col">
             <Nav />
-            <main className="mx-auto w-full max-w-4xl flex-1 px-5 py-10">{children}</main>
+            <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">{children}</main>
             <footer className="border-t border-hairline">
               <div className="microlabel mx-auto flex w-full max-w-4xl flex-wrap items-center gap-x-5 gap-y-1 px-5 py-4 text-dim">
                 <span>Sembol</span>

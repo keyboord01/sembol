@@ -3,7 +3,14 @@ import { usePasskeyWalletContext } from "../context";
 import type { SembolError } from "../errors";
 import { useConnectWallet } from "../hooks/useConnectWallet";
 import { useWalletAddress } from "../hooks/useWalletAddress";
-import { buttonClasses, cx, Spinner, type ButtonSize, type ButtonVariant } from "../internal/ui";
+import {
+  buttonClasses,
+  cx,
+  ErrorToast,
+  Spinner,
+  type ButtonSize,
+  type ButtonVariant,
+} from "../internal/ui";
 
 export interface ConnectWalletButtonProps {
   /** Button label while disconnected. @default "Connect wallet" */
@@ -36,7 +43,7 @@ export function ConnectWalletButton({
   onError,
 }: ConnectWalletButtonProps) {
   const { status, isConnected, disconnect, capabilities } = usePasskeyWalletContext();
-  const { connect, status: connectStatus, error } = useConnectWallet();
+  const { connect, status: connectStatus, error, reset } = useConnectWallet();
   const { displayAddress, explorerUrl, copy, copied } = useWalletAddress();
   const [menuOpen, setMenuOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -124,7 +131,7 @@ export function ConnectWalletButton({
 
   if (!isConnected) {
     return (
-      <span className={unstyled ? undefined : "sembol-btn-root"}>
+      <>
         <button
           type="button"
           className={unstyled ? className : buttonClasses(variant, size, className)}
@@ -136,12 +143,8 @@ export function ConnectWalletButton({
           {busy && <Spinner />}
           <span>{busy ? "Connecting…" : label}</span>
         </button>
-        {error && !busy && (
-          <span role="alert" className={unstyled ? undefined : "sembol-inline-error"}>
-            {error.userMessage}
-          </span>
-        )}
-      </span>
+        <ErrorToast error={busy ? null : error} onDismiss={reset} unstyled={unstyled} />
+      </>
     );
   }
 

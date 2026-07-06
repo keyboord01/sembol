@@ -23,11 +23,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* 11px uppercase micro-label — the smallest text tier */
+/* Uppercase micro-label — the smallest text tier */
 @utility microlabel {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
@@ -40,10 +40,16 @@ body {
   background-color: var(--color-ink);
   color: var(--color-fg);
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tailwind's preflight strips it — every interactive control is a pointer */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
 }
 
 ::selection {

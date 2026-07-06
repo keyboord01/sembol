@@ -11,6 +11,7 @@ import {
   type AssembledTransaction,
 } from "@sembol/passkey-react";
 import { RequireWallet } from "../../components/RequireWallet";
+import { toast } from "../../components/Toast";
 import { recordTransaction } from "../../lib/history";
 
 const QUICK_AMOUNTS = ["1", "10", "100"] as const;
@@ -57,15 +58,16 @@ function SendForm() {
       setTransaction(tx);
       setModalOpen(true);
     } catch (err) {
-      setFormError(toSembolError(err).userMessage);
+      // System/simulation failures toast; field validation stays inline.
+      toast("err", toSembolError(err).userMessage);
     } finally {
       setBuilding(false);
     }
   };
 
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-8">
-      <div className="flex items-baseline justify-between border-b border-hairline pb-3">
+    <div className="mx-auto flex max-w-xl flex-col gap-10">
+      <div className="flex items-baseline justify-between border-b border-hairline pb-4">
         <p className="microlabel text-dim">01 · Send XLM</p>
         <p className="microlabel tnum text-dim">
           Balance{" "}
@@ -78,9 +80,9 @@ function SendForm() {
           event.preventDefault();
           void handleReview();
         }}
-        className="flex flex-col gap-6"
+        className="flex flex-col gap-7"
       >
-        <label className="flex flex-col gap-2">
+        <label className="flex flex-col gap-2.5">
           <span className="microlabel text-dim">Recipient — G… or C… address</span>
           <input
             value={recipient}
@@ -88,11 +90,11 @@ function SendForm() {
             placeholder="GAAH4OT3…"
             spellCheck={false}
             autoComplete="off"
-            className="tnum h-11 border border-hairline bg-surface px-3 text-sm text-fg placeholder:text-dim/50 focus:border-long focus:outline-none"
+            className="tnum h-13 border border-hairline bg-surface px-4 text-base text-fg placeholder:text-dim/50 focus:border-long focus:outline-none"
           />
         </label>
 
-        <label className="flex flex-col gap-2">
+        <label className="flex flex-col gap-2.5">
           <span className="microlabel text-dim">Amount — XLM</span>
           <input
             value={amount}
@@ -100,7 +102,7 @@ function SendForm() {
             placeholder="1.5"
             inputMode="decimal"
             autoComplete="off"
-            className="tnum h-11 border border-hairline bg-surface px-3 text-sm text-fg placeholder:text-dim/50 focus:border-long focus:outline-none"
+            className="tnum h-13 border border-hairline bg-surface px-4 text-base text-fg placeholder:text-dim/50 focus:border-long focus:outline-none"
           />
           <span className="microlabel flex gap-2 text-dim">
             {QUICK_AMOUNTS.map((quick) => (
@@ -108,7 +110,7 @@ function SendForm() {
                 key={quick}
                 type="button"
                 onClick={() => setAmount(quick)}
-                className="border border-hairline px-2 py-0.5 transition-colors hover:border-long hover:text-long"
+                className="border border-hairline px-3 py-1 transition-colors hover:border-long hover:text-long"
               >
                 {quick}
               </button>
@@ -117,7 +119,7 @@ function SendForm() {
               type="button"
               onClick={setMax}
               disabled={raw === null}
-              className="border border-hairline px-2 py-0.5 transition-colors hover:border-long hover:text-long disabled:opacity-40"
+              className="border border-hairline px-3 py-1 transition-colors hover:border-long hover:text-long disabled:opacity-40"
             >
               Max
             </button>
@@ -125,7 +127,7 @@ function SendForm() {
         </label>
 
         {formError && (
-          <p role="alert" className="border-l-2 border-short py-1 pl-3 text-xs text-short">
+          <p role="alert" className="border-l-2 border-short py-1 pl-3 text-sm text-short">
             {formError}
           </p>
         )}
@@ -133,11 +135,11 @@ function SendForm() {
         <button
           type="submit"
           disabled={building}
-          className="microlabel h-11 border border-long bg-long font-medium text-ink transition-colors hover:bg-transparent hover:text-long disabled:cursor-not-allowed disabled:opacity-40"
+          className="h-13 border border-long bg-long font-mono text-sm font-semibold tracking-[0.1em] text-ink uppercase transition-colors hover:bg-transparent hover:text-long disabled:cursor-not-allowed disabled:opacity-40"
         >
           {building ? "Simulating…" : "Review & sign →"}
         </button>
-        <p className="microlabel -mt-2 text-dim">
+        <p className="microlabel -mt-3 text-dim">
           Nothing is sent until you approve with your passkey.
         </p>
       </form>

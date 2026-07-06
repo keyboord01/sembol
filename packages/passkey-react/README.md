@@ -149,6 +149,10 @@ interface SembolConfig {
   defaultPolicies?: PolicyConfig[];   // policies installed at wallet creation
   autoConnect?: boolean;              // silent session restore on mount (default true)
   webAuthn?: {...};                   // custom WebAuthn impl (testing/virtual authenticators)
+  webAuthnHints?: ("client-device" | "hybrid" | "security-key")[];
+                                      // preference order for passkey prompts, e.g.
+                                      // ["client-device", "hybrid"] surfaces Touch ID /
+                                      // Windows Hello first on connect as well as create
 }
 ```
 
