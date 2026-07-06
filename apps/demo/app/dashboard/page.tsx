@@ -6,16 +6,15 @@ import {
   toSembolError,
   usePasskeyWallet,
   useWalletAddress,
-  WalletBalance,
+  useWalletBalance,
 } from "@sembol/passkey-react";
 import { RequireWallet } from "../../components/RequireWallet";
 import { recordTransaction } from "../../lib/history";
 
 function Dashboard() {
   const { fund, address } = usePasskeyWallet();
-  const { displayAddress, explorerUrl, copy, copied } = useWalletAddress({
-    truncate: { start: 8, end: 8 },
-  });
+  const { explorerUrl, copy, copied } = useWalletAddress();
+  const { formatted, symbol, status: balanceStatus, isRefreshing, refetch } = useWalletBalance();
   const [funding, setFunding] = useState(false);
   const [notice, setNotice] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
@@ -24,7 +23,7 @@ function Dashboard() {
     setNotice(null);
     try {
       const result = await fund();
-      setNotice({ kind: "ok", text: `Received ${result.amount ?? "test"} XLM from Friendbot.` });
+      setNotice({ kind: "ok", text: `Received ${result.amount ?? "test"} XLM from Friendbot` });
       if (address && result.hash) {
         recordTransaction(address, { hash: result.hash, kind: "fund" });
       }
@@ -36,68 +35,104 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+    <div className="flex flex-col gap-10">
+      <p className="microlabel border-b border-hairline pb-3 text-dim">01 · Account</p>
 
-      <section className="rounded-2xl border border-slate-200 bg-white/60 p-6 backdrop-blur dark:border-slate-800 dark:bg-slate-900/60">
-        <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">Balance</h2>
-        <div className="mt-2 text-4xl font-bold tracking-tight">
-          <WalletBalance />
-        </div>
-        <div className="mt-6 flex flex-wrap gap-3">
+      <section className="grid gap-10 md:grid-cols-[1fr_260px]">
+        <div>
+          <p className="microlabel text-dim">Available balance</p>
+          <p className="font-display tnum mt-2 text-6xl font-semibold tracking-tight">
+            {balanceStatus === "success" ? (
+              <>
+                {formatted}
+                <span className="ml-3 text-lg text-dim">{symbol}</span>
+              </>
+            ) : balanceStatus === "error" ? (
+              <span className="text-2xl text-short">unavailable</span>
+            ) : (
+              <span className="text-dim">·····</span>
+            )}
+          </p>
           <button
             type="button"
-            onClick={() => void handleFund()}
-            disabled={funding}
-            className="sembol-btn sembol-btn--secondary"
+            onClick={() => void refetch()}
+            disabled={isRefreshing}
+            className="microlabel mt-2 text-dim transition-colors hover:text-fg disabled:opacity-40"
           >
-            {funding ? "Requesting…" : "Get test XLM"}
+            {isRefreshing ? "Refreshing…" : "↻ Refresh"}
           </button>
-          <Link href="/send" className="sembol-btn sembol-btn--primary">
-            Send payment
-          </Link>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/send"
+              className="microlabel inline-flex h-10 items-center border border-long bg-long px-5 font-medium text-ink transition-colors hover:bg-transparent hover:text-long"
+            >
+              Send payment →
+            </Link>
+            <button
+              type="button"
+              onClick={() => void handleFund()}
+              disabled={funding}
+              className="microlabel inline-flex h-10 items-center border border-hairline px-5 text-fg transition-colors hover:border-long hover:text-long disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {funding ? "Requesting…" : "Get test XLM"}
+            </button>
+          </div>
+
+          {notice && (
+            <p
+              role={notice.kind === "err" ? "alert" : "status"}
+              className={`mt-4 border-l-2 py-1 pl-3 text-xs ${
+                notice.kind === "err" ? "border-short text-short" : "border-long text-long"
+              }`}
+            >
+              {notice.text}
+            </p>
+          )}
         </div>
-        {notice && (
-          <p
-            role={notice.kind === "err" ? "alert" : "status"}
-            className={`mt-4 text-sm ${
-              notice.kind === "err"
-                ? "text-red-600 dark:text-red-400"
-                : "text-emerald-600 dark:text-emerald-400"
-            }`}
-          >
-            {notice.text}
-          </p>
-        )}
+
+        <dl className="microlabel h-fit divide-y divide-hairline border border-hairline text-dim">
+          {[
+            ["Network", "Testnet"],
+            ["Type", "Smart account"],
+            ["Signer", "Passkey"],
+            ["Fees", "RPC · deployer"],
+          ].map(([k, v]) => (
+            <div key={k} className="flex items-center justify-between gap-4 px-3 py-2.5">
+              <dt>{k}</dt>
+              <dd className="text-fg">{v}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white/60 p-6 backdrop-blur dark:border-slate-800 dark:bg-slate-900/60">
-        <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">
-          Your smart account
-        </h2>
-        <p className="mt-2 font-mono text-sm break-all">{address}</p>
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+      <section>
+        <p className="microlabel border-b border-hairline pb-3 text-dim">02 · Contract</p>
+        <div className="mt-4 border border-hairline bg-surface px-4 py-3">
+          <p className="tnum text-xs break-all text-fg sm:text-sm">{address}</p>
+        </div>
+        <div className="microlabel mt-3 flex flex-wrap gap-5">
           <button
             type="button"
             onClick={() => void copy()}
-            className="sembol-btn sembol-btn--ghost"
+            className="text-dim transition-colors hover:text-fg"
           >
-            {copied ? "Copied ✓" : "Copy address"}
+            {copied ? "✓ Copied" : "Copy address"}
           </button>
           {explorerUrl && (
             <a
               href={explorerUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-indigo-600 underline dark:text-indigo-400"
+              className="text-dim transition-colors hover:text-long"
             >
-              View on stellar.expert ↗
+              stellar.expert ↗
             </a>
           )}
         </div>
-        <p className="mt-4 text-xs text-slate-500">
-          {displayAddress} is a smart-account <em>contract</em> on Stellar testnet — not a
-          classic account. It's controlled by the passkey on this device.
+        <p className="mt-4 max-w-lg text-xs leading-relaxed text-dim">
+          This is a smart-account <span className="text-fg">contract</span>, not a classic
+          account — controlled by the passkey on this device.
         </p>
       </section>
     </div>

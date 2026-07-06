@@ -1,17 +1,136 @@
 @import "tailwindcss";
 
+/*
+ * Sembol demo — terminal as typography.
+ * 90% monochrome; green in small doses; red in micro-doses; hairlines
+ * divide everything; tabular numerals for anything that counts.
+ */
 @theme {
-  --color-ink: #0b1220;
-  --color-mist: #f1f5f9;
+  --color-ink: #0b0e0d;
+  --color-surface: #141917;
+  --color-hairline: #2a3531;
+  --color-fg: #eef4f0;
+  --color-dim: #8c988f;
+  --color-long: #3cf5a7;
+  --color-short: #ff5c5c;
+  --color-amber: #f5b83d;
+
+  --font-display: var(--font-tektur), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-:root {
-  color-scheme: light dark;
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 11px uppercase micro-label — the smallest text tier */
+@utility microlabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+html {
+  background-color: var(--color-ink);
 }
 
 body {
-  min-height: 100vh;
-  background:
-    radial-gradient(1200px 500px at 80% -10%, rgb(99 102 241 / 0.12), transparent 60%),
-    radial-gradient(900px 400px at 10% 110%, rgb(20 184 166 / 0.1), transparent 60%);
+  margin: 0;
+  background-color: var(--color-ink);
+  color: var(--color-fg);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--color-long);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 1px solid var(--color-long);
+  outline-offset: 2px;
+}
+
+/*
+ * Reskin the Sembol components to the terminal theme — pure variable
+ * overrides, zero forked CSS. This is the library's theming story, live.
+ */
+:root[data-sembol-theme="dark"] {
+  --sembol-font: var(--font-mono);
+  --sembol-font-mono: var(--font-mono);
+
+  --sembol-color-accent: #3cf5a7;
+  --sembol-color-accent-hover: #63f7b8;
+  --sembol-color-accent-active: #2bd68f;
+  --sembol-color-accent-muted: rgb(60 245 167 / 0.12);
+  --sembol-color-on-accent: #0b0e0d;
+
+  --sembol-color-bg: #0b0e0d;
+  --sembol-color-surface: #141917;
+  --sembol-color-surface-hover: #1b211d;
+  --sembol-color-border: #2a3531;
+  --sembol-color-border-strong: #3d4a44;
+  --sembol-color-fg: #eef4f0;
+  --sembol-color-fg-muted: #8c988f;
+
+  --sembol-color-success: #3cf5a7;
+  --sembol-color-success-strong: #63f7b8;
+  --sembol-color-success-muted: rgb(60 245 167 / 0.1);
+  --sembol-color-danger: #ff5c5c;
+  --sembol-color-danger-strong: #ff8080;
+  --sembol-color-danger-muted: rgb(255 92 92 / 0.1);
+
+  --sembol-color-overlay: rgb(4 6 5 / 0.75);
+
+  /* Terminal corners: near-sharp everywhere (the chip dot becomes a square LED) */
+  --sembol-radius-sm: 2px;
+  --sembol-radius: 3px;
+  --sembol-radius-lg: 4px;
+  --sembol-radius-full: 2px;
+
+  /* Flat: hairlines carry the depth, not shadows */
+  --sembol-shadow-sm: 0 0 0 rgb(0 0 0 / 0);
+  --sembol-shadow: 0 0 0 rgb(0 0 0 / 0);
+  --sembol-shadow-lg: 0 0 #0000, 0 24px 48px rgb(0 0 0 / 0.5);
+  --sembol-shadow-xl: 0 0 #0000, 0 24px 64px rgb(0 0 0 / 0.6);
+
+  --sembol-focus-ring: 0 0 0 1px var(--color-ink), 0 0 0 2px rgb(60 245 167 / 0.7);
+}
+
+/* Buttons read as terminal controls: mono microcaps */
+:root[data-sembol-theme="dark"] .sembol-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:root[data-sembol-theme="dark"] .sembol-chip {
+  font-size: 12px;
+}
+
+/* Blinking terminal caret used in headings */
+.caret::after {
+  content: "▌";
+  margin-left: 0.15em;
+  color: var(--color-long);
+  animation: caret-blink 1.1s steps(1) infinite;
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret::after {
+    animation: none;
+  }
 }

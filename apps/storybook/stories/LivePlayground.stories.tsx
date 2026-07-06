@@ -15,6 +15,7 @@ import {
 function Playground() {
   const { kit, status, isConnected, config, fund } = usePasskeyWallet();
   const { address, displayAddress, explorerUrl, copy, copied } = useWalletAddress();
+  const [walletName, setWalletName] = useState("");
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("1");
   const [transaction, setTransaction] = useState<AssembledTransaction<unknown> | null>(null);
@@ -62,11 +63,24 @@ function Playground() {
         <h3 style={{ marginTop: 0 }}>1 · Create or connect</h3>
         <p className="sembol-story-note">
           Creates a real passkey and deploys a real smart-account contract on Stellar testnet
-          (auto-funded with test XLM by Friendbot).
+          (auto-funded with test XLM by Friendbot). The name below is what your OS passkey
+          manager will display.
         </p>
+        <input
+          className="sembol-story-input"
+          style={{ marginBottom: 12 }}
+          placeholder="Wallet name (shown in your passkey manager)"
+          value={walletName}
+          onChange={(event) => setWalletName(event.target.value)}
+          maxLength={40}
+          aria-label="Wallet name"
+        />
         <div className="sembol-story-row">
-          <CreateWalletButton userName="storybook-visitor" />
-          <ConnectWalletButton />
+          <CreateWalletButton
+            userName={walletName.trim() || "storybook-visitor"}
+            nickname={walletName.trim() || undefined}
+          />
+          <ConnectWalletButton variant="secondary" />
         </div>
         <p className="sembol-story-note">status: {status}</p>
       </div>

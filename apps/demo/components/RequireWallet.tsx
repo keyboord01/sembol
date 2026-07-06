@@ -9,19 +9,19 @@ export function RequireWallet({ children }: { children: React.ReactNode }) {
 
   if (status === "initializing") {
     return (
-      <p className="py-16 text-center text-sm text-slate-500" role="status">
-        Restoring your session…
+      <p className="microlabel py-24 text-center text-dim" role="status">
+        Restoring session…
       </p>
     );
   }
 
   if (!isConnected) {
     return (
-      <div className="py-16 text-center">
-        <h1 className="text-xl font-semibold">No wallet connected</h1>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-          Use <em>Connect wallet</em> in the top right, or{" "}
-          <Link href="/" className="text-indigo-600 underline dark:text-indigo-400">
+      <div className="border border-hairline px-6 py-16 text-center">
+        <p className="microlabel text-dim">No wallet connected</p>
+        <p className="mt-3 text-sm text-dim">
+          Use <em className="text-fg not-italic">Connect wallet</em> in the top right, or{" "}
+          <Link href="/" className="text-long underline underline-offset-4">
             create a new wallet
           </Link>
           .

@@ -161,6 +161,8 @@
 .sembol-btn-root {
   display: inline-flex;
   flex-direction: column;
+  /* flex-start: the error line must never stretch the button itself */
+  align-items: flex-start;
   gap: 6px;
   max-width: 340px;
 }
@@ -168,6 +170,7 @@
 .sembol-inline-error {
   font: 400 0.8125rem/1.45 var(--sembol-font);
   color: var(--sembol-color-danger);
+  max-width: 34ch;
 }
 
 /* ---------- Buttons ---------- */

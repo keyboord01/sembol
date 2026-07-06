@@ -34,26 +34,26 @@ try {
   console.log("1. open onboarding");
   await page.goto(APP, { waitUntil: "networkidle" });
 
-  console.log("2. create wallet (passkey → deploy → fund on testnet)…");
-  await page.getByRole("button", { name: /create your wallet/i }).click();
+  console.log("2. create wallet named 'E2E Wallet' (passkey → deploy → fund)…");
+  await page.getByLabel(/wallet name/i).fill("E2E Wallet");
+  await page.getByRole("button", { name: /create wallet/i }).click();
   await page.waitForURL("**/dashboard", { timeout: 180000 });
   console.log("3. dashboard reached — wallet deployed");
 
-  const addr = (await page.locator("p.font-mono").first().textContent())?.trim();
+  const addr = (await page.locator("p.break-all").first().textContent())?.trim();
   console.log("   contract address:", addr);
   if (!addr?.startsWith("C")) throw new Error("no contract address rendered");
 
-  // Balance should be non-zero (Friendbot). Wait for a value > 0, refreshing if needed.
-  await page.waitForSelector('.sembol-balance[data-status="success"]', { timeout: 90000 });
+  // Balance should be non-zero (Friendbot). Wait for digits, refreshing if needed.
   let bal = "0";
-  for (let attempt = 0; attempt < 6; attempt++) {
-    bal = ((await page.locator(".sembol-balance__value").first().textContent()) ?? "0").trim();
-    if (bal !== "0" && bal !== "–") break;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    bal = ((await page.locator(".font-display.tnum").first().textContent()) ?? "").trim();
+    if (/[1-9]/.test(bal)) break;
     await page.waitForTimeout(4000);
-    await page.getByRole("button", { name: /refresh balance/i }).click().catch(() => {});
+    await page.getByRole("button", { name: /refresh/i }).click().catch(() => {});
   }
-  console.log("   funded balance:", bal, "XLM");
-  if (bal === "0") console.log("   ⚠ balance still 0 after retries");
+  console.log("   funded balance:", bal);
+  if (!/[1-9]/.test(bal)) console.log("   ⚠ balance still empty after retries");
 
   console.log("4. full-reload session restore check");
   await page.goto(`${APP}/send`, { waitUntil: "networkidle" });
