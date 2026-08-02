@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCreateWallet, usePasskeyWallet, type CreateWalletPhase } from "@sembol/passkey-react";
+import {
+  RecoverySetup,
+  useCreateWallet,
+  usePasskeyWallet,
+  type CreateWalletPhase,
+} from "@sembol/passkey-react";
 import { ScrambleText } from "../components/ScrambleText";
 import { toast } from "../components/Toast";
 import { recordTransaction } from "../lib/history";
@@ -128,6 +133,22 @@ export default function OnboardingPage() {
           <p className="microlabel mt-4 text-dim">
             Already have one? Connect wallet, top right.
           </p>
+
+          <details className="group mt-5">
+            <summary className="microlabel cursor-pointer list-none text-dim transition-colors hover:text-fg">
+              <span aria-hidden className="text-long">↺</span> Lost your device? Recover access
+            </summary>
+            <div className="mt-3 border-l-2 border-hairline pl-4">
+              <RecoverySetup
+                mode="recover"
+                onRecovered={() => {
+                  toast("ok", "Wallet recovered - welcome back");
+                  router.push("/dashboard");
+                }}
+                onError={(error) => toast("err", error.userMessage)}
+              />
+            </div>
+          </details>
 
           <details className="group mt-5">
             <summary className="microlabel cursor-pointer list-none text-dim transition-colors hover:text-fg">
