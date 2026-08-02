@@ -22,6 +22,10 @@ export {
   SignTransactionModal,
   type SignTransactionModalProps,
 } from "./components/SignTransactionModal";
+export { SignerList, type SignerListProps } from "./components/SignerList";
+export { AddSignerButton, type AddSignerButtonProps } from "./components/AddSignerButton";
+export { RecoverySetup, type RecoverySetupProps } from "./components/RecoverySetup";
+export { SpendingPolicyForm, type SpendingPolicyFormProps } from "./components/SpendingPolicyForm";
 
 // Headless hooks
 export { usePasskeyWallet } from "./hooks/usePasskeyWallet";
