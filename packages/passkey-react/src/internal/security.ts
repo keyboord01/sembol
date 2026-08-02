@@ -50,11 +50,50 @@ export function signerKind(signer: ContractSigner, config: ResolvedSembolConfig)
   return "unknown";
 }
 
-/** The account's Default context rule (the one the primary passkey lives on). */
+/**
+ * All Default-type rules, lowest id first.
+ *
+ * Sembol models each additional signer as its OWN single-signer Default rule:
+ * a policy-less rule requires ALL of its signers to authenticate, so putting
+ * two passkeys on one rule would demand both signatures for every action.
+ * One rule per signer gives any-of-N semantics - each credential can act
+ * alone - which is what "backup device" and "recovery" mean.
+ */
+export function listDefaultRules(rules: ContextRule[]): ContextRule[] {
+  return rules
+    .filter((rule) => rule.context_type.tag === "Default")
+    .sort((a, b) => a.id - b.id);
+}
+
+/** The account's primary Default rule (the one created at deployment). */
 export function findDefaultRule(rules: ContextRule[]): ContextRule | null {
-  const defaults = rules.filter((rule) => rule.context_type.tag === "Default");
-  if (defaults.length === 0) return null;
-  return defaults.reduce((lowest, rule) => (rule.id < lowest.id ? rule : lowest));
+  return listDefaultRules(rules)[0] ?? null;
+}
+
+/** Locate the connected credential's signer across all Default rules. */
+export function findActiveSigner(
+  rules: ContextRule[],
+  activeCredentialId: string | null,
+): { rule: ContextRule; signer: ContractSigner } | null {
+  if (!activeCredentialId) return null;
+  for (const rule of listDefaultRules(rules)) {
+    const signer = rule.signers.find(
+      (candidate) => getCredentialIdFromSigner(candidate) === activeCredentialId,
+    );
+    if (signer) return { rule, signer };
+  }
+  return null;
+}
+
+/** Contract limit: rule names are at most 20 UTF-8 bytes. */
+export function toRuleName(nickname: string | undefined, fallback: string): string {
+  const base = (nickname ?? "").trim() || fallback;
+  // Truncate on bytes, not chars, so multi-byte input can't overflow.
+  const bytes = new TextEncoder().encode(base);
+  if (bytes.length <= 20) return base;
+  let out = base;
+  while (new TextEncoder().encode(out).length > 20) out = out.slice(0, -1);
+  return out || fallback;
 }
 
 const NICKNAME_STORE_PREFIX = "sembol:signer-names:";

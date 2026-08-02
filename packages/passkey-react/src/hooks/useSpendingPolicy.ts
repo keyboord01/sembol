@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createCallContractContext,
   createSpendingLimitParams,
-  getCredentialIdFromSigner,
   type ContextRule,
 } from "smart-account-kit";
 import { usePasskeyWalletContext } from "../context";
@@ -14,7 +13,7 @@ import {
   periodToLedgers,
   type PolicyPeriod,
 } from "../internal/policy";
-import { findDefaultRule } from "../internal/security";
+import { findActiveSigner } from "../internal/security";
 import { resolveToken } from "../internal/tokens";
 import type { TokenRef } from "../types";
 
@@ -209,11 +208,8 @@ export function useSpendingPolicy(token: TokenRef = "native"): UseSpendingPolicy
         if (!existing) {
           // New limit: one token-scoped rule holding the connected signer +
           // the spending-limit policy.
-          const defaultRule = findDefaultRule(rules);
-          const activeSigner = defaultRule?.signers.find(
-            (signer) => getCredentialIdFromSigner(signer) === credentialId,
-          );
-          if (!activeSigner) {
+          const active = findActiveSigner(rules, credentialId);
+          if (!active) {
             throw new SembolError(
               "invalid_input",
               "Could not find the connected passkey among the account's signers",
@@ -226,7 +222,7 @@ export function useSpendingPolicy(token: TokenRef = "native"): UseSpendingPolicy
           const transaction = await kit.rules.add(
             createCallContractContext(targetToken),
             "Spending limit",
-            [activeSigner],
+            [active.signer],
             new Map([[address, installParams as unknown]]),
           );
           await submitTx(transaction);

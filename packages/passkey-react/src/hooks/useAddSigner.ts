@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { StrKey } from "@stellar/stellar-sdk";
 import {
+  createDefaultContext,
   createDelegatedSigner,
   createEd25519Signer,
   createWebAuthnSigner,
   getSignerKey,
-  MAX_SIGNERS,
+  type ContractSigner,
 } from "smart-account-kit";
 import { usePasskeyWalletContext } from "../context";
 import { SembolError, toSembolError } from "../errors";
-import { findDefaultRule, saveSignerNickname } from "../internal/security";
+import { saveSignerNickname, toRuleName } from "../internal/security";
 
 export type AddSignerStatus =
   | "idle"
@@ -22,8 +23,6 @@ export type AddSignerStatus =
 export interface AddSignerOptions {
   /** Friendly name shown in the signer list (stored on this browser). */
   nickname?: string;
-  /** Context rule to add to. Defaults to the account's Default rule. */
-  ruleId?: number;
 }
 
 export interface UseAddSignerResult {
@@ -44,8 +43,13 @@ export interface UseAddSignerResult {
 
 /**
  * Headless add-signer flows for passkeys, Ed25519 recovery keys, and
- * delegated Stellar accounts. Every path ends in one passkey approval from
- * the currently-connected signer.
+ * delegated Stellar accounts.
+ *
+ * Each added signer gets its OWN single-signer Default rule: a policy-less
+ * rule requires all of its signers, so sharing one rule would force every
+ * action to collect every signature. One rule per signer keeps any-of-N
+ * semantics - any enrolled credential can act alone. Every path ends in one
+ * passkey approval from the currently-connected signer.
  */
 export function useAddSigner(): UseAddSignerResult {
   const { kit, config, signals } = usePasskeyWalletContext();
@@ -74,59 +78,34 @@ export function useAddSigner(): UseAddSignerResult {
     return kit;
   }, [kit]);
 
-  /** Resolve the target rule + enforce the contract's signer cap client-side. */
-  const resolveRule = useCallback(
-    async (ruleId?: number) => {
+  /** Create the signer's own Default rule and submit with the active passkey. */
+  const submitOwnRule = useCallback(
+    async (signer: ContractSigner, ruleName: string, nickname?: string) => {
       const instance = requireKit();
-      const rules = await instance.rules.list();
-      const rule =
-        ruleId !== undefined
-          ? (rules.find((candidate) => candidate.id === ruleId) ?? null)
-          : findDefaultRule(rules);
-      if (!rule) {
-        throw new SembolError(
-          "invalid_input",
-          ruleId !== undefined
-            ? `No context rule with id ${ruleId} on this account`
-            : "The account has no Default context rule",
-        );
-      }
-      if (rule.signers.length >= MAX_SIGNERS) {
-        throw new SembolError(
-          "invalid_input",
-          `This rule already has the maximum of ${MAX_SIGNERS} signers`,
-        );
-      }
-      return rule;
-    },
-    [requireKit],
-  );
-
-  const watchCeremony = useCallback(() => {
-    return signals.on((signal) => {
-      if (signal === "webauthn:done" && mounted.current) {
-        setStatus((s) => (s === "signing" ? "submitting" : s));
-      }
-    });
-  }, [signals]);
-
-  const submit = useCallback(
-    async (transactionPromise: Promise<unknown>) => {
-      const instance = requireKit();
-      const transaction = await transactionPromise;
       setStatus("signing");
-      const off = watchCeremony();
+      const off = signals.on((signal) => {
+        if (signal === "webauthn:done" && mounted.current) {
+          setStatus((s) => (s === "signing" ? "submitting" : s));
+        }
+      });
       try {
-        const result = await instance.signAndSubmit(
-          transaction as Parameters<typeof instance.signAndSubmit>[0],
+        const transaction = await instance.rules.add(
+          createDefaultContext(),
+          ruleName,
+          [signer],
+          new Map(),
         );
+        const result = await instance.signAndSubmit(transaction);
         if (!result.success) throw toSembolError(result.error);
         signals.emit("tx:submitted");
+        if (nickname && instance.contractId) {
+          saveSignerNickname(instance.contractId, getSignerKey(signer), nickname);
+        }
       } finally {
         off();
       }
     },
-    [requireKit, signals, watchCeremony],
+    [requireKit, signals],
   );
 
   const addPasskey = useCallback(
@@ -135,38 +114,32 @@ export function useAddSigner(): UseAddSignerResult {
       setError(null);
       setStatus("registering");
       try {
-        const rule = await resolveRule(options?.ruleId);
-        const { credentialId, publicKey, transaction } = await instance.signers.addPasskey(
-          rule.id,
-          config.appName,
-          options?.nickname ?? `${config.appName} signer`,
-          { nickname: options?.nickname },
+        const nickname = options?.nickname?.trim() || undefined;
+        // Registration only - no transaction yet. The credential is saved to
+        // the kit's storage so this browser can sign with it later.
+        const credential = await instance.credentials.create({
+          nickname,
+          appName: config.appName,
+        });
+        const signer = createWebAuthnSigner(
+          config.webauthnVerifierAddress,
+          credential.publicKey,
+          credential.credentialId,
         );
-        await submit(Promise.resolve(transaction));
-        if (options?.nickname && instance.contractId) {
-          // Key the nickname by the kit's canonical signer key so the list
-          // (which joins by getSignerKey) picks it up.
-          const signer = createWebAuthnSigner(
-            config.webauthnVerifierAddress,
-            publicKey,
-            credentialId,
-          );
-          saveSignerNickname(instance.contractId, getSignerKey(signer), options.nickname);
-        }
+        await submitOwnRule(signer, toRuleName(nickname, "signer"), nickname);
         if (mounted.current) setStatus("success");
-        return { credentialId };
+        return { credentialId: credential.credentialId };
       } catch (err) {
         throw fail(err);
       }
     },
-    [requireKit, resolveRule, submit, config.appName, fail],
+    [requireKit, submitOwnRule, config.appName, config.webauthnVerifierAddress, fail],
   );
 
   const addEd25519 = useCallback(
     async (publicKey: string, options?: AddSignerOptions) => {
-      const instance = requireKit();
+      requireKit();
       setError(null);
-      setStatus("signing");
       try {
         if (!config.ed25519VerifierAddress) {
           throw new SembolError(
@@ -178,52 +151,41 @@ export function useAddSigner(): UseAddSignerResult {
         if (!StrKey.isValidEd25519PublicKey(trimmed)) {
           throw new SembolError("invalid_input", `"${publicKey}" is not a valid Stellar public key (G…)`);
         }
-        const rule = await resolveRule(options?.ruleId);
+        const nickname = options?.nickname?.trim() || undefined;
         const signer = createEd25519Signer(
           config.ed25519VerifierAddress,
           StrKey.decodeEd25519PublicKey(trimmed),
         );
-        await submit(
-          instance.signers.addBatch(rule.id, [signer], {
-            existingSignerCount: rule.signers.length,
-          }),
-        );
-        if (options?.nickname && instance.contractId) {
-          saveSignerNickname(instance.contractId, getSignerKey(signer), options.nickname);
-        }
+        await submitOwnRule(signer, toRuleName(nickname, "recovery key"), nickname);
         if (mounted.current) setStatus("success");
       } catch (err) {
         throw fail(err);
       }
     },
-    [requireKit, resolveRule, submit, config.ed25519VerifierAddress, fail],
+    [requireKit, submitOwnRule, config.ed25519VerifierAddress, fail],
   );
 
   const addWallet = useCallback(
     async (address: string, options?: AddSignerOptions) => {
-      const instance = requireKit();
+      requireKit();
       setError(null);
-      setStatus("signing");
       try {
         const trimmed = address.trim();
         if (!StrKey.isValidEd25519PublicKey(trimmed)) {
           throw new SembolError("invalid_input", `"${address}" is not a valid Stellar account (G…)`);
         }
-        const rule = await resolveRule(options?.ruleId);
-        await submit(instance.signers.addDelegated(rule.id, trimmed));
-        if (options?.nickname && instance.contractId) {
-          saveSignerNickname(
-            instance.contractId,
-            getSignerKey(createDelegatedSigner(trimmed)),
-            options.nickname,
-          );
-        }
+        const nickname = options?.nickname?.trim() || undefined;
+        await submitOwnRule(
+          createDelegatedSigner(trimmed),
+          toRuleName(nickname, "wallet"),
+          nickname,
+        );
         if (mounted.current) setStatus("success");
       } catch (err) {
         throw fail(err);
       }
     },
-    [requireKit, resolveRule, submit, fail],
+    [requireKit, submitOwnRule, fail],
   );
 
   const reset = useCallback(() => {

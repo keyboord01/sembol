@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { AssembledTransaction, TransactionSuccess } from "smart-account-kit";
 import { usePasskeyWalletContext } from "../context";
 import { SembolError, toSembolError } from "../errors";
+import { findEnforcedRuleIdForTransaction } from "../internal/policy";
 
 export type SignStatus = "idle" | "signing" | "submitting" | "success" | "error";
 
@@ -38,7 +39,7 @@ export interface UseSignTransactionResult {
 
 /** Headless transaction signing/submission with a status machine. */
 export function useSignTransaction(): UseSignTransactionResult {
-  const { kit, signals } = usePasskeyWalletContext();
+  const { kit, config, credentialId, signals } = usePasskeyWalletContext();
   const [status, setStatus] = useState<SignStatus>("idle");
   const [error, setError] = useState<SembolError | null>(null);
   const [result, setResult] = useState<TransactionSuccess | null>(null);
@@ -95,7 +96,22 @@ export function useSignTransaction(): UseSignTransactionResult {
         }
       });
       try {
-        const txResult = await instance.signAndSubmit(transaction, options);
+        // When this wallet has a spending-limit rule scoped to the invoked
+        // contract, pin it at signing time - the kit's auto-resolution can
+        // otherwise bind a Default rule and silently skip the policy.
+        const enforcedRuleId = await findEnforcedRuleIdForTransaction(
+          instance,
+          transaction,
+          config.spendingLimitPolicyAddress,
+          options?.credentialId ?? credentialId,
+        );
+        console.debug("[sembol] spending-limit rule pin:", enforcedRuleId ?? "none");
+        const txResult = await instance.signAndSubmit(transaction, {
+          ...options,
+          ...(enforcedRuleId !== null
+            ? { resolveContextRuleIds: () => [enforcedRuleId] }
+            : {}),
+        });
         if (!txResult.success) {
           // 0.4.x: TransactionFailure.error is a typed SmartAccountError
           // (possibly a decoded ContractError, e.g. a spending-limit rejection).

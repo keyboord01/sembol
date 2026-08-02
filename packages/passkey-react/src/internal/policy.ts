@@ -1,3 +1,5 @@
+import { Address, xdr } from "@stellar/stellar-sdk";
+import type { contract } from "@stellar/stellar-sdk";
 import {
   getCredentialIdFromSigner,
   LEDGERS_PER_DAY,
@@ -98,9 +100,51 @@ export async function findEnforcedRuleId(
       return null;
     }
     return rule.id;
-  } catch {
+  } catch (err) {
     // Rule discovery is best-effort; a transient indexer failure must not
     // block sending. (The account still enforces whatever rule is bound.)
+    console.debug("[sembol] spending-limit rule discovery failed:", err);
     return null;
   }
+}
+
+/**
+ * The contract a simulated transaction's auth entries invoke at their root,
+ * or null when there are no contract-invocation entries (e.g. plain payments
+ * or entries this account does not authorize).
+ */
+export function invokedContractOf(
+  transaction: contract.AssembledTransaction<unknown>,
+): string | null {
+  const entries =
+    (transaction.simulationData?.result?.auth as xdr.SorobanAuthorizationEntry[] | undefined) ?? [];
+  for (const entry of entries) {
+    try {
+      const fn = entry.rootInvocation().function();
+      if (fn.switch() === xdr.SorobanAuthorizedFunctionType.sorobanAuthorizedFunctionTypeContractFn()) {
+        return Address.fromScAddress(fn.contractFn().contractAddress()).toString();
+      }
+    } catch {
+      /* try the next entry */
+    }
+  }
+  return null;
+}
+
+/**
+ * Transaction-shaped variant of {@link findEnforcedRuleId}: derives the
+ * invoked contract from the transaction itself, so any sign path (approval
+ * modal, custom flows) can pin a policy-bearing rule without knowing what
+ * kind of call it is signing.
+ */
+export async function findEnforcedRuleIdForTransaction(
+  kit: SmartAccountKit,
+  transaction: contract.AssembledTransaction<unknown>,
+  policyAddress: string | undefined,
+  activeCredentialId: string | null,
+): Promise<number | null> {
+  if (!policyAddress) return null;
+  const invoked = invokedContractOf(transaction);
+  if (!invoked) return null;
+  return findEnforcedRuleId(kit, invoked, policyAddress, activeCredentialId);
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePasskeyWalletContext } from "../context";
 import { SembolError, toSembolError } from "../errors";
-import type { SignerInfo } from "../internal/security";
+import { listDefaultRules, type SignerInfo } from "../internal/security";
 
 export type RemoveSignerStatus = "idle" | "signing" | "submitting" | "success" | "error";
 
@@ -47,16 +47,27 @@ export function useRemoveSigner(): UseRemoveSignerResult {
         }
       });
       try {
-        // Re-read the rule at action time - the cached list may be stale.
+        // Re-read at action time - the cached list may be stale.
         const rules = await kit.rules.list();
         const rule = rules.find((candidate) => candidate.id === target.ruleId);
         if (!rule) {
           throw new SembolError("invalid_input", `Context rule ${target.ruleId} no longer exists`);
         }
-        if (rule.signers.length <= 1) {
+        // Lockout guard: never drop the account's final authorization signer.
+        const totalAuthSigners = listDefaultRules(rules).reduce(
+          (sum, candidate) => sum + candidate.signers.length,
+          0,
+        );
+        if (rule.context_type.tag === "Default" && totalAuthSigners <= 1) {
           throw new SembolError("last_signer");
         }
-        const transaction = await kit.signers.remove(target.ruleId, target.signer);
+        // Signers live on their own single-signer Default rules - removing
+        // the signer means removing its rule. (For multi-signer rules built
+        // outside Sembol, fall back to removing just the signer.)
+        const transaction =
+          rule.context_type.tag === "Default" && rule.signers.length === 1
+            ? await kit.rules.remove(rule.id)
+            : await kit.signers.remove(target.ruleId, target.signer);
         const result = await kit.signAndSubmit(transaction);
         if (!result.success) throw toSembolError(result.error);
         signals.emit("tx:submitted");

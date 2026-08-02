@@ -2,15 +2,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ContextRule } from "smart-account-kit";
 import { usePasskeyWalletContext } from "../context";
 import { SembolError, toSembolError } from "../errors";
-import { findDefaultRule, toSignerInfos, type SignerInfo } from "../internal/security";
+import { findActiveSigner, listDefaultRules, toSignerInfos, type SignerInfo } from "../internal/security";
 
 export interface UseSignersResult {
-  /** Signers on the account's Default rule (the primary authorization set). */
+  /**
+   * The account's authorization signers, across every Default-type rule.
+   * Each additional signer lives on its own single-signer rule (any-of-N).
+   */
   signers: SignerInfo[];
   /** Every context rule on the account, for advanced consumers. */
   rules: ContextRule[];
-  /** The Default rule's ID (add/remove operations target it). */
-  defaultRuleId: number | null;
+  /** The rule id the connected credential belongs to, when known. */
+  activeRuleId: number | null;
   isLoading: boolean;
   error: SembolError | null;
   /** Re-read from chain/indexer (also happens automatically after every submitted tx). */
@@ -28,7 +31,7 @@ export function useSigners(): UseSignersResult {
   const { kit, status, address, credentialId, config, txEpoch } = usePasskeyWalletContext();
   const [signers, setSigners] = useState<SignerInfo[]>([]);
   const [rules, setRules] = useState<ContextRule[]>([]);
-  const [defaultRuleId, setDefaultRuleId] = useState<number | null>(null);
+  const [activeRuleId, setActiveRuleId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<SembolError | null>(null);
   const mounted = useRef(true);
@@ -44,18 +47,21 @@ export function useSigners(): UseSignersResult {
     if (!kit || status !== "connected") {
       setSigners([]);
       setRules([]);
-      setDefaultRuleId(null);
+      setActiveRuleId(null);
       return;
     }
     setIsLoading(true);
     setError(null);
     try {
       const allRules = await kit.rules.list();
-      const defaultRule = findDefaultRule(allRules);
       if (!mounted.current) return;
       setRules(allRules);
-      setDefaultRuleId(defaultRule?.id ?? null);
-      setSigners(defaultRule ? toSignerInfos(defaultRule, config, address, credentialId) : []);
+      setActiveRuleId(findActiveSigner(allRules, credentialId)?.rule.id ?? null);
+      setSigners(
+        listDefaultRules(allRules).flatMap((rule) =>
+          toSignerInfos(rule, config, address, credentialId),
+        ),
+      );
     } catch (err) {
       if (mounted.current) setError(toSembolError(err));
     } finally {
@@ -67,5 +73,5 @@ export function useSigners(): UseSignersResult {
     void refresh();
   }, [refresh, txEpoch]);
 
-  return { signers, rules, defaultRuleId, isLoading, error, refresh };
+  return { signers, rules, activeRuleId, isLoading, error, refresh };
 }

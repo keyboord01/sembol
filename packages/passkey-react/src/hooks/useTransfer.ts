@@ -114,6 +114,9 @@ export function useTransfer(): UseTransferResult {
           config.spendingLimitPolicyAddress,
           credentialId,
         );
+        // Quiet trace so adopters (and our E2E) can see whether a limit rule
+        // was pinned for this transfer.
+        console.debug("[sembol] spending-limit rule pin:", enforcedRuleId ?? "none");
         const txResult = await kit.signAndSubmit(transaction, {
           forceMethod,
           ...(enforcedRuleId !== null
