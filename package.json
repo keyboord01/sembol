@@ -24,6 +24,7 @@
     "demo:build": "pnpm --filter sembol-demo build"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "playwright": "^1.62.1"
   }
 }
