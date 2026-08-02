@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { AssembledTransaction } from "smart-account-kit";
+import { SmartAccountError, SmartAccountErrorCode } from "smart-account-kit";
 
 // useTransfer builds real (simulated) transactions — stub the builder so
 // tests stay offline. The kit interactions themselves remain observable.
@@ -133,7 +134,15 @@ describe("useSignTransaction", () => {
 
   it("treats success:false results as submission failures", async () => {
     const kit = createFakeKit({ session: connectedSession });
-    kit.signAndSubmit.mockResolvedValue({ success: false, hash: TX_HASH, error: "tx_failed" });
+    // 0.4.x failure shape: `error` is a typed SmartAccountError, hash optional.
+    kit.signAndSubmit.mockResolvedValue({
+      success: false,
+      hash: TX_HASH,
+      error: new SmartAccountError(
+        "tx_failed",
+        SmartAccountErrorCode.TRANSACTION_SUBMISSION_FAILED,
+      ),
+    });
     const { result } = renderHook(() => useSignTransaction(), { wrapper: wrapperFor(kit) });
     await waitFor(() => expect(kit.isConnected).toBe(true));
 
@@ -200,7 +209,13 @@ describe("useTransfer", () => {
 
   it("rejects success:false submissions", async () => {
     const kit = createFakeKit({ session: connectedSession });
-    kit.signAndSubmit.mockResolvedValue({ success: false, hash: "x", error: "underfunded" });
+    kit.signAndSubmit.mockResolvedValue({
+      success: false,
+      error: new SmartAccountError(
+        "underfunded",
+        SmartAccountErrorCode.TRANSACTION_SUBMISSION_FAILED,
+      ),
+    });
     const { result } = renderHook(() => useTransfer(), { wrapper: wrapperFor(kit) });
     await waitFor(() => expect(kit.isConnected).toBe(true));
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { TransactionResult } from "smart-account-kit";
+import type { TransactionSuccess } from "smart-account-kit";
 import { usePasskeyWalletContext } from "../context";
 import { SembolError, toSembolError } from "../errors";
 import { parseTokenAmount } from "../format";
@@ -23,10 +23,10 @@ export interface TransferParams {
 
 export interface UseTransferResult {
   /** Build, passkey-sign, and submit a token transfer from the connected wallet. */
-  transfer: (params: TransferParams) => Promise<TransactionResult>;
+  transfer: (params: TransferParams) => Promise<TransactionSuccess>;
   status: TransferStatus;
   error: SembolError | null;
-  result: TransactionResult | null;
+  result: TransactionSuccess | null;
   reset: () => void;
 }
 
@@ -39,7 +39,7 @@ export function useTransfer(): UseTransferResult {
   const { kit, config, signals } = usePasskeyWalletContext();
   const [status, setStatus] = useState<TransferStatus>("idle");
   const [error, setError] = useState<SembolError | null>(null);
-  const [result, setResult] = useState<TransactionResult | null>(null);
+  const [result, setResult] = useState<TransactionSuccess | null>(null);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -106,11 +106,9 @@ export function useTransfer(): UseTransferResult {
         });
         const txResult = await kit.signAndSubmit(transaction, { forceMethod });
         if (!txResult.success) {
-          throw new SembolError(
-            "submission_failed",
-            txResult.error ?? `Transaction ${txResult.hash} failed`,
-            txResult,
-          );
+          // 0.4.x: TransactionFailure.error is a typed SmartAccountError
+          // (possibly a decoded ContractError, e.g. a spending-limit rejection).
+          throw toSembolError(txResult.error);
         }
         signals.emit("tx:submitted");
         if (mounted.current) {

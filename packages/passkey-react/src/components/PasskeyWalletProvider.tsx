@@ -59,6 +59,8 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
       config.networkPassphrase,
       config.accountWasmHash,
       config.webauthnVerifierAddress,
+      config.ed25519VerifierAddress,
+      config.spendingLimitPolicyAddress,
       config.nativeTokenContract,
       config.appName,
       config.rpId,
@@ -157,10 +159,13 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
         networkPassphrase: resolved.networkPassphrase,
         accountWasmHash: resolved.accountWasmHash,
         webauthnVerifierAddress: resolved.webauthnVerifierAddress,
+        ed25519VerifierAddress: resolved.ed25519VerifierAddress,
         rpId: resolved.rpId,
         rpName: resolved.appName,
         relayerUrl: resolved.relayerUrl,
         indexerUrl: resolved.indexerUrl,
+        indexerAuthToken: resolved.indexerAuthToken,
+        contextRuleProbe: resolved.contextRuleProbe,
         // The kit's own default is MemoryStorage, which loses sessions on
         // reload - default to IndexedDB for real persistence.
         storage:
@@ -181,6 +186,14 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
       setCredentialId(credentialId);
       setStatus("connected");
       setError(null);
+      // Remember which contract this credential opened. Recovery on this
+      // browser can then reconnect without the indexer (the kit can only
+      // derive addresses for the original deploy credential).
+      try {
+        localStorage.setItem(`sembol:wallet:${credentialId}`, contractId);
+      } catch {
+        /* private mode / quota - recovery falls back to indexer or manual address */
+      }
     });
     const offDisconnected = instance.events.on("walletDisconnected", () => {
       if (cancelled) return;
@@ -332,10 +345,8 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
           },
         );
         if (result.submitResult && !result.submitResult.success) {
-          throw new SembolError(
-            "submission_failed",
-            result.submitResult.error ?? "Wallet deployment transaction failed",
-          );
+          // 0.4.x: TransactionFailure.error is a typed SmartAccountError.
+          throw toSembolError(result.submitResult.error);
         }
         if (fund) {
           // Friendbot funds contract addresses directly - more reliable than
@@ -400,7 +411,8 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
       try {
         const result = await kit.fundWallet(resolved.nativeTokenContract);
         if (!result.success) {
-          throw new SembolError("submission_failed", result.error ?? "Funding transaction failed");
+          // 0.4.x: TransactionFailure.error is a typed SmartAccountError.
+          throw toSembolError(result.error);
         }
         signals.emit("tx:submitted");
         return result;

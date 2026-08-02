@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
-import type { AssembledTransaction, TransactionResult } from "smart-account-kit";
+import type { AssembledTransaction, TransactionSuccess } from "smart-account-kit";
 import { usePasskeyWalletContext } from "../context";
 import type { SembolError } from "../errors";
 import { truncateAddress } from "../format";
@@ -19,7 +19,8 @@ export interface SignTransactionModalProps {
   description?: string;
   /** Called when the user dismisses the modal (cancel, Escape, overlay, Done). */
   onClose: () => void;
-  onSuccess?: (result: TransactionResult) => void;
+  /** Called only after on-chain success - the result is always a confirmed transaction. */
+  onSuccess?: (result: TransactionSuccess) => void;
   onError?: (error: SembolError) => void;
   /** Signing options forwarded to `signAndSubmit`. */
   signOptions?: SignOptions;
@@ -237,7 +238,7 @@ export function SignTransactionModal({
               <Spinner /> Submitting to the network…
             </p>
           )}
-          {status === "success" && result && (
+          {status === "success" && result?.success && (
             <p
               className={unstyled ? undefined : cx("sembol-modal__status", "sembol-modal__status--success")}
               role="status"

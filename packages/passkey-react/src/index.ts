@@ -48,7 +48,14 @@ export {
 } from "./hooks/useWalletBalance";
 
 // Errors
-export { SembolError, toSembolError, type SembolErrorCode } from "./errors";
+export { SembolError, toSembolError, contractCodeFromMessage, type SembolErrorCode } from "./errors";
+
+// Deployed contract sets per network (spread into your SembolConfig)
+export {
+  SEMBOL_TESTNET_ARTIFACTS,
+  SEMBOL_MAINNET_ARTIFACTS,
+  type SembolArtifacts,
+} from "./artifacts";
 
 // Styling primitives
 export type { ButtonSize, ButtonVariant } from "./internal/ui";
@@ -106,5 +113,7 @@ export type {
   AssembledTransaction,
   SmartAccountConfig,
   StorageAdapter,
+  TransactionFailure,
   TransactionResult,
+  TransactionSuccess,
 } from "smart-account-kit";

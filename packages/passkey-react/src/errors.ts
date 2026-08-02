@@ -1,4 +1,4 @@
-import { SmartAccountError, SmartAccountErrorCode } from "smart-account-kit";
+import { ContractError, SmartAccountError, SmartAccountErrorCode } from "smart-account-kit";
 
 /**
  * Normalized error codes for every failure mode a passkey wallet flow can hit.
@@ -18,6 +18,10 @@ export type SembolErrorCode =
   | "timeout"
   | "invalid_input"
   | "already_funded"
+  | "last_signer"
+  | "spending_limit_exceeded"
+  | "policy_not_found"
+  | "recovery_needs_address"
   | "storage_error"
   | "network_error"
   | "unknown";
@@ -40,6 +44,13 @@ const USER_MESSAGES: Record<SembolErrorCode, string> = {
   timeout: "The network request timed out. Please try again.",
   invalid_input: "Some of the provided values are invalid.",
   already_funded: "This wallet already holds the maximum testnet balance from Friendbot.",
+  last_signer:
+    "This is the wallet's only signer. Add another signer or recovery key before removing it.",
+  spending_limit_exceeded:
+    "This payment would exceed the spending limit set for this signer. Try a smaller amount or wait for the limit window to reset.",
+  policy_not_found: "No policy of that type is installed on this wallet.",
+  recovery_needs_address:
+    "Your passkey was found, but the wallet address could not be discovered automatically. Enter the wallet address (C…) to finish recovery.",
   storage_error: "Could not read or write local wallet storage.",
   network_error: "A network error occurred. Check your connection and try again.",
   unknown: "Something went wrong. Please try again.",
@@ -97,6 +108,46 @@ function fromDomExceptionName(name: string, err: unknown): SembolError | null {
   }
 }
 
+/**
+ * Map a decoded on-chain contract error (smart-account / policy contracts) to
+ * a Sembol code. Codes from the kit's CONTRACT_ERROR_REGISTRY:
+ * SmartAccount 3000-3016, WebAuthn 3110-3119, policies 32xx.
+ */
+function fromContractCode(code: number, err: ContractError): SembolError {
+  switch (code) {
+    case 3221: // SpendingLimitExceeded
+      return new SembolError("spending_limit_exceeded", err.message, err);
+    case 3222: // InvalidLimitOrPeriod
+      return new SembolError(
+        "invalid_input",
+        "Spending limit and period must both be greater than zero",
+        err,
+      );
+    case 3227: // OnlyCallContractAllowed
+      return new SembolError(
+        "invalid_input",
+        "The spending-limit policy only applies to token-scoped (CallContract) rules",
+        err,
+      );
+    default:
+      return new SembolError(
+        "submission_failed",
+        `${err.contractErrorName || "Contract error"} (#${code})`,
+        err,
+      );
+  }
+}
+
+/**
+ * Extract a contract error code from a simulation diagnostic string, e.g.
+ * `Error(Contract, #3221)`. Simulation failures surface these before any
+ * transaction is submitted.
+ */
+export function contractCodeFromMessage(message: string): number | null {
+  const match = /Error\(Contract, #(\d+)\)/.exec(message);
+  return match ? Number(match[1]) : null;
+}
+
 function fromSmartAccountCode(err: SmartAccountError): SembolError {
   const C = SmartAccountErrorCode;
   switch (err.code) {
@@ -147,6 +198,8 @@ function fromSmartAccountCode(err: SmartAccountError): SembolError {
     case C.STORAGE_READ_FAILED:
     case C.STORAGE_WRITE_FAILED:
       return new SembolError("storage_error", err.message, err);
+    case C.POLICY_NOT_FOUND:
+      return new SembolError("policy_not_found", err.message, err);
     default:
       return new SembolError("unknown", err.message, err);
   }
@@ -158,6 +211,10 @@ function fromSmartAccountCode(err: SmartAccountError): SembolError {
  */
 export function toSembolError(err: unknown): SembolError {
   if (err instanceof SembolError) return err;
+
+  // ContractError extends SmartAccountError - check the subclass first so
+  // decoded on-chain codes (e.g. SpendingLimitExceeded) map precisely.
+  if (err instanceof ContractError) return fromContractCode(err.contractCode, err);
 
   if (err instanceof SmartAccountError) return fromSmartAccountCode(err);
 
