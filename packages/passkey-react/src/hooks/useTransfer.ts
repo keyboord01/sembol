@@ -4,6 +4,7 @@ import { usePasskeyWalletContext } from "../context";
 import { SembolError, toSembolError } from "../errors";
 import { parseTokenAmount } from "../format";
 import { readTokenMeta } from "../internal/balance";
+import { findEnforcedRuleId } from "../internal/policy";
 import { resolveToken } from "../internal/tokens";
 import { buildTransferTransaction } from "../transactions";
 import type { TokenRef } from "../types";
@@ -36,7 +37,7 @@ export interface UseTransferResult {
  * whose metadata is read on-chain.
  */
 export function useTransfer(): UseTransferResult {
-  const { kit, config, signals } = usePasskeyWalletContext();
+  const { kit, config, credentialId, signals } = usePasskeyWalletContext();
   const [status, setStatus] = useState<TransferStatus>("idle");
   const [error, setError] = useState<SembolError | null>(null);
   const [result, setResult] = useState<TransactionSuccess | null>(null);
@@ -104,7 +105,21 @@ export function useTransfer(): UseTransferResult {
           amount,
           decimals,
         });
-        const txResult = await kit.signAndSubmit(transaction, { forceMethod });
+        // When this wallet has a spending-limit rule for the token, pin it at
+        // signing time - 0.4.2's auto-resolution can otherwise bind the
+        // Default rule and silently skip the policy.
+        const enforcedRuleId = await findEnforcedRuleId(
+          kit,
+          resolvedToken.contractId,
+          config.spendingLimitPolicyAddress,
+          credentialId,
+        );
+        const txResult = await kit.signAndSubmit(transaction, {
+          forceMethod,
+          ...(enforcedRuleId !== null
+            ? { resolveContextRuleIds: () => [enforcedRuleId] }
+            : {}),
+        });
         if (!txResult.success) {
           // 0.4.x: TransactionFailure.error is a typed SmartAccountError
           // (possibly a decoded ContractError, e.g. a spending-limit rejection).

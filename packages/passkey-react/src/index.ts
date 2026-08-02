@@ -40,6 +40,32 @@ export {
 } from "./hooks/useSignTransaction";
 export { useTransfer, type TransferParams, type TransferStatus, type UseTransferResult } from "./hooks/useTransfer";
 export { useWalletAddress, type UseWalletAddressResult } from "./hooks/useWalletAddress";
+export { useSigners, type UseSignersResult } from "./hooks/useSigners";
+export {
+  useAddSigner,
+  type AddSignerOptions,
+  type AddSignerStatus,
+  type UseAddSignerResult,
+} from "./hooks/useAddSigner";
+export {
+  useRemoveSigner,
+  type RemoveSignerStatus,
+  type UseRemoveSignerResult,
+} from "./hooks/useRemoveSigner";
+export {
+  useRecovery,
+  type EnrollRecoveryParams,
+  type RecoverOutcome,
+  type RecoveryStatus,
+  type UseRecoveryResult,
+} from "./hooks/useRecovery";
+export {
+  useSpendingPolicy,
+  type SetSpendingLimitParams,
+  type SpendingPolicyState,
+  type SpendingPolicyStatus,
+  type UseSpendingPolicyResult,
+} from "./hooks/useSpendingPolicy";
 export {
   useWalletBalance,
   type BalanceStatus,
@@ -59,6 +85,14 @@ export {
 
 // Styling primitives
 export type { ButtonSize, ButtonVariant } from "./internal/ui";
+
+// Account-security primitives
+export type { SignerInfo, SignerKind } from "./internal/security";
+export {
+  describeLedgerPeriod,
+  periodToLedgers,
+  type PolicyPeriod,
+} from "./internal/policy";
 
 // WebAuthn capability detection
 export {
