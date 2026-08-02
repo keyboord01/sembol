@@ -67,6 +67,10 @@ export function useRecovery(): UseRecoveryResult {
   const [status, setStatus] = useState<RecoveryStatus>("idle");
   const [error, setError] = useState<SembolError | null>(null);
   const mounted = useRef(true);
+  // The credential proved by the most recent recovery attempt. Retrying with
+  // an explicit contractId (address fallback, candidate picker) reuses it so
+  // the user is not asked for the same passkey twice in one flow.
+  const provedCredentialRef = useRef<string | null>(null);
 
   useEffect(() => {
     mounted.current = true;
@@ -127,10 +131,20 @@ export function useRecovery(): UseRecoveryResult {
     async (options?: { contractId?: string }): Promise<RecoverOutcome> => {
       if (!kit) throw fail(new SembolError("unknown", "Wallet is still initializing"));
       setError(null);
-      setStatus("authenticating");
       try {
-        // Any resident passkey - no session or contract knowledge needed.
-        const { credentialId } = await kit.authenticatePasskey();
+        // A recovery retry that names the wallet (address fallback or the
+        // candidate picker) reuses the credential the user proved moments
+        // ago - one passkey ceremony per recovery, not one per step.
+        let credentialId =
+          options?.contractId && provedCredentialRef.current
+            ? provedCredentialRef.current
+            : null;
+        if (!credentialId) {
+          setStatus("authenticating");
+          // Any resident passkey - no session or contract knowledge needed.
+          ({ credentialId } = await kit.authenticatePasskey());
+          provedCredentialRef.current = credentialId;
+        }
 
         // 1. Explicit address (user pasted it after a failed discovery).
         if (options?.contractId) {
@@ -189,6 +203,7 @@ export function useRecovery(): UseRecoveryResult {
   const reset = useCallback(() => {
     setStatus("idle");
     setError(null);
+    provedCredentialRef.current = null;
     addSigner.reset();
   }, [addSigner]);
 

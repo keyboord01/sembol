@@ -375,6 +375,44 @@ describe("useRecovery.recover", () => {
     });
     expect(result.current.status).toBe("error");
   });
+
+  it("does not re-prompt the passkey on the address-fallback retry", async () => {
+    const kit = recoveryKit();
+    kit.discoverContractsByCredential.mockResolvedValue([]);
+    kit.connectWallet.mockImplementation(
+      async (opts?: { prompt?: boolean; contractId?: string; credentialId?: string }) => {
+        if (opts?.contractId) {
+          kit.simulateConnected(opts.contractId, opts.credentialId);
+          return { contractId: opts.contractId, credentialId: opts.credentialId };
+        }
+        // First attempt: derivation fails, silent restore returns nothing.
+        if (opts?.prompt) throw new Error(`Contract not found on-chain for credential ${REC_CRED}`);
+        return null;
+      },
+    );
+    const { result } = renderHook(() => useRecovery(), { wrapper: wrapperFor(kit) });
+    await waitFor(() => expect(kit.connectWallet).toHaveBeenCalled());
+
+    // First attempt fails discovery and asks for the address.
+    await act(async () => {
+      await expect(result.current.recover()).rejects.toMatchObject({
+        code: "recovery_needs_address",
+      });
+    });
+    expect(kit.authenticatePasskey).toHaveBeenCalledTimes(1);
+
+    // Retry with the saved address: reuses the proved credential, no second ceremony.
+    let outcome!: RecoverOutcome;
+    await act(async () => {
+      outcome = await result.current.recover({ contractId: CONTRACT_ID });
+    });
+    expect(outcome).toMatchObject({
+      outcome: "connected",
+      contractId: CONTRACT_ID,
+      credentialId: REC_CRED,
+    });
+    expect(kit.authenticatePasskey).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("useSpendingPolicy", () => {
