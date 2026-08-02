@@ -10,6 +10,13 @@ as a first-party module.
 > signing), and its module registry only covers extension/hardware/bridge wallets. That is the
 > adoption gap this document targets. The actual PR into the kit is a separate workstream; this
 > guide is the technical basis for that conversation.
+>
+> Update, August 2026: the other integration direction is no longer a sketch. smart-account-kit
+> 0.4.x ships a **built-in `StellarWalletsKitAdapter`**, so external wallets (Freighter, xBull,
+> Lobstr…) can sign as delegated co-signers on a passkey smart account today - see Direction 1
+> below, now updated to the shipped API. A proposal for the reverse direction (a passkey module
+> inside the kit) is drafted in
+> [stellar-wallets-kit-issue-draft.md](./stellar-wallets-kit-issue-draft.md).
 
 ## How the two kits relate
 
@@ -22,27 +29,85 @@ as a first-party module.
 
 Two integration directions exist, and they're complementary:
 
-## Direction 1 (available today): external wallets *inside* Sembol
+## Direction 1 (shipped in smart-account-kit 0.4.x): external wallets *inside* Sembol
 
-smart-account-kit already consumes Stellar Wallets Kit for **multi-signer flows**: an external
-wallet (Freighter, Ledger…) can be a delegated Ed25519 signer on the smart account. Wire it via
-the provider config:
+smart-account-kit 0.4.x ships `StellarWalletsKitAdapter` in the box: a concrete
+`ExternalWalletAdapter` that drives Stellar Wallets Kit (its modal, wallet selection, and
+SEP-43 signing) so an external wallet can act as a **delegated co-signer** on the smart
+account. Two halves make that work:
 
-```ts
-import { StellarWalletsKitAdapter } from "smart-account-kit";
+- **On-chain registration** - Sembol's `useAddSigner().addWallet("G…")` (or
+  `<AddSignerButton method="wallet" />`) adds the external wallet's G-address as a delegated
+  signer on its own rule.
+- **Signature collection** - when that co-signer needs to sign an auth entry, the kit routes
+  the request through the adapter, which asks the connected extension wallet to sign.
 
-<PasskeyWalletProvider
-  config={{
-    ...networkConfig,
-    // ExternalWalletAdapter - smart-account-kit ships a ready adapter for SWK
-  }}
-/>
+Wiring: the adapter is passed as `externalWallet` when constructing the kit. Sembol's
+`SembolConfig` does not expose that field, so build the `SmartAccountKit` yourself and hand it
+to the provider via its `kit` prop (the provider then uses it as-is):
+
+```tsx
+import { SmartAccountKit, StellarWalletsKitAdapter } from "smart-account-kit";
+import { Networks } from "@stellar/stellar-sdk";
+import { PasskeyWalletProvider, SEMBOL_TESTNET_ARTIFACTS } from "@sembol/passkey-react";
+
+const config = { ...SEMBOL_TESTNET_ARTIFACTS, appName: "My App" };
+
+const adapter = new StellarWalletsKitAdapter({ network: Networks.TESTNET });
+await adapter.init(); // imports SWK, registers its SEP-43 wallet modules
+
+const kit = new SmartAccountKit({
+  rpcUrl: config.rpcUrl,
+  networkPassphrase: config.networkPassphrase,
+  accountWasmHash: config.accountWasmHash,
+  webauthnVerifierAddress: config.webauthnVerifierAddress,
+  ed25519VerifierAddress: config.ed25519VerifierAddress,
+  externalWallet: adapter,
+});
+
+<PasskeyWalletProvider config={config} kit={kit}>…</PasskeyWalletProvider>;
 ```
 
-See `StellarWalletsKitAdapter` in smart-account-kit for the wiring; Sembol re-exposes the kit
-instance (`usePasskeyWallet().kit`) so `kit.externalSigners.addFromWallet()` works unchanged.
+Requirements and behavior, per the 0.4.2 typings:
+
+- Stellar Wallets Kit is an **optional peer dependency**, loaded lazily inside
+  `adapter.init()` (throws if not installed). Nothing SWK-related loads unless you use the
+  adapter.
+- **Upstream packaging bug + workaround (verified against npm, Aug 2026):** smart-account-kit
+  0.4.2 declares and dynamically imports `@creit-tech/stellar-wallets-kit` (hyphen), but the
+  published package is `@creit.tech/stellar-wallets-kit` (dot, 2.5.0 at time of writing) -
+  the hyphenated name does not exist on npm, so the adapter's import fails out of the box.
+  Until it is fixed upstream, alias the name so the kit's import resolves:
+
+  ```jsonc
+  // package.json
+  "dependencies": {
+    "@creit-tech/stellar-wallets-kit": "npm:@creit.tech/stellar-wallets-kit@^2.5.0"
+  }
+  ```
+
+  (We are reporting this upstream - see docs/stellar-wallets-kit-issue-draft.md for the
+  companion smart-account-kit bug report.)
+- `adapter.connect()` opens the kit's own wallet-picker modal and resolves to the connected
+  wallet (or `null` on cancel); `adapter.reconnect(walletId)` is a best-effort silent restore
+  for page reloads. Connections can persist via the kit's `externalSignerStorage` and
+  `kit.externalSigners.restoreConnections()`.
+- Sembol re-exposes the kit instance (`usePasskeyWallet().kit`), so
+  `kit.externalSigners.addFromWallet()` - connect an external wallet and track it as an
+  available signer - and `kit.externalSigners.canSignFor("G…")` work unchanged from React.
+
+The result: a passkey wallet where a Freighter or xBull account is a registered backup signer,
+without Sembol depending on SWK for its core flows.
 
 ## Direction 2 (the adoption path): a passkey module *inside* Stellar Wallets Kit
+
+Direction 1 helps apps that already chose Sembol. A first-class module in Stellar Wallets Kit
+would help the larger group that chose SWK: passkey smart wallets would appear in the kit's
+wallet-picker modal **next to** Freighter, xBull, and Lobstr, so any SWK dapp gains
+"sign in with a passkey - no extension installed" through the integration it already ships,
+with zero Sembol-specific wiring. It also completes a neat loop with Direction 1: the same
+pair of libraries would compose in both directions (external wallets as co-signers on smart
+accounts, and smart accounts as a wallet option in the kit).
 
 A kit module must implement `ModuleInterface` (from `@creit.tech/stellar-wallets-kit/types`,
 v2.x). Sembol's engine maps onto it almost 1:1. Skeleton:
@@ -146,4 +211,6 @@ StellarWalletsKit.init({
 ## Try it
 
 Everything above runs against the live testnet in this repo's Storybook and reference app -
-`pnpm storybook` / `pnpm demo`.
+`pnpm storybook` / `pnpm demo`. The delegated-co-signer surface (adding a `G…` wallet as a
+signer) is on the reference app's security page; the proposal text for the kit maintainers
+lives in [stellar-wallets-kit-issue-draft.md](./stellar-wallets-kit-issue-draft.md).
