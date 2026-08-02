@@ -113,3 +113,92 @@ fall back to `balance()`/`decimals()`/`symbol()` simulation (metadata cached).
 const { address, displayAddress, explorerUrl, copy, copied } = useWalletAddress();
 // displayAddress: "CDLZ…CYSC" ; copy() → clipboard + 2s `copied` flag
 ```
+
+## `useSigners()`
+
+Live view of the connected account's signers, read from its on-chain context rules
+(indexer-backed, with the kit's on-chain probe as fallback). Each additional signer
+lives on its own single-signer rule, so any enrolled credential can act alone
+(any-of-N). Refreshes automatically after every Sembol-submitted transaction.
+
+```tsx
+const { signers, rules, activeRuleId, isLoading, error, refresh } = useSigners();
+// signers: SignerInfo[] - { kind: "passkey" | "ed25519" | "wallet" | "contract" | "unknown",
+//   display, nickname?, isActive, ruleId, key, signer, credentialId? }
+// rules: every raw ContextRule, for advanced consumers
+```
+
+## `useAddSigner()`
+
+Headless add-signer flows for the three signer types. `addPasskey` is a
+**two-prompt flow**: register the brand-new passkey first (nothing on-chain yet),
+then approve the add-signer transaction with the current one. Every path ends in
+one approval from the currently-connected signer. `addEd25519` needs
+`ed25519VerifierAddress` in the config - included in the network artifact presets.
+
+```tsx
+const { addPasskey, addEd25519, addWallet, status, error, reset } = useAddSigner();
+// status: "idle" | "registering" | "signing" | "submitting" | "success" | "error"
+
+const { credentialId } = await addPasskey({ nickname: "my-laptop" });
+await addEd25519("G…", { nickname: "backup-key" });   // offline recovery key
+await addWallet("G…", { nickname: "cold-wallet" });   // delegated co-signer
+```
+
+## `useRemoveSigner()`
+
+Signer removal with a lockout guard: rules are re-read at action time, and the
+account's **final authorization signer can never be removed** (`last_signer`
+error) - that would lock the account forever.
+
+```tsx
+const { removeSigner, status, error, reset } = useRemoveSigner();
+// status: "idle" | "signing" | "submitting" | "success" | "error"
+
+await removeSigner(signer);   // a SignerInfo from useSigners()
+```
+
+## `useRecovery()`
+
+Recovery is an extra credential enrolled **today** plus a reconnect path for the
+day the primary device is gone. After `enroll`, surface `walletAddress` and tell
+the user to save it - recovery on a brand-new browser may need it. `recover()`
+discovery order: explicit `contractId` → this browser's credential→wallet map →
+the public indexer → the deterministic deploy address (original deploy credential
+only) → throws `recovery_needs_address`, then retry with the saved address.
+
+```tsx
+const { enroll, recover, walletAddress, status, error, reset } = useRecovery();
+// status: "idle" | "enrolling" | "authenticating" | "discovering"
+//       | "connecting" | "choice" | "success" | "error"
+
+// While the user still has the device:
+await enroll({ method: "passkey", nickname: "Recovery" });
+await enroll({ method: "ed25519", publicKey: "G…" });
+
+// On the new browser:
+const outcome = await recover();
+// → { outcome: "connected", contractId, credentialId }
+// → { outcome: "choose", candidates: ["C…", …] }  - pick one, recover({ contractId })
+// → throws { code: "recovery_needs_address" }     - retry: recover({ contractId })
+```
+
+## `useSpendingPolicy()`
+
+Per-token spending limits backed by the deployed spending-limit policy contract
+(`spendingLimitPolicyAddress` in the config / network presets). Honest
+enforcement note: limits bind to transfers built as **direct token invocations** -
+Sembol's send path. smart-account-kit 0.4.2's own `kit.transfer()` wraps
+transfers in `execute` and is not covered until the kit's next release. A period
+change re-installs the policy (two approvals); a limit-only change is one.
+
+```tsx
+const { policy, isLoading, setLimit, removeLimit, status, error, refresh, reset } =
+  useSpendingPolicy();                              // native XLM
+useSpendingPolicy({ contractId: "C…" });            // any SEP-41 token
+
+await setLimit({ limit: "25", period: { days: 1 } });
+await removeLimit();
+// policy: { limit, spent, remaining, periodLedgers, periodLabel, ruleId, tokenContract }
+//   (bigint amounts in stroops; null when no limit is set)
+```

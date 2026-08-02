@@ -59,8 +59,8 @@ prompts for sessions, and `WalletBalance` live-reads the XLM balance.
 
 | Layer | Exports |
 | --- | --- |
-| **Components** | `PasskeyWalletProvider`, `ConnectWalletButton`, `CreateWalletButton`, `WalletBalance`, `SignTransactionModal` |
-| **Headless hooks** | `usePasskeyWallet`, `useConnectWallet`, `useCreateWallet`, `useSignTransaction`, `useTransfer`, `useWalletBalance`, `useWalletAddress` |
+| **Components** | `PasskeyWalletProvider`, `ConnectWalletButton`, `CreateWalletButton`, `WalletBalance`, `SignTransactionModal`, `SignerList`, `AddSignerButton`, `RecoverySetup`, `SpendingPolicyForm` |
+| **Headless hooks** | `usePasskeyWallet`, `useConnectWallet`, `useCreateWallet`, `useSignTransaction`, `useTransfer`, `useWalletBalance`, `useWalletAddress`, `useSigners`, `useAddSigner`, `useRemoveSigner`, `useRecovery`, `useSpendingPolicy` |
 | **Utilities** | `buildTransferTransaction`, `buildContractCallTransaction`, `summarizeTransaction`, `detectWebAuthnCapabilities`, `toSembolError`, formatting helpers |
 
 Every component is a thin, styled layer over the hooks - use the hooks directly for fully
