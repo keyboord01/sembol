@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { SmartAccountEventEmitter, type SmartAccountKit } from "smart-account-kit";
+import { SmartAccountEventEmitter, type ContextRule, type SmartAccountKit } from "smart-account-kit";
 import type { SembolConfig } from "../../src/types";
 
 export const TESTNET_PASSPHRASE = "Test SDF Network ; September 2015";
@@ -50,9 +50,56 @@ export interface FakeKit {
   sign: ReturnType<typeof vi.fn>;
   signAndSubmit: ReturnType<typeof vi.fn>;
   transfer: ReturnType<typeof vi.fn>;
+  rules: {
+    list: ReturnType<typeof vi.fn>;
+    get: ReturnType<typeof vi.fn>;
+    add: ReturnType<typeof vi.fn>;
+    remove: ReturnType<typeof vi.fn>;
+  };
+  signers: {
+    addPasskey: ReturnType<typeof vi.fn>;
+    addDelegated: ReturnType<typeof vi.fn>;
+    addBatch: ReturnType<typeof vi.fn>;
+    remove: ReturnType<typeof vi.fn>;
+  };
+  credentials: {
+    create: ReturnType<typeof vi.fn>;
+  };
+  policies: {
+    add: ReturnType<typeof vi.fn>;
+    remove: ReturnType<typeof vi.fn>;
+  };
+  /** The one spending-limit client handed out by `policyClients.spendingLimit()`. */
+  spendingLimitClient: {
+    getSpendingLimitData: ReturnType<typeof vi.fn>;
+    setSpendingLimit: ReturnType<typeof vi.fn>;
+  };
+  policyClients: { spendingLimit: ReturnType<typeof vi.fn> };
+  convertPolicyParams: ReturnType<typeof vi.fn>;
+  authenticatePasskey: ReturnType<typeof vi.fn>;
+  discoverContractsByCredential: ReturnType<typeof vi.fn>;
   /** Test helper: mark the kit connected and emit walletConnected. */
   simulateConnected(contractId?: string, credentialId?: string): void;
   asKit(): SmartAccountKit;
+}
+
+/**
+ * Build a ContextRule fixture. Only `id` is required; everything else
+ * defaults to an empty Default-context rule.
+ */
+export function makeContextRule(
+  overrides: Partial<ContextRule> & Pick<ContextRule, "id">,
+): ContextRule {
+  return {
+    context_type: { tag: "Default", values: undefined },
+    name: "Default",
+    policies: [],
+    policy_ids: [],
+    signer_ids: [],
+    signers: [],
+    valid_until: undefined,
+    ...overrides,
+  };
 }
 
 /**
@@ -84,12 +131,25 @@ export function createFakeKit(options?: {
     credentialId: undefined,
     session: options?.session ?? null,
 
-    connectWallet: vi.fn(async (opts?: { prompt?: boolean; fresh?: boolean }) => {
-      if (!opts?.prompt && !opts?.fresh && !kit.session) return null;
-      const target = kit.session ?? { contractId: CONTRACT_ID, credentialId: CREDENTIAL_ID };
-      kit.simulateConnected(target.contractId, target.credentialId);
-      return { ...target };
-    }),
+    connectWallet: vi.fn(
+      async (opts?: {
+        prompt?: boolean;
+        fresh?: boolean;
+        contractId?: string;
+        credentialId?: string;
+      }) => {
+        if (!opts?.prompt && !opts?.fresh && !kit.session) return null;
+        const fallback = kit.session ?? { contractId: CONTRACT_ID, credentialId: CREDENTIAL_ID };
+        // Honor explicitly requested targets (recovery flows); otherwise
+        // behave like a stored-session reconnect.
+        const target = {
+          contractId: opts?.contractId ?? fallback.contractId,
+          credentialId: opts?.credentialId ?? fallback.credentialId,
+        };
+        kit.simulateConnected(target.contractId, target.credentialId);
+        return { ...target };
+      },
+    ),
 
     // NOTE: the real kit only ever emits credentialCreated / walletConnected /
     // sessionExpired / walletDisconnected — transaction events exist in its
@@ -130,6 +190,61 @@ export function createFakeKit(options?: {
     signAndSubmit: vi.fn(async () => ({ success: true, hash: TX_HASH, ledger: 42 })),
 
     transfer: vi.fn(async () => ({ success: true, hash: TX_HASH, ledger: 42 })),
+
+    rules: {
+      list: vi.fn(async () => [] as ContextRule[]),
+      get: vi.fn(async () => ({ result: null })),
+      add: vi.fn(async () => ({ op: "rules.add" })),
+      remove: vi.fn(async () => ({ op: "rules.remove" })),
+    },
+
+    signers: {
+      addPasskey: vi.fn(async () => ({
+        credentialId: "new-passkey-cred",
+        publicKey: new Uint8Array(65).fill(9),
+        transaction: { op: "signers.addPasskey" },
+      })),
+      addDelegated: vi.fn(async () => ({ op: "signers.addDelegated" })),
+      addBatch: vi.fn(async () => ({ op: "signers.addBatch" })),
+      remove: vi.fn(async () => ({ op: "signers.remove" })),
+    },
+
+    credentials: {
+      // Registration-only passkey creation (no transaction) - the own-rule
+      // add-signer path pairs this with rules.add.
+      create: vi.fn(async (options?: { nickname?: string; appName?: string }) => ({
+        credentialId: "new-passkey-cred",
+        publicKey: new Uint8Array(65).fill(9),
+        contractId: CONTRACT_ID,
+        nickname: options?.nickname,
+        createdAt: 0,
+      })),
+    },
+
+    policies: {
+      add: vi.fn(async () => ({ op: "policies.add" })),
+      remove: vi.fn(async () => ({ op: "policies.remove" })),
+    },
+
+    spendingLimitClient: {
+      getSpendingLimitData: vi.fn(async () => ({
+        spending_limit: 0n,
+        period_ledgers: 17280,
+        spending_history: [],
+        cached_total_spent: 0n,
+      })),
+      setSpendingLimit: vi.fn(async () => ({ op: "policy.setSpendingLimit" })),
+    },
+
+    policyClients: {
+      spendingLimit: vi.fn(() => kit.spendingLimitClient),
+    },
+
+    convertPolicyParams: vi.fn(() => ({ op: "convertPolicyParams" })),
+
+    authenticatePasskey: vi.fn(async () => ({ credentialId: CREDENTIAL_ID, rawResponse: {} })),
+
+    discoverContractsByCredential: vi.fn(async () => []),
 
     simulateConnected(contractId = CONTRACT_ID, credentialId = CREDENTIAL_ID) {
       kit.isConnected = true;
