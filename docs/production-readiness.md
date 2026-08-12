@@ -74,4 +74,4 @@ the `month-2` branch.
 - [ ] `month-2` merged to `main`, pushed to the public repo
 - [ ] Demo + Storybook redeployed from `main`; deployment URLs re-verified
 - [ ] Demo video refreshed (desktop + security flows + recovery)
-- [ ] Release announcement posted (draft: `docs/release-announcement-0.3.0.md`)
+- [ ] Release announcement posted (Stellar Dev Discord, dev forum, Turkiye channel)

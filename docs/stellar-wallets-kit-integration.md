@@ -15,8 +15,8 @@ as a first-party module.
 > 0.4.x ships a **built-in `StellarWalletsKitAdapter`**, so external wallets (Freighter, xBull,
 > Lobstr…) can sign as delegated co-signers on a passkey smart account today - see Direction 1
 > below, now updated to the shipped API. A proposal for the reverse direction (a passkey module
-> inside the kit) is drafted in
-> [stellar-wallets-kit-issue-draft.md](./stellar-wallets-kit-issue-draft.md).
+> inside the kit) is being filed upstream on
+> [Creit-Tech/stellar-wallets-kit](https://github.com/Creit-Tech/stellar-wallets-kit/issues).
 
 ## How the two kits relate
 
@@ -86,8 +86,8 @@ Requirements and behavior, per the 0.4.2 typings:
   }
   ```
 
-  (We are reporting this upstream - see docs/stellar-wallets-kit-issue-draft.md for the
-  companion smart-account-kit bug report.)
+  (We are reporting this upstream to
+  [kalepail/smart-account-kit](https://github.com/kalepail/smart-account-kit/issues).)
 - `adapter.connect()` opens the kit's own wallet-picker modal and resolves to the connected
   wallet (or `null` on cancel); `adapter.reconnect(walletId)` is a best-effort silent restore
   for page reloads. Connections can persist via the kit's `externalSignerStorage` and
@@ -212,5 +212,6 @@ StellarWalletsKit.init({
 
 Everything above runs against the live testnet in this repo's Storybook and reference app -
 `pnpm storybook` / `pnpm demo`. The delegated-co-signer surface (adding a `G…` wallet as a
-signer) is on the reference app's security page; the proposal text for the kit maintainers
-lives in [stellar-wallets-kit-issue-draft.md](./stellar-wallets-kit-issue-draft.md).
+signer) is on the reference app's security page; the passkey-module proposal for the kit
+maintainers is being filed on
+[Creit-Tech/stellar-wallets-kit](https://github.com/Creit-Tech/stellar-wallets-kit/issues).
