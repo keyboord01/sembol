@@ -53,9 +53,9 @@ Proof it works, on live testnet (from the repo's 9-step E2E: add/remove signer, 
 including a full storage-wipe reconnect, and an enforced limit):
 
 - Wallet contract (with the spending-limit rule installed):
-  https://stellar.expert/explorer/testnet/contract/CONTRACT_ID_HERE
+  https://stellar.expert/explorer/testnet/contract/CDW3EB2QGGFU4GFSAJPQWD6FG4ULX5Z2PPAAU2LFRVRYZJQZ3YQIZOXW
 - 2 XLM payment inside a 5 XLM/day limit, confirmed and metered:
-  https://stellar.expert/explorer/testnet/tx/TX_HASH_HERE
+  https://stellar.expert/explorer/testnet/tx/378e9bec991611d5bf87b0764522cfae1ed6eaa70b568c3d26300e781f8b0b3f
 - 4 XLM payment over the remaining allowance: rejected by the policy contract with
   `ContractError #3221` (`spending_limit_exceeded`) - rejected transactions never land
   on-chain, so the evidence is the enforced rule on the wallet contract above plus the E2E
