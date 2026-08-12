@@ -132,8 +132,8 @@ Each added signer lives on its own single-signer authorization rule, so **any** 
 credential can act alone (a lost phone is not a lost wallet). Spending limits install the
 audited spending-limit policy contract on a token-scoped rule; over-limit payments are
 rejected **on-chain**. Enforcement covers transfers built as direct token invocations -
-which is how this library sends payments. (`smart-account-kit@0.4.2`'s own `kit.transfer()`
-wraps transfers in `execute` and is not covered until the kit's next release.)
+which is how this library sends payments, and, as of `smart-account-kit@0.5.0`, how the
+kit's own `kit.transfer()` works too, so spending limits cover both paths.
 
 ## Components
 

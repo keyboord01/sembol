@@ -60,18 +60,21 @@ passkey prompts, error states, and the long tail of WebAuthn quirks across brows
 Sembol packages all of that once, headless-first, so the ecosystem stops paying that tax
 (the gap called out by the SCF Passkey UI/SDK RFP).
 
-## Up-to-date foundations (July 2026)
+## Up-to-date foundations (August 2026)
 
 This library was built against the **current** Stellar passkey stack, which moved significantly
-in early 2026:
+in 2026:
 
 - [`passkey-kit`](https://github.com/kalepail/passkey-kit) is now **legacy**; its successor is
-  [`smart-account-kit`](https://github.com/stellar/smart-account-kit), built on audited
-  OpenZeppelin smart-account contracts. **Sembol wraps smart-account-kit.**
-- **Launchtube is dead** (domains no longer resolve). Fee sponsoring now runs through the
-  [OpenZeppelin Relayer Channels service](https://docs.openzeppelin.com/relayer) -
-  testnet API keys are self-serve (`curl https://channels.openzeppelin.com/testnet/gen`).
-  The library treats the relayer as optional; on testnet everything works via plain RPC.
+  [`smart-account-kit`](https://github.com/stellar/smart-account-kit) - adopted into the
+  **official Stellar org** in August 2026 - built on audited OpenZeppelin smart-account
+  contracts. **Sembol wraps smart-account-kit 0.6.x.**
+- **Launchtube is dead** (domains no longer resolve). Fee sponsoring runs through relayer
+  proxies backed by the [OpenZeppelin Relayer Channels service](https://docs.openzeppelin.com/relayer).
+  Since kit 0.5.0 wallet creation requires a relayer (the shared deployer is sign-only);
+  the testnet preset defaults to the public SDF proxy so everything still works with zero
+  config, and on mainnet you bring your own key
+  (testnet keys are self-serve: `curl https://channels.openzeppelin.com/testnet/gen`).
 - Migrating from the old stack? See [docs/migrating-from-passkey-kit.md](docs/migrating-from-passkey-kit.md).
 
 ## Quickstart (this repo)
@@ -85,7 +88,8 @@ pnpm demo           # reference app on :3000
 ```
 
 Requires Node ≥ 20 and pnpm ≥ 10. The demo and Storybook run against Stellar **testnet** with
-zero configuration (Friendbot funds wallets; fees paid via the kit's deployer account).
+zero configuration (Friendbot funds wallets; deploys fee-sponsored via the public SDF
+testnet relayer proxy).
 
 ## Deliverables map (Instaward SOW)
 
@@ -141,8 +145,8 @@ from the self-serve `/gen` endpoint.)
 
 ## Testnet configuration
 
-The default config uses the smart-account-kit **v0.2.x** testnet artifacts
-(Protocol 27 set: WASM hash `1b5f4534…`, WebAuthn verifier `CC7EKIHQ…`, Ed25519 verifier and spending-limit policy included via `SEMBOL_TESTNET_ARTIFACTS`) - verified live on-chain, end to end.
+The default config uses the smart-account-kit **v0.6.x** testnet artifacts
+(Protocol 27 set: WASM hash `1b5f4534…`, WebAuthn verifier `CC7EKIHQ…`, Ed25519 verifier and spending-limit policy included via `SEMBOL_TESTNET_ARTIFACTS`, plus the public SDF relayer proxy for fee-sponsored deploys) - verified live on-chain, end to end.
 
 Two gotchas worth knowing:
 

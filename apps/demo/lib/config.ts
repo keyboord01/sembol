@@ -5,7 +5,7 @@ import { SEMBOL_TESTNET_ARTIFACTS, type SembolConfig } from "@sembol/passkey-rea
  *
  * Contract artifacts come from the library's SEMBOL_TESTNET_ARTIFACTS preset:
  * the Protocol 27 set deployed and provenance-verified by the smart-account-kit
- * team (must match the installed kit version, currently 0.4.x). Testnet resets
+ * team (must match the installed kit version, currently 0.6.x). Testnet resets
  * can invalidate them; env vars override every field for that case.
  */
 export const sembolConfig: SembolConfig = {
@@ -26,7 +26,9 @@ export const sembolConfig: SembolConfig = {
     SEMBOL_TESTNET_ARTIFACTS.spendingLimitPolicyAddress,
   nativeTokenContract:
     process.env.NEXT_PUBLIC_NATIVE_TOKEN_CONTRACT ?? SEMBOL_TESTNET_ARTIFACTS.nativeTokenContract,
-  relayerUrl: process.env.NEXT_PUBLIC_RELAYER_URL || undefined,
+  // Since kit 0.5.0 wallet creation requires a relayer (shared deployer is
+  // sign-only, no RPC fallback) - fall back to the preset's public SDF proxy.
+  relayerUrl: process.env.NEXT_PUBLIC_RELAYER_URL || SEMBOL_TESTNET_ARTIFACTS.relayerUrl,
   appName: "Sembol Demo",
   // Surface the local platform passkey (Touch ID / Windows Hello) first on
   // every prompt - some browsers otherwise bury it on connect.
