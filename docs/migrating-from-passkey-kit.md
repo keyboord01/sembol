@@ -9,7 +9,7 @@ Stellar passkey SDK - here is what changed in the ecosystem and how to move to
 As of 2026:
 
 - **passkey-kit is officially legacy.** Its README points new projects at
-  [`smart-account-kit`](https://github.com/kalepail/smart-account-kit), which is built on the
+  [`smart-account-kit`](https://github.com/stellar/smart-account-kit), which is built on the
   **audited** OpenZeppelin smart-account contracts (passkey-kit's contracts were explicitly
   "demo material only, not audited"), and adds session persistence, an indexer, context rules,
   and policy support.

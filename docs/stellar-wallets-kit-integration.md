@@ -87,7 +87,7 @@ Requirements and behavior, per the 0.4.2 typings:
   ```
 
   (We are reporting this upstream to
-  [kalepail/smart-account-kit](https://github.com/kalepail/smart-account-kit/issues).)
+  [stellar/smart-account-kit](https://github.com/stellar/smart-account-kit/issues).)
 - `adapter.connect()` opens the kit's own wallet-picker modal and resolves to the connected
   wallet (or `null` on cancel); `adapter.reconnect(walletId)` is a best-effort silent restore
   for page reloads. Connections can persist via the kit's `externalSignerStorage` and

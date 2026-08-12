@@ -66,7 +66,7 @@ This library was built against the **current** Stellar passkey stack, which move
 in early 2026:
 
 - [`passkey-kit`](https://github.com/kalepail/passkey-kit) is now **legacy**; its successor is
-  [`smart-account-kit`](https://github.com/kalepail/smart-account-kit), built on audited
+  [`smart-account-kit`](https://github.com/stellar/smart-account-kit), built on audited
   OpenZeppelin smart-account contracts. **Sembol wraps smart-account-kit.**
 - **Launchtube is dead** (domains no longer resolve). Fee sponsoring now runs through the
   [OpenZeppelin Relayer Channels service](https://docs.openzeppelin.com/relayer) -

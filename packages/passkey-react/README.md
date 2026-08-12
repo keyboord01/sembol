@@ -3,7 +3,7 @@
 React components and headless hooks for **Stellar passkey smart wallets**. Users sign with
 Face ID / Touch ID / Windows Hello - no seed phrases, no extensions - and every wallet is an
 audited [OpenZeppelin Smart Account](https://docs.openzeppelin.com/stellar-contracts/accounts/smart-account)
-contract, driven by [smart-account-kit](https://github.com/kalepail/smart-account-kit).
+contract, driven by [smart-account-kit](https://github.com/stellar/smart-account-kit).
 
 - 🧩 **9 drop-in components** - provider, create/connect buttons, balance, signing modal,
   signer list + add-signer, recovery setup, spending-limit form
