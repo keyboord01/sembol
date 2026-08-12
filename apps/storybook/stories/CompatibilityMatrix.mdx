@@ -92,3 +92,24 @@ try {
   }
 }
 ```
+
+## What CI verifies, continuously
+
+The matrix above is hand-tested guidance; the rows below are re-proven by
+GitHub Actions on every push (`.github/workflows/ci.yml`, `cross-browser` job)
+so they cannot silently rot:
+
+| Check | Chromium | Firefox | WebKit |
+| --- | --- | --- | --- |
+| Full passkey journey on live testnet (create wallet, fund, reload session restore, sign + submit a payment) | ✅ automated, virtual authenticator | - | - |
+| Account-security journey on live testnet (add/remove signer, recovery after storage wipe, on-chain spending-limit rejection) | ✅ weekly + on demand | - | - |
+| App boots, onboarding renders, recovery entry point present | ✅ | ✅ | ✅ |
+| WebAuthn capability detection completes and drives the UI (create form or honest unsupported notice) | ✅ | ✅ | ✅ |
+| No fatal console errors | ✅ | ✅ | ✅ |
+
+One honest platform constraint: automated passkey ceremonies use the CDP
+`WebAuthn` domain (virtual authenticator), which only Chromium exposes.
+Firefox and WebKit passkey flows are therefore covered by the automated
+render/capability checks plus the hand-tested rows above - not by scripted
+ceremonies. This is a limitation of browser automation, not of the library:
+the same WebAuthn calls run in all supported browsers.

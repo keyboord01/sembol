@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.3.0 - 2026-08-02
+
+The account-security release: recovery, multi-signer, and spending limits.
+
+### Added
+- Components: `<SignerList />`, `<AddSignerButton />`, `<RecoverySetup />`,
+  `<SpendingPolicyForm />`.
+- Hooks: `useSigners`, `useAddSigner`, `useRemoveSigner`, `useRecovery`,
+  `useSpendingPolicy`.
+- `SEMBOL_TESTNET_ARTIFACTS` / `SEMBOL_MAINNET_ARTIFACTS` presets: the full
+  Protocol 27 contract set (account WASM, WebAuthn + Ed25519 verifiers,
+  spending-limit policy, native SAC) so a config is one spread + an app name.
+- Config: `ed25519VerifierAddress`, `spendingLimitPolicyAddress`,
+  `indexerAuthToken`, `contextRuleProbe`.
+- Error codes: `last_signer`, `spending_limit_exceeded`, `policy_not_found`,
+  `recovery_needs_address`; on-chain `ContractError`s now decode to precise
+  codes (a rejected over-limit payment reads like one, not like a generic
+  failure).
+
+### Changed
+- smart-account-kit `^0.2.10` -> `^0.4.2` (Protocol 27 contracts). Wallets
+  created on the 0.2.x-era testnet artifacts use the previous contract
+  interface and are not carried over - create a fresh testnet wallet.
+- Each added signer gets its own single-signer Default rule (any-of-N):
+  a policy-less rule requires all of its signers, so a shared rule would
+  force every action to collect every signature.
+- Spending limits enforce through the core sign path: `signAndSubmit` pins
+  the policy-bearing token-scoped rule at signing time. Enforcement covers
+  transfers built as direct token invocations (Sembol's send path);
+  smart-account-kit 0.4.2's own `kit.transfer()` wraps transfers in
+  `execute` and is not covered until the kit's next release.
+- `signAndSubmit`/`transfer` results narrow to `TransactionSuccess`
+  (failures throw a mapped `SembolError`); `SignTransactionModal.onSuccess`
+  receives a confirmed transaction.
+
 ## 0.2.2 - 2026-07-06
 
 ### Changed

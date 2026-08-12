@@ -24,6 +24,17 @@ export interface SembolConfig {
   /** Deployed WebAuthn (secp256r1) verifier contract address. */
   webauthnVerifierAddress: string;
   /**
+   * Deployed Ed25519 verifier contract address. Required only for Ed25519
+   * recovery keys / external signers; the network presets include it.
+   */
+  ed25519VerifierAddress?: string;
+  /**
+   * Deployed spending-limit policy contract address. Required by
+   * `useSpendingPolicy` / `<SpendingPolicyForm />`; the network presets
+   * include it.
+   */
+  spendingLimitPolicyAddress?: string;
+  /**
    * Native XLM Stellar Asset Contract address. Enables the default token for
    * `useWalletBalance`, `<WalletBalance />` and testnet funding via `fund()`.
    * Defaults to the SAC derived from the network passphrase.
@@ -39,8 +50,19 @@ export interface SembolConfig {
    * kit's deterministic deployer keypair as fee payer (fine on testnet).
    */
   relayerUrl?: string;
-  /** Indexer URL for contract discovery. `false` disables. Defaults to the public testnet indexer. */
+  /** Indexer URL for contract discovery. `false` disables. Defaults to the public Mercury indexer for testnet/mainnet. */
   indexerUrl?: string | false;
+  /** Optional bearer token for a private indexer deployment. */
+  indexerAuthToken?: string;
+  /**
+   * On-chain probing of low-numbered context rules when the indexer is
+   * unavailable or behind (fresh wallets). Enabled by default.
+   */
+  contextRuleProbe?: {
+    enabled?: boolean;
+    maxRuleId?: number;
+    maxConsecutiveMisses?: number;
+  };
   /** Credential/session storage adapter. Defaults to IndexedDB. */
   storage?: StorageAdapter;
   /** Session expiry in milliseconds (default 7 days). */
@@ -111,9 +133,9 @@ export type TokenRef =
 
 /**
  * Internal progress signals emitted by the provider and hooks.
- * smart-account-kit@0.2.x declares transaction events in its type map but
- * never emits them at runtime, so Sembol instruments the WebAuthn ceremony
- * and its own submission paths instead.
+ * smart-account-kit declares transaction events in its type map but never
+ * emits them at runtime (verified against 0.2.10 and 0.4.2), so Sembol
+ * instruments the WebAuthn ceremony and its own submission paths instead.
  */
 export type SembolSignal =
   | "webauthn:start"

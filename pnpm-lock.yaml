@@ -6,7 +6,14 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      '@axe-core/playwright':
+        specifier: ^4.12.1
+        version: 4.12.1(playwright-core@1.62.1)
+      playwright:
+        specifier: ^1.62.1
+        version: 1.62.1
 
   apps/demo:
     dependencies:
@@ -106,8 +113,8 @@ importers:
         specifier: ^16.0.1
         version: 16.0.1
       smart-account-kit:
-        specifier: ^0.2.10
-        version: 0.2.10(@stellar/stellar-sdk@16.0.1)
+        specifier: ^0.4.2
+        version: 0.4.2(@stellar/stellar-sdk@16.0.1)
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^6.9.1
@@ -169,6 +176,11 @@ packages:
 
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
+
+  '@axe-core/playwright@4.12.1':
+    resolution: {integrity: sha512-rMd7xriptqKpP+w5265i4Hdkv2X5kbu6uiBi/B2I7uf3hieRBM3qDCfaKPtxfiYb2mKXfF+yLODJwIx+Jv1GDw==}
+    peerDependencies:
+      playwright-core: '>= 1.0.0'
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -1813,6 +1825,11 @@ packages:
     resolution: {integrity: sha512-vKatAh4SlVfgbv+YtmhiRjhEMJsYpsG1Y2rMQtR+SVSbytsSD1YGzDIcrAJmdFec88u/+VoGmxnl+80gL1tRCQ==}
     engines: {node: '>= 6'}
 
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -2178,6 +2195,16 @@ packages:
   pkg-types@1.3.1:
     resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
 
+  playwright-core@1.62.1:
+    resolution: {integrity: sha512-wPYSwEBJY9GHraISXqyqtx0na0LpO3XEX7jNDhntbex7tzUS7kLnZsOlFruFJB4Hi/rhDMjXGqHewDZ68nYZVw==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.62.1:
+    resolution: {integrity: sha512-0M+L3LAD8/nm554LOla9Ayx0j0tmFZ0FBcoQ7F1VuVHpM/XpiC8RcDzBQB8W5+hA8L22THxELzeF+2WcUzvcLg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   pngjs@5.0.0:
     resolution: {integrity: sha512-40QW5YalBNfQo5yRYmiw7Yz6TKKVr3h6970B2YE+3fQpsWcrbj1PzJgxeJ19DRQjhMbKPIuMY8rFaXc8moolVw==}
     engines: {node: '>=10.13.0'}
@@ -2323,12 +2350,27 @@ packages:
     peerDependencies:
       '@stellar/stellar-sdk': '>=14.0.0'
 
+  smart-account-kit-bindings@0.3.0:
+    resolution: {integrity: sha512-2q3xOvMNFGwJlCKdFmD/3FIDeiTA86cXAPm/H32DnqTwTU2H4YqMpQ6Gb82kPWofwM/Q9Qnv8nP3pAyBJbazdw==}
+    peerDependencies:
+      '@stellar/stellar-sdk': '>=15.1.0'
+
   smart-account-kit@0.2.10:
     resolution: {integrity: sha512-3XmgpmiOUfjBfZjOpDAN8DhniVG+mEHBS0h9m4oVa9eUzUBR6080mzfQvCcYPislsmBzJnFmAc6uTPl2ylD45Q==}
     engines: {node: '>=22.0.0', pnpm: '>=10.0.0'}
     peerDependencies:
       '@creit-tech/stellar-wallets-kit': '>=2.0.0'
       '@stellar/stellar-sdk': '>=14.0.0'
+    peerDependenciesMeta:
+      '@creit-tech/stellar-wallets-kit':
+        optional: true
+
+  smart-account-kit@0.4.2:
+    resolution: {integrity: sha512-Gxz7so1O132hsCJsb4nPWGNjcYA9pWpM1b7ivFuami7efK9gSwD/mWDExSHCG42wpVbIqS3GDRiq4Y+jWulI8w==}
+    engines: {node: '>=22.0.0', pnpm: '>=10.0.0'}
+    peerDependencies:
+      '@creit-tech/stellar-wallets-kit': '>=2.1.0'
+      '@stellar/stellar-sdk': '>=16.0.0'
     peerDependenciesMeta:
       '@creit-tech/stellar-wallets-kit':
         optional: true
@@ -2725,6 +2767,11 @@ snapshots:
   '@asamuzakjp/generational-cache@1.0.1': {}
 
   '@asamuzakjp/nwsapi@2.3.9': {}
+
+  '@axe-core/playwright@4.12.1(playwright-core@1.62.1)':
+    dependencies:
+      axe-core: 4.12.1
+      playwright-core: 1.62.1
 
   '@babel/code-frame@7.29.7':
     dependencies:
@@ -4080,6 +4127,9 @@ snapshots:
       hasown: 2.0.4
       mime-types: 2.1.35
 
+  fsevents@2.3.2:
+    optional: true
+
   fsevents@2.3.3:
     optional: true
 
@@ -4448,6 +4498,14 @@ snapshots:
       mlly: 1.8.2
       pathe: 2.0.3
 
+  playwright-core@1.62.1: {}
+
+  playwright@1.62.1:
+    dependencies:
+      playwright-core: 1.62.1
+    optionalDependencies:
+      fsevents: 2.3.2
+
   pngjs@5.0.0: {}
 
   postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.16):
@@ -4648,12 +4706,24 @@ snapshots:
       '@stellar/stellar-sdk': 16.0.1
       buffer: 6.0.3
 
+  smart-account-kit-bindings@0.3.0(@stellar/stellar-sdk@16.0.1):
+    dependencies:
+      '@stellar/stellar-sdk': 16.0.1
+      buffer: 6.0.3
+
   smart-account-kit@0.2.10(@stellar/stellar-sdk@16.0.1):
     dependencies:
       '@simplewebauthn/browser': 13.3.0
       '@stellar/stellar-sdk': 16.0.1
       base64url: 3.0.1
       smart-account-kit-bindings: 0.1.2(@stellar/stellar-sdk@16.0.1)
+
+  smart-account-kit@0.4.2(@stellar/stellar-sdk@16.0.1):
+    dependencies:
+      '@simplewebauthn/browser': 13.3.0
+      '@stellar/stellar-sdk': 16.0.1
+      base64url: 3.0.1
+      smart-account-kit-bindings: 0.3.0(@stellar/stellar-sdk@16.0.1)
 
   smol-toml@1.7.0: {}
 

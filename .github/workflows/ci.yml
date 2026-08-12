@@ -2,8 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, month-2]
   pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly account-security journey against live testnet (Mondays 06:00 UTC)
+    - cron: "0 6 * * 1"
 
 jobs:
   build-and-test:
@@ -35,3 +39,90 @@ jobs:
 
       - name: Build demo
         run: pnpm --filter sembol-demo build
+
+  # Cross-browser verification. Chromium runs the REAL passkey journey against
+  # live testnet (CDP virtual authenticator - Chromium-only by platform
+  # constraint); Firefox and WebKit run the render + capability smoke that is
+  # verifiable without WebAuthn automation. The compatibility matrix in
+  # Storybook mirrors exactly what this job proves.
+  cross-browser:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build library
+        run: pnpm --filter @sembol/passkey-react build
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Build demo
+        run: pnpm --filter sembol-demo build
+
+      - name: Start demo
+        run: |
+          pnpm --filter sembol-demo start --port 3100 &
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3100 > /dev/null; then echo "up"; break; fi
+            sleep 1
+          done
+
+      - name: Full passkey journey (chromium, live testnet)
+        if: matrix.browser == 'chromium'
+        run: APP_URL=http://localhost:3100 node scripts/e2e-testnet.mjs
+
+      - name: Render + capability smoke
+        run: BROWSER=${{ matrix.browser }} APP_URL=http://localhost:3100 node scripts/ci-browser-check.mjs
+
+  # The full 9-step account-security journey (add/remove signer, recovery,
+  # on-chain spending-limit rejection) burns ~4 minutes of live-testnet
+  # transactions - scheduled + on-demand rather than per push.
+  security-journey:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build library
+        run: pnpm --filter @sembol/passkey-react build
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build demo
+        run: pnpm --filter sembol-demo build
+
+      - name: Start demo
+        run: |
+          pnpm --filter sembol-demo start --port 3100 &
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3100 > /dev/null; then echo "up"; break; fi
+            sleep 1
+          done
+
+      - name: Account-security journey (live testnet)
+        run: APP_URL=http://localhost:3100 node scripts/e2e-security.mjs

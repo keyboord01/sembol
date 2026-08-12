@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AssembledTransaction, TransactionResult } from "smart-account-kit";
+import type { AssembledTransaction, TransactionSuccess } from "smart-account-kit";
 import { usePasskeyWalletContext } from "../context";
 import { SembolError, toSembolError } from "../errors";
+import { findEnforcedRuleIdForTransaction } from "../internal/policy";
 
 export type SignStatus = "idle" | "signing" | "submitting" | "success" | "error";
 
@@ -28,20 +29,20 @@ export interface UseSignTransactionResult {
   signAndSubmit: <T>(
     transaction: AssembledTransaction<T>,
     options?: SignOptions,
-  ) => Promise<TransactionResult>;
+  ) => Promise<TransactionSuccess>;
   status: SignStatus;
   error: SembolError | null;
   /** Submission result after `signAndSubmit` succeeds. */
-  result: TransactionResult | null;
+  result: TransactionSuccess | null;
   reset: () => void;
 }
 
 /** Headless transaction signing/submission with a status machine. */
 export function useSignTransaction(): UseSignTransactionResult {
-  const { kit, signals } = usePasskeyWalletContext();
+  const { kit, config, credentialId, signals } = usePasskeyWalletContext();
   const [status, setStatus] = useState<SignStatus>("idle");
   const [error, setError] = useState<SembolError | null>(null);
-  const [result, setResult] = useState<TransactionResult | null>(null);
+  const [result, setResult] = useState<TransactionSuccess | null>(null);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -95,13 +96,26 @@ export function useSignTransaction(): UseSignTransactionResult {
         }
       });
       try {
-        const txResult = await instance.signAndSubmit(transaction, options);
+        // When this wallet has a spending-limit rule scoped to the invoked
+        // contract, pin it at signing time - the kit's auto-resolution can
+        // otherwise bind a Default rule and silently skip the policy.
+        const enforcedRuleId = await findEnforcedRuleIdForTransaction(
+          instance,
+          transaction,
+          config.spendingLimitPolicyAddress,
+          options?.credentialId ?? credentialId,
+        );
+        console.debug("[sembol] spending-limit rule pin:", enforcedRuleId ?? "none");
+        const txResult = await instance.signAndSubmit(transaction, {
+          ...options,
+          ...(enforcedRuleId !== null
+            ? { resolveContextRuleIds: () => [enforcedRuleId] }
+            : {}),
+        });
         if (!txResult.success) {
-          throw new SembolError(
-            "submission_failed",
-            txResult.error ?? `Transaction ${txResult.hash} failed`,
-            txResult,
-          );
+          // 0.4.x: TransactionFailure.error is a typed SmartAccountError
+          // (possibly a decoded ContractError, e.g. a spending-limit rejection).
+          throw toSembolError(txResult.error);
         }
         signals.emit("tx:submitted");
         if (mounted.current) {

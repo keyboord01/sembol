@@ -22,6 +22,10 @@ export {
   SignTransactionModal,
   type SignTransactionModalProps,
 } from "./components/SignTransactionModal";
+export { SignerList, type SignerListProps } from "./components/SignerList";
+export { AddSignerButton, type AddSignerButtonProps } from "./components/AddSignerButton";
+export { RecoverySetup, type RecoverySetupProps } from "./components/RecoverySetup";
+export { SpendingPolicyForm, type SpendingPolicyFormProps } from "./components/SpendingPolicyForm";
 
 // Headless hooks
 export { usePasskeyWallet } from "./hooks/usePasskeyWallet";
@@ -40,6 +44,32 @@ export {
 } from "./hooks/useSignTransaction";
 export { useTransfer, type TransferParams, type TransferStatus, type UseTransferResult } from "./hooks/useTransfer";
 export { useWalletAddress, type UseWalletAddressResult } from "./hooks/useWalletAddress";
+export { useSigners, type UseSignersResult } from "./hooks/useSigners";
+export {
+  useAddSigner,
+  type AddSignerOptions,
+  type AddSignerStatus,
+  type UseAddSignerResult,
+} from "./hooks/useAddSigner";
+export {
+  useRemoveSigner,
+  type RemoveSignerStatus,
+  type UseRemoveSignerResult,
+} from "./hooks/useRemoveSigner";
+export {
+  useRecovery,
+  type EnrollRecoveryParams,
+  type RecoverOutcome,
+  type RecoveryStatus,
+  type UseRecoveryResult,
+} from "./hooks/useRecovery";
+export {
+  useSpendingPolicy,
+  type SetSpendingLimitParams,
+  type SpendingPolicyState,
+  type SpendingPolicyStatus,
+  type UseSpendingPolicyResult,
+} from "./hooks/useSpendingPolicy";
 export {
   useWalletBalance,
   type BalanceStatus,
@@ -48,10 +78,25 @@ export {
 } from "./hooks/useWalletBalance";
 
 // Errors
-export { SembolError, toSembolError, type SembolErrorCode } from "./errors";
+export { SembolError, toSembolError, contractCodeFromMessage, type SembolErrorCode } from "./errors";
+
+// Deployed contract sets per network (spread into your SembolConfig)
+export {
+  SEMBOL_TESTNET_ARTIFACTS,
+  SEMBOL_MAINNET_ARTIFACTS,
+  type SembolArtifacts,
+} from "./artifacts";
 
 // Styling primitives
 export type { ButtonSize, ButtonVariant } from "./internal/ui";
+
+// Account-security primitives
+export type { SignerInfo, SignerKind } from "./internal/security";
+export {
+  describeLedgerPeriod,
+  periodToLedgers,
+  type PolicyPeriod,
+} from "./internal/policy";
 
 // WebAuthn capability detection
 export {
@@ -106,5 +151,7 @@ export type {
   AssembledTransaction,
   SmartAccountConfig,
   StorageAdapter,
+  TransactionFailure,
   TransactionResult,
+  TransactionSuccess,
 } from "smart-account-kit";

@@ -8,6 +8,7 @@ import { LedgerReadout } from "./LedgerReadout";
 const LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/send", label: "Send" },
+  { href: "/security", label: "Security" },
   { href: "/history", label: "History" },
 ] as const;
 
@@ -62,7 +63,7 @@ export function Nav() {
       {/* Mobile section tabs: their own hairline row so nothing overflows */}
       {isConnected && (
         <nav
-          className="microlabel grid grid-cols-3 divide-x divide-hairline border-t border-hairline text-center md:hidden"
+          className="microlabel grid grid-cols-4 divide-x divide-hairline border-t border-hairline text-center md:hidden"
           aria-label="Main"
         >
           {LINKS.map(({ href, label }) => {

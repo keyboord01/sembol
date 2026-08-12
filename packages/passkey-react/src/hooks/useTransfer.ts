@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { TransactionResult } from "smart-account-kit";
+import type { TransactionSuccess } from "smart-account-kit";
 import { usePasskeyWalletContext } from "../context";
 import { SembolError, toSembolError } from "../errors";
 import { parseTokenAmount } from "../format";
 import { readTokenMeta } from "../internal/balance";
+import { findEnforcedRuleId } from "../internal/policy";
 import { resolveToken } from "../internal/tokens";
 import { buildTransferTransaction } from "../transactions";
 import type { TokenRef } from "../types";
@@ -23,10 +24,10 @@ export interface TransferParams {
 
 export interface UseTransferResult {
   /** Build, passkey-sign, and submit a token transfer from the connected wallet. */
-  transfer: (params: TransferParams) => Promise<TransactionResult>;
+  transfer: (params: TransferParams) => Promise<TransactionSuccess>;
   status: TransferStatus;
   error: SembolError | null;
-  result: TransactionResult | null;
+  result: TransactionSuccess | null;
   reset: () => void;
 }
 
@@ -36,10 +37,10 @@ export interface UseTransferResult {
  * whose metadata is read on-chain.
  */
 export function useTransfer(): UseTransferResult {
-  const { kit, config, signals } = usePasskeyWalletContext();
+  const { kit, config, credentialId, signals } = usePasskeyWalletContext();
   const [status, setStatus] = useState<TransferStatus>("idle");
   const [error, setError] = useState<SembolError | null>(null);
-  const [result, setResult] = useState<TransactionResult | null>(null);
+  const [result, setResult] = useState<TransactionSuccess | null>(null);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -104,13 +105,28 @@ export function useTransfer(): UseTransferResult {
           amount,
           decimals,
         });
-        const txResult = await kit.signAndSubmit(transaction, { forceMethod });
+        // When this wallet has a spending-limit rule for the token, pin it at
+        // signing time - 0.4.2's auto-resolution can otherwise bind the
+        // Default rule and silently skip the policy.
+        const enforcedRuleId = await findEnforcedRuleId(
+          kit,
+          resolvedToken.contractId,
+          config.spendingLimitPolicyAddress,
+          credentialId,
+        );
+        // Quiet trace so adopters (and our E2E) can see whether a limit rule
+        // was pinned for this transfer.
+        console.debug("[sembol] spending-limit rule pin:", enforcedRuleId ?? "none");
+        const txResult = await kit.signAndSubmit(transaction, {
+          forceMethod,
+          ...(enforcedRuleId !== null
+            ? { resolveContextRuleIds: () => [enforcedRuleId] }
+            : {}),
+        });
         if (!txResult.success) {
-          throw new SembolError(
-            "submission_failed",
-            txResult.error ?? `Transaction ${txResult.hash} failed`,
-            txResult,
-          );
+          // 0.4.x: TransactionFailure.error is a typed SmartAccountError
+          // (possibly a decoded ContractError, e.g. a spending-limit rejection).
+          throw toSembolError(txResult.error);
         }
         signals.emit("tx:submitted");
         if (mounted.current) {

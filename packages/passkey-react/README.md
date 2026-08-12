@@ -5,13 +5,16 @@ Face ID / Touch ID / Windows Hello - no seed phrases, no extensions - and every 
 audited [OpenZeppelin Smart Account](https://docs.openzeppelin.com/stellar-contracts/accounts/smart-account)
 contract, driven by [smart-account-kit](https://github.com/kalepail/smart-account-kit).
 
-- 🧩 **5 drop-in components** - provider, create/connect buttons, balance, signing modal
-- 🪝 **7 headless hooks** - every component is a thin layer over them; bring your own UI
+- 🧩 **9 drop-in components** - provider, create/connect buttons, balance, signing modal,
+  signer list + add-signer, recovery setup, spending-limit form
+- 🪝 **12 headless hooks** - every component is a thin layer over them; bring your own UI
+- 🔐 **Account security built in** - add backup devices and recovery keys (any-of-N),
+  recover on a fresh browser, cap spending with the on-chain spending-limit policy
 - 🌐 **WebAuthn edge cases handled** - capability detection, cancellations, timeouts,
   duplicate credentials, rpId mismatches → one typed, user-presentable error taxonomy
 - 🎨 **CSS-variable theming** - light/dark included, Tailwind-v4-friendly, `unstyled` escape hatch
 - 🖥 **SSR-safe** - works in Next.js App Router out of the box (`"use client"` baked in)
-- 🧪 **Tested** - 66 unit + component smoke tests (vitest + testing-library)
+- 🧪 **Tested** - 102 unit + component smoke tests (vitest + testing-library), plus live-testnet E2E journeys
 
 ## Install
 
@@ -30,17 +33,16 @@ import {
   ConnectWalletButton,
   CreateWalletButton,
   WalletBalance,
+  SEMBOL_TESTNET_ARTIFACTS,
 } from "@sembol/passkey-react";
 import "@sembol/passkey-react/styles.css";
 
 const config = {
-  // Stellar testnet
-  rpcUrl: "https://soroban-testnet.stellar.org",
-  networkPassphrase: "Test SDF Network ; September 2015",
-  // Current smart-account-kit testnet deployment
-  // (testnet resets can invalidate these - see kalepail/smart-account-kit demo/.env.example):
-  accountWasmHash: "a12e8fa9621efd20315753bd4007d974390e31fbcb4a7ddc4dd0a0dec728bf2e",
-  webauthnVerifierAddress: "CBSHV66WG7UV6FQVUTB67P3DZUEJ2KJ5X6JKQH5MFRAAFNFJUAJVXJYV",
+  // Protocol 27 contract set (account WASM, verifiers, spending-limit policy)
+  // deployed + provenance-verified by the smart-account-kit team. A mainnet
+  // preset (SEMBOL_MAINNET_ARTIFACTS) ships too. Testnet resets can
+  // invalidate the testnet set - every field can be overridden.
+  ...SEMBOL_TESTNET_ARTIFACTS,
   appName: "My Stellar App",
 };
 
@@ -98,7 +100,40 @@ function Send() {
 The modal shows a decoded summary (contract, function, args, max fee, network), runs the full
 **sign → re-simulate → submit** flow on approve, and reports the hash with a stellar.expert link.
 
-Prefer one-call sends without an approval screen? `useTransfer()` wraps `kit.transfer`.
+Prefer one-call sends without an approval screen? `useTransfer()` gives you the whole flow
+in one call.
+
+### Account security: recovery, co-signers, spending limits
+
+```tsx
+import {
+  SignerList,
+  AddSignerButton,
+  RecoverySetup,
+  SpendingPolicyForm,
+} from "@sembol/passkey-react";
+
+function Security() {
+  return (
+    <>
+      <SignerList />          {/* every signer, with guarded removal */}
+      <AddSignerButton />     {/* new passkey, Ed25519 recovery key, or G-address */}
+      <RecoverySetup />       {/* guided recovery enrollment */}
+      <SpendingPolicyForm />  {/* on-chain spending limit per window */}
+    </>
+  );
+}
+
+// On a fresh device (nothing installed, wallet lost):
+<RecoverySetup mode="recover" onRecovered={({ contractId }) => ...} />
+```
+
+Each added signer lives on its own single-signer authorization rule, so **any** enrolled
+credential can act alone (a lost phone is not a lost wallet). Spending limits install the
+audited spending-limit policy contract on a token-scoped rule; over-limit payments are
+rejected **on-chain**. Enforcement covers transfers built as direct token invocations -
+which is how this library sends payments. (`smart-account-kit@0.4.2`'s own `kit.transfer()`
+wraps transfers in `execute` and is not covered until the kit's next release.)
 
 ## Components
 
@@ -109,6 +144,10 @@ Prefer one-call sends without an approval screen? `useTransfer()` wraps `kit.tra
 | `<ConnectWalletButton />` | Session restore / passkey prompt; renders an account chip with copy / explorer / switch / disconnect menu when connected. |
 | `<WalletBalance />` | Live balance with skeleton, error state, auto + manual refresh. Props: `token`, `address`, `refreshInterval`, `showRefresh`, `unstyled`. |
 | `<SignTransactionModal />` | Accessible approval dialog (focus trap, Escape, `aria-modal`) driving `signAndSubmit`. Props: `open`, `transaction`, `title`, `description`, `signOptions`, `onClose`, `onSuccess`, `onError`, `unstyled`. |
+| `<SignerList />` | The account's signers across its authorization rules: type badges, nicknames, "this device" tag, two-step removal with a last-signer lockout guard. Props: `readOnly`, `onRemoved`, `onError`, `unstyled`. |
+| `<AddSignerButton />` | Add a new passkey (two prompts: register, then approve), an Ed25519 recovery key, or a delegated Stellar address - each on its own single-signer rule. Props: `method`, `label`, `variant`, `size`, `onAdded`, `onError`, `unstyled`. |
+| `<RecoverySetup />` | Guided recovery: enroll a backup credential (`mode="setup"`, shows the wallet address to save), or reconnect on a fresh device (`mode="recover"`: passkey → discovery → manual-address fallback). Props: `mode`, `onEnrolled`, `onRecovered`, `onError`, `unstyled`. |
+| `<SpendingPolicyForm />` | Read + manage the on-chain spending limit for a token: limit/window inputs, spent-remaining meter, update and guarded remove. Props: `token`, `tokenSymbol`, `onChanged`, `onError`, `unstyled`. |
 
 All components take `className` and `unstyled` - with `unstyled` they render bare, semantic
 markup for your own styles.
@@ -124,6 +163,11 @@ markup for your own styles.
 | `useTransfer()` | `{ transfer({ to, amount, token? }), status, error, result, reset }` with address/amount validation |
 | `useWalletBalance(opts?)` | `{ raw, formatted, symbol, decimals, status, error, refetch, isRefreshing }` - auto-refetch after every submitted tx |
 | `useWalletAddress()` | `{ address, displayAddress, explorerUrl, copy, copied }` |
+| `useSigners()` | `{ signers, rules, activeRuleId, isLoading, error, refresh }` - display-ready signer list, auto-refreshes after every tx |
+| `useAddSigner()` | `{ addPasskey, addEd25519, addWallet, status, error, reset }` - each creates the signer's own rule |
+| `useRemoveSigner()` | `{ removeSigner(target), status, error, reset }` - refuses to remove the final signer (`last_signer`) |
+| `useRecovery()` | `{ enroll, recover, walletAddress, status, error, reset }` - `recover` resolves the wallet via local map → indexer → manual address (`recovery_needs_address`) |
+| `useSpendingPolicy(token?)` | `{ policy, setLimit, removeLimit, isLoading, status, error, refresh, reset }` - stroop-precise `{ limit, spent, remaining, periodLedgers }` |
 
 Utilities: `buildTransferTransaction`, `buildContractCallTransaction`, `summarizeTransaction`,
 `detectWebAuthnCapabilities`, `toSembolError`, `formatTokenAmount`, `parseTokenAmount`,
@@ -197,7 +241,7 @@ Storybook *Theming* page.
 ## Testing your integration
 
 Inject a fake kit through the provider's `kit` prop, or pass a custom `webAuthn` implementation
-in the config (this is how the library's own 66-test suite works - see `tests/helpers/fakeKit.ts`
+in the config (this is how the library's own 102-test suite works - see `tests/helpers/fakeKit.ts`
 in the repo). For E2E, Chromium's virtual-authenticator CDP works with real testnet flows.
 
 ## License

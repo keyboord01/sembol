@@ -40,7 +40,8 @@ function Playground() {
     try {
       const result = await fund();
       setFeedback(`✓ Funded with ${result.amount ?? "?"} test XLM`);
-      if (result.hash) setHashes((h) => [result.hash, ...h]);
+      const fundHash = result.success ? result.hash : undefined;
+      if (fundHash) setHashes((h) => [fundHash, ...h]);
     } catch (err) {
       setFeedback(`⚠️ ${toSembolError(err).userMessage}`);
     } finally {
