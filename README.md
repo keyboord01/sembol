@@ -24,7 +24,7 @@ import "@sembol/passkey-react/styles.css";
 | **Storybook** | **https://sembol-storybook.vercel.app** | ✅ Live (interactive testnet stories) |
 | Source (public, MIT) | https://github.com/keyboord01/sembol | ✅ Live |
 | **npm package** | **https://www.npmjs.com/package/@sembol/passkey-react** | ✅ Published - `npm install @sembol/passkey-react` |
-| CI | `.github/workflows/ci.yml` | ✅ Build + typecheck + 101 tests on every push |
+| CI | `.github/workflows/ci.yml` | ✅ Build + typecheck + 102 tests on every push |
 
 **Demo video:** [docs/media/sembol-demo-video.mp4](docs/media/sembol-demo-video.mp4) -
 end-to-end against the live sites, in three parts: (1) desktop reference app - create a named
@@ -47,7 +47,7 @@ created wallet
 
 | Path | What it is |
 | --- | --- |
-| [`packages/passkey-react`](packages/passkey-react) | **`@sembol/passkey-react`** - the component library + headless hooks (TypeScript, MIT). 9 components, 12 hooks (incl. recovery, multi-signer, and spending limits), WebAuthn edge-case handling, typed errors, CSS-variable theming, 101 unit/smoke tests. |
+| [`packages/passkey-react`](packages/passkey-react) | **`@sembol/passkey-react`** - the component library + headless hooks (TypeScript, MIT). 9 components, 12 hooks (incl. recovery, multi-signer, and spending limits), WebAuthn edge-case handling, typed errors, CSS-variable theming, 102 unit/smoke tests. |
 | [`apps/storybook`](apps/storybook) | Public Storybook: every component/hook documented with **live Stellar-testnet examples**, a browser-compatibility matrix, theming guide, and a full wallet playground. |
 | [`apps/demo`](apps/demo) | Reference app (Next.js 16 + Tailwind 4) built **only** with the published library: onboarding → dashboard → send payment → history, on Stellar testnet. |
 | [`docs/`](docs) | Integration guide for [Stellar Wallets Kit](https://github.com/Creit-Tech/Stellar-Wallets-Kit) adopters and a migration note for teams on passkey-kit/Launchtube. |
@@ -79,7 +79,7 @@ in early 2026:
 ```bash
 pnpm install
 pnpm build          # builds @sembol/passkey-react
-pnpm test           # 101 vitest unit + component smoke tests
+pnpm test           # 102 vitest unit + component smoke tests
 pnpm storybook      # Storybook on :6006 (live testnet stories)
 pnpm demo           # reference app on :3000
 ```

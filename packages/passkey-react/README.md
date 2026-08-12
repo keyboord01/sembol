@@ -14,7 +14,7 @@ contract, driven by [smart-account-kit](https://github.com/kalepail/smart-accoun
   duplicate credentials, rpId mismatches → one typed, user-presentable error taxonomy
 - 🎨 **CSS-variable theming** - light/dark included, Tailwind-v4-friendly, `unstyled` escape hatch
 - 🖥 **SSR-safe** - works in Next.js App Router out of the box (`"use client"` baked in)
-- 🧪 **Tested** - 101 unit + component smoke tests (vitest + testing-library), plus live-testnet E2E journeys
+- 🧪 **Tested** - 102 unit + component smoke tests (vitest + testing-library), plus live-testnet E2E journeys
 
 ## Install
 
@@ -241,7 +241,7 @@ Storybook *Theming* page.
 ## Testing your integration
 
 Inject a fake kit through the provider's `kit` prop, or pass a custom `webAuthn` implementation
-in the config (this is how the library's own 101-test suite works - see `tests/helpers/fakeKit.ts`
+in the config (this is how the library's own 102-test suite works - see `tests/helpers/fakeKit.ts`
 in the repo). For E2E, Chromium's virtual-authenticator CDP works with real testnet flows.
 
 ## License
