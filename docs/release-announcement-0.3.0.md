@@ -1,9 +1,8 @@
 # Release announcement draft: @sembol/passkey-react 0.3.0
 
-Draft for Discord / dev channels; the same text works as a Stellar dev forum post (use the
-heading as the title). Before posting: run `node scripts/e2e-security.mjs` against the live
-demo, then replace every `TX_HASH_HERE` / `CONTRACT_ID_HERE` placeholder with the fresh hashes
-and contract id the script prints. Do not post with placeholders in.
+Ready to post to Discord / dev channels; the same text works as a Stellar dev forum post
+(use the heading as the title). Copy everything below the `---`. The contract id and tx hash
+were filled from a live production E2E run (`scripts/e2e-security.mjs`) on Aug 12, 2026.
 
 ---
 
