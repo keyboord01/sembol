@@ -24,3 +24,4 @@ coverage/
 .idea/
 .vscode/
 .vercel
+e2e-*-failure.png

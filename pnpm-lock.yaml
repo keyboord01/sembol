@@ -76,8 +76,8 @@ importers:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
       smart-account-kit:
-        specifier: ^0.2.10
-        version: 0.2.10(@stellar/stellar-sdk@16.0.1)
+        specifier: ^0.6.0
+        version: 0.6.0(@stellar/stellar-sdk@16.0.1)
     devDependencies:
       '@storybook/addon-a11y':
         specifier: ^10.4.6
@@ -113,8 +113,8 @@ importers:
         specifier: ^16.0.1
         version: 16.0.1
       smart-account-kit:
-        specifier: ^0.4.2
-        version: 0.4.2(@stellar/stellar-sdk@16.0.1)
+        specifier: ^0.6.0
+        version: 0.6.0(@stellar/stellar-sdk@16.0.1)
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^6.9.1
@@ -2345,28 +2345,13 @@ packages:
   siginfo@2.0.0:
     resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
 
-  smart-account-kit-bindings@0.1.2:
-    resolution: {integrity: sha512-2P9IBk/KPutkkVUhTOLvaaRIIaAmJHBCbHUod/0K+zEHLbzQKjL6SSesFK+hO7OPOi2vn4mzZCs6J/vPVXRDCQ==}
-    peerDependencies:
-      '@stellar/stellar-sdk': '>=14.0.0'
-
   smart-account-kit-bindings@0.3.0:
     resolution: {integrity: sha512-2q3xOvMNFGwJlCKdFmD/3FIDeiTA86cXAPm/H32DnqTwTU2H4YqMpQ6Gb82kPWofwM/Q9Qnv8nP3pAyBJbazdw==}
     peerDependencies:
       '@stellar/stellar-sdk': '>=15.1.0'
 
-  smart-account-kit@0.2.10:
-    resolution: {integrity: sha512-3XmgpmiOUfjBfZjOpDAN8DhniVG+mEHBS0h9m4oVa9eUzUBR6080mzfQvCcYPislsmBzJnFmAc6uTPl2ylD45Q==}
-    engines: {node: '>=22.0.0', pnpm: '>=10.0.0'}
-    peerDependencies:
-      '@creit-tech/stellar-wallets-kit': '>=2.0.0'
-      '@stellar/stellar-sdk': '>=14.0.0'
-    peerDependenciesMeta:
-      '@creit-tech/stellar-wallets-kit':
-        optional: true
-
-  smart-account-kit@0.4.2:
-    resolution: {integrity: sha512-Gxz7so1O132hsCJsb4nPWGNjcYA9pWpM1b7ivFuami7efK9gSwD/mWDExSHCG42wpVbIqS3GDRiq4Y+jWulI8w==}
+  smart-account-kit@0.6.0:
+    resolution: {integrity: sha512-qojpla+KPra00HbA7s+WwJXbA++dkJgOSDwNW5dDV2bMkxetid6BLIIlFxdkq4fBCWtHiTm3TQyuwnbR+HSnNg==}
     engines: {node: '>=22.0.0', pnpm: '>=10.0.0'}
     peerDependencies:
       '@creit-tech/stellar-wallets-kit': '>=2.1.0'
@@ -4701,24 +4686,12 @@ snapshots:
 
   siginfo@2.0.0: {}
 
-  smart-account-kit-bindings@0.1.2(@stellar/stellar-sdk@16.0.1):
-    dependencies:
-      '@stellar/stellar-sdk': 16.0.1
-      buffer: 6.0.3
-
   smart-account-kit-bindings@0.3.0(@stellar/stellar-sdk@16.0.1):
     dependencies:
       '@stellar/stellar-sdk': 16.0.1
       buffer: 6.0.3
 
-  smart-account-kit@0.2.10(@stellar/stellar-sdk@16.0.1):
-    dependencies:
-      '@simplewebauthn/browser': 13.3.0
-      '@stellar/stellar-sdk': 16.0.1
-      base64url: 3.0.1
-      smart-account-kit-bindings: 0.1.2(@stellar/stellar-sdk@16.0.1)
-
-  smart-account-kit@0.4.2(@stellar/stellar-sdk@16.0.1):
+  smart-account-kit@0.6.0(@stellar/stellar-sdk@16.0.1):
     dependencies:
       '@simplewebauthn/browser': 13.3.0
       '@stellar/stellar-sdk': 16.0.1

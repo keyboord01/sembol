@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.3.1 - 2026-08-12
+
+Upstream hardening release: smart-account-kit `^0.4.2` -> `^0.6.0` (the kit
+now lives at [stellar/smart-account-kit](https://github.com/stellar/smart-account-kit)
+after its adoption into the official Stellar org). No Sembol API changes; all
+102 tests pass unchanged.
+
+### Fixed
+- **Wallet creation crashed under Next.js/Turbopack with kit >=0.5.0**
+  (`Buffer.from(...).readBigInt64BE is not a function`): the kit's new
+  client-side deploy authorization entries use Buffer BigInt accessors that
+  Next's bundled `buffer` polyfill (pre-6.x feross/buffer) does not have. The
+  library now ships a tiny feature-detected prototype shim (loaded before any
+  kit code) that adds the missing BigInt read/write methods, so no bundler
+  configuration is needed. Real Node/browser Buffers are untouched.
+
+### Fixed (via upstream)
+- **Backup-passkey mapping loss** (kit 0.5.1): the connect/sync path could
+  delete the stored row that maps an added (non-derived) passkey to its
+  wallet - the exact credential our add-signer flow creates. On 0.4.2 a
+  backup passkey could stop resolving its wallet after session expiry.
+- **Signer/policy contract errors returned as data** (kit 0.5.2): reads on
+  the signer/policy paths could receive an `Err` object where a value was
+  expected instead of the documented typed error.
+- **Scoped-rule resolution** (kit 0.5.0): automatic context-rule resolution
+  now prefers a rule scoped to the invoked contract over a `Default`
+  fallback, closing a path that could bypass a spending limit at signing
+  time. Sembol already pinned the scoped rule in its own sign path; the
+  default path now matches.
+
+### Changed
+- **Wallet creation now goes through a fee-sponsoring relayer** (kit 0.5.0
+  makes the shared deployer sign-only; auto-submitted deploys no longer fall
+  back to RPC). `SEMBOL_TESTNET_ARTIFACTS` therefore ships a `relayerUrl`
+  default (the public SDF testnet proxy), so the one-spread config keeps
+  working with zero changes. Override or unset it via config/env. On mainnet
+  supply your own relayer (e.g. an OpenZeppelin Relayer Channels proxy).
+- Connecting from an untrusted source (address derivation or an app-supplied
+  address, e.g. recovery-by-address) now verifies the account runs an
+  accepted smart-account WASM before proceeding (kit 0.6.0,
+  `acceptedWasmHashes`, defaults to the preset's `accountWasmHash`).
+- `kit.transfer()`-style transfers are now signed as direct token invocations
+  upstream, so spending limits cover them kit-wide - previously guaranteed
+  only for transfers built by this library.
+
 ## 0.3.0 - 2026-08-02
 
 The account-security release: recovery, multi-signer, and spending limits.

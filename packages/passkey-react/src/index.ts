@@ -10,6 +10,10 @@
  * ```
  */
 
+// Must run before any smart-account-kit code touches XDR in the browser:
+// patches bundler `buffer` polyfills that lack the BigInt accessors.
+import "./buffer-compat";
+
 // Provider + components
 export {
   PasskeyWalletProvider,

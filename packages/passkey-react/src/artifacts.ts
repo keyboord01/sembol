@@ -25,6 +25,13 @@ export interface SembolArtifacts {
   ed25519VerifierAddress: string;
   spendingLimitPolicyAddress: string;
   nativeTokenContract: string;
+  /**
+   * Fee-sponsoring relayer proxy. Since smart-account-kit 0.5.0 the shared
+   * deployer is sign-only: auto-submitted wallet creation REQUIRES a relayer
+   * (there is no RPC fallback). The testnet preset therefore points at the
+   * public SDF proxy; on mainnet you must supply your own.
+   */
+  relayerUrl?: string;
 }
 
 /** Stellar testnet: RPC, passphrase, and the P27 contract set. */
@@ -37,6 +44,10 @@ export const SEMBOL_TESTNET_ARTIFACTS: SembolArtifacts = {
   spendingLimitPolicyAddress: "CABXBYJNZ7IUW4G3D6BND5YCAQF3ASSDMDAOKQQ63UYFSO7WUU2TIP5G",
   // Native XLM Stellar Asset Contract on testnet.
   nativeTokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+  // Public fee-sponsoring proxy run by the SDF ecosystem team (same default
+  // as the smart-account-kit demo). Override with your own, e.g. an
+  // OpenZeppelin Relayer Channels proxy, if you outgrow it.
+  relayerUrl: "https://smart-account-relayer-proxy.sdf-ecosystem.workers.dev",
 };
 
 /** Stellar mainnet: RPC, passphrase, and the P27 contract set. */
