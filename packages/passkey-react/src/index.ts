@@ -14,6 +14,15 @@
 // patches bundler `buffer` polyfills that lack the BigInt accessors.
 import "./buffer-compat";
 
+// Theming
+export {
+  sembolThemeToCss,
+  sembolThemes,
+  type SembolTheme,
+  type SembolThemeColors,
+  type SembolThemeRadius,
+} from "./theme";
+
 // Provider + components
 export {
   PasskeyWalletProvider,

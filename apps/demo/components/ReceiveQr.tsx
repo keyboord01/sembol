@@ -16,7 +16,7 @@ export function ReceiveQr({ address }: { address: string }) {
       margin: 1,
       width: 440,
       errorCorrectionLevel: "M",
-      color: { dark: "#0b0e0d", light: "#eef4f0" },
+      color: { dark: "#0a0d14", light: "#f4f2ec" },
     })
       .then((url) => {
         if (!cancelled) setDataUrl(url);
@@ -37,7 +37,7 @@ export function ReceiveQr({ address }: { address: string }) {
       <img
         src={dataUrl}
         alt={`QR code for wallet address ${address}`}
-        className="h-44 w-44 border border-hairline"
+        className="h-44 w-44 rounded-xl border border-hairline"
       />
       <p className="max-w-xs text-sm leading-relaxed text-dim">
         Scan from another device to grab this address instantly. The code encodes the raw

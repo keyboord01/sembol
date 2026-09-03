@@ -135,11 +135,11 @@ export function QrScanner({
       aria-modal="true"
       aria-label="Scan a QR code"
     >
-      <p className="microlabel text-dim">
+      <p className="text-sm text-dim">
         {scanning ? "Point the camera at an address QR" : "Starting camera…"}
       </p>
       {error ? (
-        <p className="max-w-sm border-l-2 border-amber py-1 pl-3 text-sm text-amber" role="alert">
+        <p className="max-w-sm rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn" role="alert">
           {error}
         </p>
       ) : (
@@ -149,18 +149,18 @@ export function QrScanner({
             playsInline
             muted
             autoPlay
-            className="h-[min(72vw,420px)] w-[min(72vw,420px)] border border-hairline bg-surface object-cover"
+            className="h-[min(72vw,420px)] w-[min(72vw,420px)] rounded-2xl border border-hairline bg-surface object-cover"
           />
-          <span aria-hidden className="absolute -top-px -left-px h-5 w-5 border-t-2 border-l-2 border-long" />
-          <span aria-hidden className="absolute -top-px -right-px h-5 w-5 border-t-2 border-r-2 border-long" />
-          <span aria-hidden className="absolute -bottom-px -left-px h-5 w-5 border-b-2 border-l-2 border-long" />
-          <span aria-hidden className="absolute -right-px -bottom-px h-5 w-5 border-r-2 border-b-2 border-long" />
+          <span aria-hidden className="absolute -top-px -left-px h-5 w-5 rounded-tl-md border-t-2 border-l-2 border-gold" />
+          <span aria-hidden className="absolute -top-px -right-px h-5 w-5 rounded-tr-md border-t-2 border-r-2 border-gold" />
+          <span aria-hidden className="absolute -bottom-px -left-px h-5 w-5 rounded-bl-md border-b-2 border-l-2 border-gold" />
+          <span aria-hidden className="absolute -right-px -bottom-px h-5 w-5 rounded-br-md border-r-2 border-b-2 border-gold" />
         </div>
       )}
       <button
         type="button"
         onClick={onClose}
-        className="microlabel h-11 cursor-pointer border border-hairline px-6 text-fg transition-colors hover:border-long hover:text-long"
+        className="btn-ghost h-11 px-6 text-sm"
       >
         {error ? "Close" : "Cancel"}
       </button>

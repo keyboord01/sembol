@@ -16,6 +16,7 @@ import type {
   WalletStatus,
 } from "../types";
 import { detectWebAuthnCapabilities, type WebAuthnCapabilities } from "../webauthn";
+import { sembolThemeToCss, type SembolTheme } from "../theme";
 
 export interface PasskeyWalletProviderProps {
   config: SembolConfig;
@@ -24,6 +25,12 @@ export interface PasskeyWalletProviderProps {
    * When provided, `config` network fields are still used for display helpers.
    */
   kit?: SmartAccountKit;
+  /**
+   * Zero-CSS theming: colors, radius, fonts, and color scheme as a typed
+   * object. Compiled to CSS custom properties and rendered as an inline
+   * `<style>` (SSR-safe). See `SembolTheme` and `sembolThemes` presets.
+   */
+  theme?: SembolTheme;
   children: ReactNode;
 }
 
@@ -49,7 +56,7 @@ function resolveConfig(config: SembolConfig): ResolvedSembolConfig {
  * Unlike raw smart-account-kit (which defaults to in-memory storage),
  * sessions persist in IndexedDB by default, so reloads silently reconnect.
  */
-export function PasskeyWalletProvider({ config, kit: injectedKit, children }: PasskeyWalletProviderProps) {
+export function PasskeyWalletProvider({ config, kit: injectedKit, theme, children }: PasskeyWalletProviderProps) {
   const resolved = useMemo(
     () => resolveConfig(config),
     // Individual fields, so inline config objects don't re-init every render.
@@ -445,5 +452,27 @@ export function PasskeyWalletProvider({ config, kit: injectedKit, children }: Pa
     [kit, status, address, credentialId, error, capabilities, resolved, txEpoch, signals, connect, createWallet, disconnect, fund],
   );
 
-  return <PasskeyWalletContext.Provider value={value}>{children}</PasskeyWalletContext.Provider>;
+  const themeCss = theme ? sembolThemeToCss(theme) : null;
+  const colorScheme = theme?.colorScheme;
+
+  // Pinning the scheme is a document-level act, so it lives in an effect and
+  // restores whatever the host page had on unmount.
+  useEffect(() => {
+    if (!colorScheme) return;
+    const el = document.documentElement;
+    const previous = el.getAttribute("data-sembol-theme");
+    if (colorScheme === "auto") el.removeAttribute("data-sembol-theme");
+    else el.setAttribute("data-sembol-theme", colorScheme);
+    return () => {
+      if (previous === null) el.removeAttribute("data-sembol-theme");
+      else el.setAttribute("data-sembol-theme", previous);
+    };
+  }, [colorScheme]);
+
+  return (
+    <PasskeyWalletContext.Provider value={value}>
+      {themeCss ? <style data-sembol-theme-css="">{themeCss}</style> : null}
+      {children}
+    </PasskeyWalletContext.Provider>
+  );
 }

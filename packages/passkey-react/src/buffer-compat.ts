@@ -10,10 +10,17 @@
  * Patching the polyfill's prototype once fixes every consumer of that module
  * instance (our code and the kit's alike). Real Node/browser Buffers that
  * already have the methods are left untouched.
+ *
+ * Vite is the exception: it "externalizes" an unresolved `buffer` import into
+ * a stub whose every property access THROWS. Vite consumers do not need this
+ * shim (the kit resolves the real buffer@6 there, which has the BigInt
+ * methods), so the shim must fail soft instead of taking the app down. Hence
+ * the namespace import and the guarded access below - never a named import,
+ * which would throw at module-evaluation time under Vite.
  */
 // @ts-ignore - resolved by the consumer's bundler (or Node); this package's
 // tsconfig deliberately has no Node types.
-import { Buffer } from "buffer";
+import * as bufferModule from "buffer";
 
 type Accessor = (this: Uint8Array, offset?: number) => bigint;
 type Mutator = (this: Uint8Array, value: bigint, offset?: number) => number;
@@ -56,7 +63,17 @@ const writers: Record<string, Mutator> = {
   },
 };
 
-const proto = (Buffer as unknown as { prototype?: Record<string, unknown> })?.prototype;
+let BufferCtor: { prototype?: Record<string, unknown> } | undefined;
+try {
+  BufferCtor =
+    (bufferModule as unknown as { Buffer?: { prototype?: Record<string, unknown> } })?.Buffer ??
+    (globalThis as { Buffer?: { prototype?: Record<string, unknown> } }).Buffer;
+} catch {
+  // Vite's externalized stub throws on any property access - nothing to patch.
+  BufferCtor = (globalThis as { Buffer?: { prototype?: Record<string, unknown> } }).Buffer;
+}
+
+const proto = BufferCtor?.prototype;
 if (proto) {
   for (const [name, fn] of [...Object.entries(readers), ...Object.entries(writers)]) {
     if (typeof proto[name] !== "function") {

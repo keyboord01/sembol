@@ -32,7 +32,7 @@ async function dumpState(label) {
 
 try {
   console.log("1. open onboarding");
-  await page.goto(APP, { waitUntil: "networkidle" });
+  await page.goto(`${APP}/wallet`, { waitUntil: "networkidle" });
 
   console.log("2. create wallet named 'E2E Wallet' (passkey → deploy → fund)…");
   await page.getByLabel(/wallet name/i).fill("E2E Wallet");

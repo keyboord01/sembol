@@ -1,6 +1,6 @@
 import { Meta } from "@storybook/addon-docs/blocks";
 
-<Meta title="Theming" />
+<Meta title="Theming/Overview" />
 
 # Theming
 
@@ -13,6 +13,30 @@ light/dark.
 ```ts
 import "@sembol/passkey-react/styles.css"; // once, app-wide
 ```
+
+## Zero-CSS theming: the `theme` prop
+
+Pass a typed `SembolTheme` to the provider and skip CSS entirely. One `accent`
+retints the whole kit - hover, active, muted, and the focus ring derive from it
+per color scheme:
+
+```tsx
+<PasskeyWalletProvider
+  config={config}
+  theme={{ accent: "#e11d48", radius: "lg", colorScheme: "auto" }}
+>
+```
+
+- `colors` / `darkColors` override any of the 19 tokens per scheme
+- `radius`: `"none" | "sm" | "md" | "lg" | "full"` or a number in px
+- `fonts.body` / `fonts.mono`, `shadows: false` for flat UIs
+- `colorScheme`: `"light" | "dark" | "auto"` (the provider manages `data-sembol-theme`)
+- Presets: `theme={sembolThemes.seal}` (or `ocean`, `forest`, `mono`) - spread and override
+- Advanced: `sembolThemeToCss(theme, ".checkout")` scopes a theme to one subtree
+
+Try it live in **Theming → Playground**, which generates the exact `theme` prop
+to copy. Everything below still works on top: the prop compiles to the same
+CSS custom properties.
 
 Prefer fully custom markup? Pass `unstyled` to any component to drop all `sembol-*`
 classes, or skip the stylesheet entirely and build on the headless hooks.

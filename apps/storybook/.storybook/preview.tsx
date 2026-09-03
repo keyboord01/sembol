@@ -58,6 +58,7 @@ const preview: Preview = {
           "Live Playground",
           "Browser Compatibility",
           "Theming",
+          ["Overview", "Playground", "Presets"],
         ],
       },
     },

@@ -10,10 +10,11 @@ import {
   useWalletBalance,
   type AssembledTransaction,
 } from "@sembol/passkey-react";
-import { QrScanner } from "../../components/QrScanner";
-import { RequireWallet } from "../../components/RequireWallet";
-import { toast } from "../../components/Toast";
-import { recordTransaction } from "../../lib/history";
+import { QrIcon, SendIcon } from "../../../components/icons";
+import { QrScanner } from "../../../components/QrScanner";
+import { RequireWallet } from "../../../components/RequireWallet";
+import { toast } from "../../../components/Toast";
+import { recordTransaction } from "../../../lib/history";
 
 const QUICK_AMOUNTS = ["1", "10", "100"] as const;
 
@@ -68,13 +69,21 @@ function SendForm() {
   };
 
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-10">
-      <div className="flex items-baseline justify-between border-b border-hairline pb-4">
-        <p className="microlabel text-dim">01 · Send XLM</p>
-        <p className="microlabel tnum text-dim">
-          Balance{" "}
-          <span className="text-fg">{balanceStatus === "success" ? formatted : "-"}</span> XLM
-        </p>
+    <div className="mx-auto flex max-w-xl flex-col gap-7 py-2">
+      <div>
+        <p className="microlabel text-gold">Send</p>
+        <div className="mt-3 flex flex-wrap items-baseline justify-between gap-3">
+          <h1 className="font-display text-3xl font-semibold tracking-tight uppercase">
+            Send XLM
+          </h1>
+          <p className="tnum text-sm text-dim">
+            Balance{" "}
+            <span className="font-medium text-fg">
+              {balanceStatus === "success" ? formatted : "…"}
+            </span>{" "}
+            XLM
+          </p>
+        </div>
       </div>
 
       <form
@@ -82,17 +91,20 @@ function SendForm() {
           event.preventDefault();
           void handleReview();
         }}
-        className="flex flex-col gap-7"
+        className="card flex flex-col gap-6 p-6 sm:p-7"
       >
         <div className="flex flex-col gap-2.5">
-          <div className="microlabel flex items-center justify-between text-dim">
-            <label htmlFor="recipient">Recipient (G… or C… address)</label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="recipient" className="text-sm font-medium">
+              Recipient <span className="font-normal text-faint">(G… or C… address)</span>
+            </label>
             <button
               type="button"
               onClick={() => setScanning(true)}
-              className="border border-hairline px-3 py-1 transition-colors hover:border-long hover:text-long"
+              className="chip transition-colors hover:border-gold/50 hover:text-gold"
             >
-              ▦ Scan QR
+              <QrIcon size={13} />
+              Scan QR
             </button>
           </div>
           <input
@@ -102,7 +114,7 @@ function SendForm() {
             placeholder="GAAH4OT3…"
             spellCheck={false}
             autoComplete="off"
-            className="tnum h-13 border border-hairline bg-surface px-4 text-base text-fg placeholder:text-dim/50 focus:border-long focus:outline-none"
+            className="input-field tnum font-mono text-sm"
           />
         </div>
 
@@ -118,22 +130,24 @@ function SendForm() {
         )}
 
         <label className="flex flex-col gap-2.5">
-          <span className="microlabel text-dim">Amount - XLM</span>
+          <span className="text-sm font-medium">
+            Amount <span className="font-normal text-faint">· XLM</span>
+          </span>
           <input
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
             placeholder="1.5"
             inputMode="decimal"
             autoComplete="off"
-            className="tnum h-13 border border-hairline bg-surface px-4 text-base text-fg placeholder:text-dim/50 focus:border-long focus:outline-none"
+            className="input-field tnum"
           />
-          <span className="microlabel flex gap-2 text-dim">
+          <span className="flex flex-wrap gap-2">
             {QUICK_AMOUNTS.map((quick) => (
               <button
                 key={quick}
                 type="button"
                 onClick={() => setAmount(quick)}
-                className="border border-hairline px-3 py-1 transition-colors hover:border-long hover:text-long"
+                className="chip tnum transition-colors hover:border-gold/50 hover:text-gold"
               >
                 {quick}
               </button>
@@ -142,7 +156,7 @@ function SendForm() {
               type="button"
               onClick={setMax}
               disabled={raw === null}
-              className="border border-hairline px-3 py-1 transition-colors hover:border-long hover:text-long disabled:opacity-40"
+              className="chip transition-colors hover:border-gold/50 hover:text-gold disabled:opacity-40"
             >
               Max
             </button>
@@ -150,21 +164,29 @@ function SendForm() {
         </label>
 
         {formError && (
-          <p role="alert" className="border-l-2 border-short py-1 pl-3 text-sm text-short">
+          <p
+            role="alert"
+            className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger"
+          >
             {formError}
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={building}
-          className="h-13 border border-long bg-long font-mono text-sm font-semibold tracking-[0.1em] text-ink uppercase transition-colors hover:bg-transparent hover:text-long disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {building ? "Simulating…" : "Review & sign →"}
-        </button>
-        <p className="microlabel -mt-3 text-dim">
-          Nothing is sent until you approve with your passkey.
-        </p>
+        <div>
+          <button type="submit" disabled={building} className="btn-gold h-13 w-full text-base">
+            {building ? (
+              "Simulating…"
+            ) : (
+              <>
+                <SendIcon size={18} />
+                Review &amp; sign
+              </>
+            )}
+          </button>
+          <p className="mt-3.5 text-center text-sm text-faint">
+            Nothing is sent until you approve with your passkey.
+          </p>
+        </div>
       </form>
 
       <SignTransactionModal

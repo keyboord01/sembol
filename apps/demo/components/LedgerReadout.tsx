@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePasskeyWallet } from "@sembol/passkey-react";
 
-/** Live testnet ledger counter - proof of life in the status strip. */
+/** Live testnet ledger counter - proof of life in the top bar. */
 export function LedgerReadout() {
   const { kit } = usePasskeyWallet();
   const [ledger, setLedger] = useState<number | null>(null);
@@ -31,11 +31,11 @@ export function LedgerReadout() {
     };
   }, [kit]);
 
-  const label = ledger === null ? "OFFLINE" : `BLOCK ${ledger.toLocaleString("en-US")}`;
+  const label = ledger === null ? "offline" : `block ${ledger.toLocaleString("en-US")}`;
 
   return (
     <span
-      className="microlabel tnum inline-flex items-center gap-2 text-dim"
+      className="tnum inline-flex items-center gap-2 font-mono text-xs text-faint"
       role="status"
       title={
         ledger === null
@@ -45,9 +45,11 @@ export function LedgerReadout() {
     >
       <span
         aria-hidden
-        className={`inline-block h-1.5 w-1.5 ${stale || ledger === null ? "bg-amber" : "bg-long"}`}
+        className={`inline-block h-1.5 w-1.5 rounded-full ${
+          stale || ledger === null ? "bg-warn" : "pulse-dot bg-mint"
+        }`}
       />
-      {/* Dot + block number on mobile; full label from sm up. */}
+      {/* Dot only on mobile; full label from sm up. */}
       <span className="hidden sm:inline">{label}</span>
       <span className="sr-only">Testnet {label}</span>
     </span>

@@ -7,6 +7,7 @@ const monorepoRoot = path.resolve(fileURLToPath(new URL(".", import.meta.url)), 
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  devIndicators: false,
   // smart-account-kit ships extensionless relative ESM imports; let Next
   // transpile/resolve it bundler-style on the server too.
   transpilePackages: ["smart-account-kit"],

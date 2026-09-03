@@ -47,7 +47,7 @@ async function waitForRowCount(expected, timeoutMs = 120000) {
 
 try {
   console.log("1. create wallet");
-  await page.goto(APP, { waitUntil: "networkidle" });
+  await page.goto(`${APP}/wallet`, { waitUntil: "networkidle" });
   await page.getByLabel(/wallet name/i).fill("E2E Security");
   await page.getByRole("button", { name: /create wallet/i }).click();
   await page.waitForURL("**/dashboard", { timeout: 180000 });
@@ -167,7 +167,7 @@ try {
         ),
     );
   });
-  await page.goto(APP, { waitUntil: "networkidle" });
+  await page.goto(`${APP}/wallet`, { waitUntil: "networkidle" });
   await page.getByText(/lost your device\? recover access/i).click();
   await page.getByRole("button", { name: /recover with passkey/i }).click();
 
