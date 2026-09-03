@@ -209,6 +209,7 @@ export default function LandingPage() {
           <nav className="hidden items-center gap-7 text-sm text-dim md:flex" aria-label="Landing">
             <a href="#ritual" className="transition-colors hover:text-fg">The ritual</a>
             <a href="#registry" className="transition-colors hover:text-fg">Registry</a>
+            <Link href="/docs" className="transition-colors hover:text-fg">Docs</Link>
             <Link href="/customize" className="transition-colors hover:text-fg">Theme builder</Link>
             <a
               href={STORYBOOK_URL}
@@ -413,7 +414,7 @@ export default function LandingPage() {
                     rel="noreferrer"
                     className="inline-flex items-center gap-1.5 text-paper-dim transition-colors hover:text-brass"
                   >
-                    Read the docs on GitHub <ArrowUpRightIcon size={14} />
+                    Source on GitHub <ArrowUpRightIcon size={14} />
                   </a>
                   <a
                     href={NPM_URL}
@@ -533,6 +534,7 @@ export default function LandingPage() {
             <a href="https://stellar.org" target="_blank" rel="noreferrer" className="text-dim transition-colors hover:text-fg">Stellar</a>
             <a href={NPM_URL} target="_blank" rel="noreferrer" className="text-dim transition-colors hover:text-fg">npm</a>
             <a href="https://github.com/stellar/smart-account-kit" target="_blank" rel="noreferrer" className="text-dim transition-colors hover:text-fg">smart-account-kit</a>
+            <Link href="/docs" className="text-dim transition-colors hover:text-fg">Docs</Link>
             <Link href="/wallet" className="text-dim transition-colors hover:text-fg">Live demo</Link>
             <Link href="/customize" className="text-dim transition-colors hover:text-fg">Theme builder</Link>
             <a href={STORYBOOK_URL} target="_blank" rel="noreferrer" className="text-dim transition-colors hover:text-fg">Storybook</a>

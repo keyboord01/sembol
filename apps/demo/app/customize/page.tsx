@@ -90,6 +90,9 @@ interface BuilderState {
   font: string;
 }
 
+/* Preview-only: the canvas behind the widget. Not part of the theme config. */
+
+
 const DEFAULTS: BuilderState = {
   preset: "custom",
   accent: "#4f46e5",
@@ -164,6 +167,7 @@ const SELECT_CHEVRON =
 
 export default function CustomizePage() {
   const [state, setState] = useState<BuilderState>(DEFAULTS);
+  const [stageBg, setStageBg] = useState("");
   const [copied, setCopied] = useState(false);
   const set = <K extends keyof BuilderState>(key: K, value: BuilderState[K]) =>
     setState((s) => ({ ...s, [key]: value, ...(key !== "preset" ? { preset: "custom" as Preset } : {}) }));
@@ -317,6 +321,32 @@ export default function CustomizePage() {
             </Row>
           </div>
 
+          <p className="microlabel mt-6 mb-1 text-faint">Preview</p>
+          <p className="mb-1 text-xs leading-relaxed text-faint">
+            Just the demo canvas. Not part of your config.
+          </p>
+          <Row label="Behind the widget">
+            <span className="flex items-center gap-2">
+              {stageBg && (
+                <button
+                  type="button"
+                  onClick={() => setStageBg("")}
+                  className="text-xs text-faint transition-colors hover:text-fg"
+                >
+                  reset
+                </button>
+              )}
+              <input
+                type="color"
+                value={stageBg || "#0a0d14"}
+                onChange={(e) => setStageBg(e.target.value)}
+                aria-label="Preview backdrop color"
+                className="h-8 w-8 cursor-pointer rounded-md border border-hairline bg-transparent"
+              />
+              <code className="tnum font-mono text-xs text-dim">{stageBg || "auto"}</code>
+            </span>
+          </Row>
+
           <p className="microlabel mt-6 mb-2 text-faint">Your config</p>
           <p className="mb-3 text-xs leading-relaxed text-faint">
             Paste this into your app. That is the whole integration.
@@ -345,8 +375,13 @@ export default function CustomizePage() {
         </aside>
 
         {/* ---------- live preview ---------- */}
-        <section aria-label="Live preview" className="grid-bg relative rounded-2xl border border-hairline">
-          <div className="flex min-h-[560px] items-center justify-center p-6 sm:p-12">
+        <section
+          aria-label="Live preview"
+          className="relative overflow-hidden rounded-2xl border border-hairline"
+          style={stageBg ? { background: stageBg } : undefined}
+        >
+          {!stageBg && <div aria-hidden className="grid-bg pointer-events-none absolute inset-0" />}
+          <div className="relative flex min-h-[560px] items-center justify-center p-6 sm:p-12">
             {/* inert: looks alive, never triggers a passkey prompt */}
             <div
               inert

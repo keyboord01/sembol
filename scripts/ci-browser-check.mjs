@@ -27,7 +27,7 @@ page.on("pageerror", (error) => consoleErrors.push(`pageerror: ${error}`));
 
 try {
   console.log(`[${BROWSER}] 1. onboarding renders`);
-  await page.goto(APP, { waitUntil: "networkidle", timeout: 60000 });
+  await page.goto(`${APP}/wallet`, { waitUntil: "networkidle", timeout: 60000 });
   const body = await page.locator("body").innerText();
   if (!/SEMBOL/i.test(body)) throw new Error("wordmark missing from onboarding");
 
