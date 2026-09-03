@@ -11,6 +11,7 @@ import { Reveal } from "../components/landing/Reveal";
 
 const GITHUB_URL = "https://github.com/keyboord01/sembol";
 const NPM_URL = "https://www.npmjs.com/package/@sembol/passkey-react";
+const STORYBOOK_URL = "https://storybook.sembol.xyz";
 const SITE_URL = "https://sembol.xyz";
 
 /* Thin-stroke version of the mark for oversized watermark use. */
@@ -209,6 +210,14 @@ export default function LandingPage() {
             <a href="#ritual" className="transition-colors hover:text-fg">The ritual</a>
             <a href="#registry" className="transition-colors hover:text-fg">Registry</a>
             <Link href="/customize" className="transition-colors hover:text-fg">Theme builder</Link>
+            <a
+              href={STORYBOOK_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-fg"
+            >
+              Storybook
+            </a>
             <a
               href={GITHUB_URL}
               target="_blank"
@@ -414,6 +423,14 @@ export default function LandingPage() {
                   >
                     @sembol/passkey-react on npm <ArrowUpRightIcon size={14} />
                   </a>
+                  <a
+                    href={STORYBOOK_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-paper-dim transition-colors hover:text-brass"
+                  >
+                    Every component in the live Storybook <ArrowUpRightIcon size={14} />
+                  </a>
                 </div>
               </Reveal>
               <Reveal delay={120} className="min-w-0">
@@ -484,8 +501,16 @@ export default function LandingPage() {
                 A wallet with your face on it, free test XLM in it, and your first payment out
                 of it. Half a minute, in this browser.
               </p>
-              <div className="mt-10">
-                <HoldToSeal label="Hold to begin" sublabel="or tap · nothing to install" />
+              <div className="mt-10 flex flex-wrap items-center gap-4">
+                <LaunchCta label="Create your wallet" className="btn-seal" />
+                <a
+                  href={STORYBOOK_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-ghost h-13 px-7 text-base"
+                >
+                  Browse the Storybook
+                </a>
               </div>
             </Reveal>
           </div>
@@ -510,6 +535,8 @@ export default function LandingPage() {
             <a href="https://github.com/stellar/smart-account-kit" target="_blank" rel="noreferrer" className="text-dim transition-colors hover:text-fg">smart-account-kit</a>
             <Link href="/wallet" className="text-dim transition-colors hover:text-fg">Live demo</Link>
             <Link href="/customize" className="text-dim transition-colors hover:text-fg">Theme builder</Link>
+            <a href={STORYBOOK_URL} target="_blank" rel="noreferrer" className="text-dim transition-colors hover:text-fg">Storybook</a>
+            <a href="https://openzeppelin.com" target="_blank" rel="noreferrer" className="text-dim transition-colors hover:text-fg">OpenZeppelin</a>
           </nav>
         </div>
         <p

@@ -25,3 +25,4 @@ coverage/
 .vscode/
 .vercel
 e2e-*-failure.png
+.env*

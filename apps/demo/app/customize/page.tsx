@@ -15,6 +15,8 @@ import { ArrowUpRightIcon, CheckIcon, CopyIcon } from "../../components/icons";
 
 const SCOPE = "customize-scope";
 
+/* Neutral library defaults scoped to the preview, so the site's own dark
+ * theme cannot leak into it. The dynamic theme <style> comes after and wins. */
 const RESET_CSS = `
 .customize-scope {
   --sembol-color-bg: #ffffff;
@@ -68,7 +70,6 @@ const RESET_CSS = `
 }
 `;
 
-
 const PRESETS = ["custom", "seal", "ocean", "forest", "mono"] as const;
 type Preset = (typeof PRESETS)[number];
 
@@ -82,6 +83,7 @@ interface BuilderState {
   preset: Preset;
   accent: string;
   onAccent: string;
+  bg: string; // "" = library default for the active scheme
   dark: boolean;
   radius: number;
   shadows: boolean;
@@ -92,18 +94,40 @@ const DEFAULTS: BuilderState = {
   preset: "custom",
   accent: "#4f46e5",
   onAccent: "#ffffff",
+  bg: "",
   dark: false,
   radius: 10,
   shadows: true,
   font: "",
 };
 
+/* Selecting a preset hydrates every control, so tweaking one knob
+ * continues FROM the preset instead of snapping back to older values. */
+const PRESET_STATES: Record<Exclude<Preset, "custom">, Omit<BuilderState, "preset">> = {
+  seal: { accent: "#f5b841", onAccent: "#241a05", bg: "", dark: true, radius: 16, shadows: true, font: "" },
+  ocean: { accent: "#0284c7", onAccent: "#ffffff", bg: "", dark: false, radius: 10, shadows: true, font: "" },
+  forest: { accent: "#16a34a", onAccent: "#ffffff", bg: "", dark: false, radius: 6, shadows: true, font: "" },
+  mono: { accent: "#171717", onAccent: "#ffffff", bg: "", dark: false, radius: 0, shadows: false, font: "" },
+};
+
 function buildTheme(s: BuilderState): SembolTheme {
+  // Untouched presets stay faithful (including their dark palettes).
   if (s.preset !== "custom") return sembolThemes[s.preset];
+  const mix = s.dark ? "#ffffff" : "#000000";
   return {
     colorScheme: s.dark ? "dark" : "light",
     accent: s.accent,
-    colors: { onAccent: s.onAccent },
+    colors: {
+      onAccent: s.onAccent,
+      ...(s.bg
+        ? {
+            bg: s.bg,
+            surface: `color-mix(in srgb, ${s.bg} 94%, ${mix})`,
+            surfaceHover: `color-mix(in srgb, ${s.bg} 90%, ${mix})`,
+            border: `color-mix(in srgb, ${s.bg} 86%, ${mix})`,
+          }
+        : {}),
+    },
     radius: s.radius,
     shadows: s.shadows,
     ...(s.font ? { fonts: { body: s.font } } : {}),
@@ -126,7 +150,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
       role="switch"
       aria-checked={on}
       onClick={() => onChange(!on)}
-      className={`relative h-6 w-11 rounded-full transition-colors ${on ? "bg-gold" : "bg-raised"}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${on ? "bg-gold" : "bg-raised"}`}
     >
       <span
         className={`absolute top-0.5 left-0 h-5 w-5 rounded-full bg-white transition-transform ${on ? "translate-x-[22px]" : "translate-x-0.5"}`}
@@ -134,6 +158,9 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
     </button>
   );
 }
+
+const SELECT_CHEVRON =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa3b7' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")";
 
 export default function CustomizePage() {
   const [state, setState] = useState<BuilderState>(DEFAULTS);
@@ -166,12 +193,12 @@ export default function CustomizePage() {
           <nav className="flex items-center gap-6 text-sm text-dim" aria-label="Builder">
             <Link href="/" className="transition-colors hover:text-fg">Home</Link>
             <a
-              href="https://github.com/keyboord01/sembol"
+              href="https://storybook.sembol.xyz"
               target="_blank"
               rel="noreferrer"
               className="hidden items-center gap-1 transition-colors hover:text-fg sm:inline-flex"
             >
-              GitHub <ArrowUpRightIcon size={13} />
+              Storybook <ArrowUpRightIcon size={13} />
             </a>
             <Link href="/wallet" className="btn-gold btn-seal h-9 px-4 text-sm">
               Try the wallet
@@ -195,7 +222,9 @@ export default function CustomizePage() {
               <button
                 key={p}
                 type="button"
-                onClick={() => setState(p === "custom" ? { ...DEFAULTS } : { ...DEFAULTS, preset: p })}
+                onClick={() =>
+                  setState(p === "custom" ? { ...DEFAULTS } : { preset: p, ...PRESET_STATES[p] })
+                }
                 className={`chip transition-colors ${state.preset === p ? "border-gold/60 text-gold" : "hover:border-gold/40 hover:text-fg"}`}
               >
                 {p}
@@ -229,6 +258,27 @@ export default function CustomizePage() {
                 <code className="tnum font-mono text-xs text-dim">{state.onAccent}</code>
               </span>
             </Row>
+            <Row label="Background">
+              <span className="flex items-center gap-2">
+                {state.bg && (
+                  <button
+                    type="button"
+                    onClick={() => set("bg", "")}
+                    className="text-xs text-faint transition-colors hover:text-fg"
+                  >
+                    reset
+                  </button>
+                )}
+                <input
+                  type="color"
+                  value={state.bg || (state.dark ? "#101114" : "#ffffff")}
+                  onChange={(e) => set("bg", e.target.value)}
+                  aria-label="Background color"
+                  className="h-8 w-8 cursor-pointer rounded-md border border-hairline bg-transparent"
+                />
+                <code className="tnum font-mono text-xs text-dim">{state.bg || "auto"}</code>
+              </span>
+            </Row>
             <Row label="Dark mode">
               <Toggle on={state.dark} onChange={(v) => set("dark", v)} />
             </Row>
@@ -251,7 +301,12 @@ export default function CustomizePage() {
                 value={state.font}
                 onChange={(e) => set("font", e.target.value)}
                 aria-label="Body font"
-                className="rounded-lg border border-hairline bg-ink px-2 py-1.5 text-sm text-fg"
+                className="appearance-none rounded-lg border border-hairline bg-ink py-1.5 pr-8 pl-3 text-sm text-fg"
+                style={{
+                  backgroundImage: SELECT_CHEVRON,
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "right 10px center",
+                }}
               >
                 {FONTS.map((f) => (
                   <option key={f.label} value={f.value}>
@@ -279,13 +334,23 @@ export default function CustomizePage() {
               {copied ? "Copied" : "Copy"}
             </button>
           </div>
+          <a
+            href="https://storybook.sembol.xyz"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm text-dim transition-colors hover:text-gold"
+          >
+            Every component, every state: live Storybook <ArrowUpRightIcon size={13} />
+          </a>
         </aside>
 
         {/* ---------- live preview ---------- */}
         <section aria-label="Live preview" className="grid-bg relative rounded-2xl border border-hairline">
           <div className="flex min-h-[560px] items-center justify-center p-6 sm:p-12">
+            {/* inert: looks alive, never triggers a passkey prompt */}
             <div
-              className={SCOPE}
+              inert
+              className={`${SCOPE} select-none`}
               data-sembol-theme={dark ? "dark" : "light"}
               style={{ colorScheme: dark ? "dark" : "light" }}
             >
@@ -295,7 +360,7 @@ export default function CustomizePage() {
                   background: "var(--sembol-color-bg)",
                   borderColor: "var(--sembol-color-border)",
                   borderRadius: "var(--sembol-radius-lg)",
-                  boxShadow: "var(--sembol-shadow-xl)",
+                  boxShadow: "var(--sembol-shadow)",
                   fontFamily: "var(--sembol-font)",
                   color: "var(--sembol-color-fg)",
                 }}
@@ -327,7 +392,7 @@ export default function CustomizePage() {
             </div>
           </div>
           <p className="microlabel absolute bottom-4 left-1/2 w-full -translate-x-1/2 px-4 text-center text-faint">
-            Live preview · buttons are real and will prompt for a passkey
+            Preview only · create a real wallet from Try the wallet
           </p>
         </section>
       </main>
