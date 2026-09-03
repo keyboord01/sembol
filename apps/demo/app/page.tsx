@@ -524,7 +524,7 @@ export default function LandingPage() {
           <div className="max-w-sm">
             <SembolLogo />
             <p className="mt-4 text-sm leading-relaxed text-dim">
-              Passkey wallets for Stellar. Built in Türkiye, funded through the Stellar
+              Passkey wallets for Stellar. From developers to developers, funded through the Stellar
               Instawards program.
             </p>
             <p className="microlabel mt-5 text-faint">MIT · © 2026 Sembol contributors</p>
