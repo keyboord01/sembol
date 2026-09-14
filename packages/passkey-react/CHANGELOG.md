@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.4.0 - 2026-09-15
+
+Theming and compatibility release. No breaking changes; all tests pass.
+
+### Added
+- **Typed theming via a `theme` prop on `PasskeyWalletProvider`.** Restyle
+  every component from one object instead of writing CSS: a single `accent`
+  derives hover/active/muted and the focus ring per color scheme (via
+  `color-mix`), with fine-grained `colors`/`darkColors`, `radius`, `fonts`,
+  `shadows`, and `colorScheme`. Everything still compiles to the same
+  `--sembol-*` custom properties, so hand-written CSS keeps working on top.
+- **`sembolThemeToCss(theme, selector?)`** to compile a theme to a scoped CSS
+  string (theme one subtree, e.g. an embedded checkout), and **`sembolThemes`**
+  presets (`seal`, `ocean`, `forest`, `mono`). New exported types
+  `SembolTheme`, `SembolThemeColors`, `SembolThemeRadius`.
+
+### Fixed
+- **Vite consumers crashed at import** (`Module "buffer" has been externalized
+  for browser compatibility. Cannot access "buffer.Buffer"`). The Buffer
+  BigInt shim used a static named `buffer` import, which Vite turns into a
+  throwing stub. The shim now uses a namespace import guarded with try/catch
+  and falls back to `globalThis.Buffer`, so it is inert where it is not needed
+  (Vite resolves the real `buffer@6`, which already has the BigInt accessors)
+  and still patches Next's polyfill where it is. Storybook and any Vite app
+  can now depend on the package.
+
+
 ## 0.3.1 - 2026-08-12
 
 Upstream hardening release: smart-account-kit `^0.4.2` -> `^0.6.0` (the kit

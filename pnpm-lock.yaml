@@ -20,6 +20,9 @@ importers:
       '@sembol/passkey-react':
         specifier: workspace:*
         version: link:../../packages/passkey-react
+      '@stellar/stellar-sdk':
+        specifier: ^16.0.1
+        version: 16.0.1
       jsqr:
         specifier: ^1.4.0
         version: 1.4.0
@@ -2353,6 +2356,7 @@ packages:
   smart-account-kit@0.6.0:
     resolution: {integrity: sha512-qojpla+KPra00HbA7s+WwJXbA++dkJgOSDwNW5dDV2bMkxetid6BLIIlFxdkq4fBCWtHiTm3TQyuwnbR+HSnNg==}
     engines: {node: '>=22.0.0', pnpm: '>=10.0.0'}
+    deprecated: Security issue in wallet connection validation. Upgrade to smart-account-kit@0.6.1.
     peerDependencies:
       '@creit-tech/stellar-wallets-kit': '>=2.1.0'
       '@stellar/stellar-sdk': '>=16.0.0'
