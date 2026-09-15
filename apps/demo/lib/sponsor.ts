@@ -27,6 +27,8 @@ import {
 
 // Self-contained defaults: the sponsor runs server-side and must not depend on
 // the library's client bundle resolving here (it can tree-shake to undefined).
+import { acquireChannelLease } from "./channel-lease";
+
 const DEFAULT_RPC_URL = "https://soroban-testnet.stellar.org";
 const DEFAULT_NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
 
@@ -72,9 +74,14 @@ export function loadSponsorConfig(): SponsorConfig | null {
   };
 }
 
-function pickChannel(config: ProjectKeyConfig): Keypair {
-  const secret = config.secrets[Math.floor(Math.random() * config.secrets.length)];
-  return Keypair.fromSecret(secret);
+/** All channel keypairs for a project, indexed by public key. */
+function channelMap(config: ProjectKeyConfig): Map<string, Keypair> {
+  const map = new Map<string, Keypair>();
+  for (const secret of config.secrets) {
+    const kp = Keypair.fromSecret(secret);
+    map.set(kp.publicKey(), kp);
+  }
+  return map;
 }
 
 function maxFeeStroops(config: ProjectKeyConfig): number {
@@ -138,9 +145,12 @@ export async function sponsorHostFunction(
   const func = stellarXdr.HostFunction.fromXDR(funcB64, "base64");
   const auth = authB64.map((a) => stellarXdr.SorobanAuthorizationEntry.fromXDR(a, "base64"));
 
-  // one bad-seq retry with a fresh sequence number
+  const channels = channelMap(keyConfig);
+  const lease = await acquireChannelLease(projectKey, [...channels.keys()]);
+  const channel = channels.get(lease.channel)!;
+  try {
+  // one bad-seq retry with a fresh sequence number (rare: lease is exclusive)
   for (let attempt = 0; attempt < 2; attempt++) {
-    const channel = pickChannel(keyConfig);
     const account = await server.getAccount(channel.publicKey());
     const tx = new TransactionBuilder(account, {
       fee: BASE_FEE,
@@ -186,6 +196,9 @@ export async function sponsorHostFunction(
     return result;
   }
   return { success: false, errorCode: "BAD_SEQ", error: "Sequence retry exhausted" };
+  } finally {
+    await lease.release();
+  }
 }
 
 /** Mode 2: { xdr } - fee-bump a signed transaction, preserving its signatures. */
@@ -203,17 +216,23 @@ export async function sponsorFeeBump(
     return { success: false, errorCode: "INVALID_XDR", error: "Cannot fee-bump a fee-bump" };
   }
 
-  const channel = pickChannel(keyConfig);
-  const perOpFee = Math.min(
-    Math.max(Number(inner.fee) * 10, 2_000_000),
-    maxFeeStroops(keyConfig),
-  );
-  const bump = TransactionBuilder.buildFeeBumpTransaction(
-    channel,
-    String(perOpFee),
-    inner,
-    config.networkPassphrase,
-  );
-  bump.sign(channel);
-  return submitAndPoll(server, bump);
+  const channels = channelMap(keyConfig);
+  const lease = await acquireChannelLease(projectKey, [...channels.keys()]);
+  const channel = channels.get(lease.channel)!;
+  try {
+    const perOpFee = Math.min(
+      Math.max(Number(inner.fee) * 10, 2_000_000),
+      maxFeeStroops(keyConfig),
+    );
+    const bump = TransactionBuilder.buildFeeBumpTransaction(
+      channel,
+      String(perOpFee),
+      inner,
+      config.networkPassphrase,
+    );
+    bump.sign(channel);
+    return await submitAndPoll(server, bump);
+  } finally {
+    await lease.release();
+  }
 }
