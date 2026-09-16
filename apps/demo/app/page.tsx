@@ -467,12 +467,31 @@ export default function LandingPage() {
                 </div>
                 <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 py-4">
                   <h3 className="font-display text-lg font-semibold tracking-wide uppercase">
-                    Kumbara
+                    <a
+                      href="https://kumbara.sembol.xyz"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="transition-colors hover:text-gold"
+                    >
+                      Kumbara
+                    </a>
                   </h3>
                   <p className="text-sm text-dim">
-                    A savings app for Türkiye on Sembol: deposit lira, hold dollars, earn on-chain.
+                    The front door to crypto: local currency in through an anchor, dollars in a wallet
+                    only you hold, send and receive like any wallet. One market first, then every
+                    market with a mainnet anchor.
                   </p>
-                  <span className="chip ml-auto text-xs">hackathon build</span>
+                  <span className="chip ml-auto text-xs">live · testnet</span>
+                </div>
+                <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 py-4">
+                  <h3 className="font-display text-lg font-semibold tracking-wide uppercase">
+                    Receive from anywhere
+                  </h3>
+                  <p className="text-sm text-dim">
+                    A plain Stellar address for every smart wallet, so money from an exchange or any
+                    wallet lands in yours.
+                  </p>
+                  <span className="chip ml-auto text-xs">next</span>
                 </div>
               </div>
             </Reveal>
