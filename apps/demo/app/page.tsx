@@ -6,6 +6,7 @@ import { Girih } from "../components/landing/Girih";
 import { HoldToSeal } from "../components/landing/HoldToSeal";
 import { LaunchCta } from "../components/landing/LaunchCta";
 import { LiveLedger } from "../components/landing/LiveLedger";
+import { MainnetProof } from "../components/landing/MainnetProof";
 import { Marquee } from "../components/landing/Marquee";
 import { Reveal } from "../components/landing/Reveal";
 
@@ -239,10 +240,16 @@ export default function LandingPage() {
           <div aria-hidden className="glow-gold absolute inset-0" />
 
           <div className="relative mx-auto w-full max-w-6xl px-5 pt-16 pb-24 sm:px-8 sm:pt-24 sm:pb-32">
-            <p className="chip fade-up mb-8 border-gold/35 bg-gold/8 text-[13px] text-gold">
-              <SembolMark size={12} title="" />
-              Stellar Instawards winner
-            </p>
+            <div className="fade-up mb-8 flex flex-wrap items-center gap-2">
+              <span className="chip border-gold/35 bg-gold/8 text-[13px] text-gold">
+                <SembolMark size={12} title="" />
+                Stellar Instawards winner
+              </span>
+              <span className="chip border-mint/35 bg-mint/8 text-[13px] text-mint">
+                <span aria-hidden className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-mint" />
+                Live on Stellar mainnet
+              </span>
+            </div>
 
             {/* dictionary entry */}
             <div className="fade-up fade-up-1 max-w-md border-l-2 border-gold/50 pl-4 font-mono text-sm leading-relaxed text-dim">
@@ -299,6 +306,7 @@ export default function LandingPage() {
                 <div className="mt-8">
                   <LiveLedger tone="paper" />
                 </div>
+                <MainnetProof />
               </Reveal>
             </div>
           </section>
@@ -452,9 +460,10 @@ export default function LandingPage() {
                     Sembol Cloud
                   </h3>
                   <p className="text-sm text-dim">
-                    Sponsored fees as a service: project keys, allowlists, prepaid budgets, mainnet.
+                    Sponsored fees as a service: project keys, prepaid budgets, capped floats.
+                    Sponsoring on mainnet today.
                   </p>
-                  <span className="chip ml-auto text-xs">in the works</span>
+                  <span className="chip ml-auto text-xs">live · v0</span>
                 </div>
                 <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 py-4">
                   <h3 className="font-display text-lg font-semibold tracking-wide uppercase">
