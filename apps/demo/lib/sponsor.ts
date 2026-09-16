@@ -31,6 +31,8 @@ import { acquireChannelLease } from "./channel-lease";
 
 const DEFAULT_RPC_URL = "https://soroban-testnet.stellar.org";
 const DEFAULT_NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
+const MAINNET_RPC_URL = "https://mainnet.sorobanrpc.com";
+const MAINNET_PASSPHRASE = "Public Global Stellar Network ; September 2015";
 
 interface ProjectKeyConfig {
   secrets: string[];
@@ -55,6 +57,21 @@ export interface SponsorResult {
 const BASE_FEE = "1000"; // stroops; simulation raises it with resource fees
 
 export function loadSponsorConfig(): SponsorConfig | null {
+  const mainnet = process.env.NEXT_PUBLIC_SEMBOL_NETWORK === "mainnet";
+
+  // Mainnet: one funded channel from MAINNET_SPONSOR_SECRET, higher fee ceiling
+  // to cover contract creation rent. Keeps the mainnet float physically capped.
+  if (mainnet) {
+    const secret = process.env.MAINNET_SPONSOR_SECRET;
+    if (!secret) return null;
+    return {
+      keys: { "sembol-mainnet": { secrets: [secret], maxFeeXlm: 5 } },
+      defaultKey: "sembol-mainnet",
+      rpcUrl: process.env.NEXT_PUBLIC_RPC_URL ?? MAINNET_RPC_URL,
+      networkPassphrase: process.env.NEXT_PUBLIC_NETWORK_PASSPHRASE ?? MAINNET_PASSPHRASE,
+    };
+  }
+
   const raw = process.env.SPONSOR_KEYS_JSON;
   if (!raw) return null;
   let keys: Record<string, ProjectKeyConfig>;

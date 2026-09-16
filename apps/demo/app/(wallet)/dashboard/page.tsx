@@ -22,15 +22,19 @@ import { RequireWallet } from "../../../components/RequireWallet";
 import { toast } from "../../../components/Toast";
 import { recordTransaction } from "../../../lib/history";
 
-const FACTS = [
-  ["Network", "Testnet"],
-  ["Type", "Smart account"],
-  ["Signer", "Passkey"],
-  ["Creation fees", "Sponsored"],
-] as const;
+function facts(network: string): [string, string][] {
+  const isMain = /public|mainnet/i.test(network);
+  return [
+    ["Network", isMain ? "Mainnet" : "Testnet"],
+    ["Type", "Smart account"],
+    ["Signer", "Passkey"],
+    ["Creation fees", "Sponsored"],
+  ];
+}
 
 function Dashboard() {
-  const { fund, address } = usePasskeyWallet();
+  const { fund, address, config } = usePasskeyWallet();
+  const isMainnet = /public|mainnet/i.test(config.networkPassphrase ?? "");
   const { explorerUrl, copy, copied } = useWalletAddress();
   const { formatted, symbol, status: balanceStatus, isRefreshing, refetch } = useWalletBalance();
   const [funding, setFunding] = useState(false);
@@ -111,15 +115,17 @@ function Dashboard() {
               <QrIcon size={17} />
               {showQr ? "Hide QR" : "Receive"}
             </button>
-            <button
-              type="button"
-              onClick={() => void handleFund()}
-              disabled={funding}
-              className="btn-ghost h-12 px-6"
-            >
-              <BoltIcon size={17} />
-              {funding ? "Working…" : "Get test XLM"}
-            </button>
+            {!isMainnet && (
+              <button
+                type="button"
+                onClick={() => void handleFund()}
+                disabled={funding}
+                className="btn-ghost h-12 px-6"
+              >
+                <BoltIcon size={17} />
+                {funding ? "Working…" : "Get test XLM"}
+              </button>
+            )}
           </div>
 
           {fundStep && (
@@ -139,7 +145,7 @@ function Dashboard() {
 
       {/* ---------- facts ---------- */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Account facts">
-        {FACTS.map(([k, v]) => (
+        {facts(config.networkPassphrase ?? "").map(([k, v]) => (
           <div key={k} className="card px-4 py-3.5">
             <p className="microlabel text-faint">{k}</p>
             <p className="mt-1 text-sm font-medium">{v}</p>

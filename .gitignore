@@ -26,3 +26,4 @@ coverage/
 .vercel
 e2e-*-failure.png
 .env*
+apps/demo/scripts/mainnet-proof.json
