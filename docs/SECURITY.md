@@ -151,6 +151,32 @@ the env, redeploy.
 for a channel-key leak, sweep the funds first (you are racing the attacker for a
 bounded amount, which is exactly why the float is capped).
 
+## Telemetry and privacy
+
+Sembol Cloud measures **its own service**, through OpenTelemetry (`@vercel/otel`) plus one
+structured log line per request. For each sponsorship attempt it records: which project made it,
+whether it created a wallet or sponsored an existing one, the network, success or failure, the error
+code when it failed, and how long it took.
+
+**It never records:**
+
+- wallet or contract addresses
+- transaction hashes, host-function arguments, or authorization entries
+- IP addresses, cookies, device or browser identifiers
+- anything that could identify or follow an individual person
+
+`project` identifies a paying project, which is a business, never a user. Counting requests to our
+own API is not user tracking, and the implementation keeps it that way by emitting counts and
+outcomes rather than identities. See `lib/telemetry.ts`.
+
+**The library sends nothing.** `@sembol/passkey-react` runs inside other developers' applications, in
+their users' browsers. Those users have no relationship with us and never agreed to anything, so the
+library phones home about nothing at all. If SDK adoption telemetry is ever added it must be opt-in
+by the integrating developer, off by default, and documented in the README.
+
+**The website** (sembol.xyz) uses Vercel Web Analytics, which is cookieless and does not build
+profiles or follow visitors between sites.
+
 ## What is deliberately out of scope for v0
 
 - Public self-serve key issuance (keys are hand-issued in the capped beta).

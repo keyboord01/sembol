@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Tektur } from "next/font/google";
 import "@sembol/passkey-react/styles.css";
 import "./globals.css";
@@ -75,6 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Toaster />
           {children}
         </Providers>
+        <Analytics />
       </body>
     </html>
   );

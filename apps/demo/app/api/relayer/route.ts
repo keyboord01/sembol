@@ -23,6 +23,8 @@ import {
   sponsorFeeBump,
   sponsorHostFunction,
 } from "../../../lib/sponsor";
+import { classifyHostFunction, recordSponsorship } from "../../../lib/telemetry";
+import { xdr as stellarXdr } from "@stellar/stellar-sdk";
 
 export const maxDuration = 60;
 
@@ -72,17 +74,26 @@ export async function POST(request: Request): Promise<Response> {
         result = null;
       }
       if (result) {
-        console.log(
-          JSON.stringify({
-            level: result.success ? "info" : "warn",
-            msg: "sponsor",
-            key: projectKey,
-            mode,
-            ok: result.success,
-            errorCode: result.errorCode,
-            ms: Date.now() - startedAt,
-          }),
-        );
+        // Classify without retaining anything from the payload.
+        let kind: ReturnType<typeof classifyHostFunction> = "fee_bump";
+        if (mode === "func" && typeof payload.func === "string") {
+          try {
+            kind = classifyHostFunction(
+              stellarXdr.HostFunction.fromXDR(payload.func, "base64").switch().name,
+            );
+          } catch {
+            kind = "sponsor_transaction";
+          }
+        }
+        recordSponsorship({
+          project: projectKey,
+          kind,
+          network:
+            process.env.NEXT_PUBLIC_SEMBOL_NETWORK === "mainnet" ? "mainnet" : "testnet",
+          ok: result.success,
+          errorCode: result.errorCode,
+          durationMs: Date.now() - startedAt,
+        });
         return Response.json(result, { status: result.success ? 200 : 400, headers });
       }
       return Response.json(
