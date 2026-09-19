@@ -13,6 +13,7 @@
 import { HORIZON, USAGE_PROJECTS, type UsageNetwork, type UsageProject } from "./usage-accounts";
 
 const PAGE_LIMIT = 200;
+const MAX_PAGES = 10; // 2,000 operations per account before we flag truncation
 const REVALIDATE_SECONDS = 60;
 
 export interface ProjectUsage {
@@ -25,6 +26,10 @@ export interface ProjectUsage {
   xlmSpent: number;
   xlmRemaining: number;
   accounts: number;
+  /** Transfers where the sponsor moved its own funds - not sponsorship. */
+  treasuryTransfers: number;
+  /** True when we hit the pagination cap and counts may understate. */
+  truncated: boolean;
   /** First sponsor account, for an explorer link. */
   sampleAccount: string;
   /** True when a reported number came from the persisted floor, not the chain. */
@@ -61,24 +66,50 @@ async function getJson(url: string): Promise<Record<string, unknown> | null> {
   }
 }
 
+/** Walk a Horizon collection, following `next` until exhausted or capped. */
+async function collect(firstUrl: string): Promise<{ records: Record<string, unknown>[]; truncated: boolean }> {
+  const records: Record<string, unknown>[] = [];
+  let url: string | null = firstUrl;
+  for (let page = 0; page < MAX_PAGES && url; page++) {
+    const body = await getJson(url);
+    const batch = ((body?._embedded as { records?: Record<string, unknown>[] })?.records ?? []) as Record<string, unknown>[];
+    records.push(...batch);
+    if (batch.length < PAGE_LIMIT) return { records, truncated: false };
+    const links = body?._links as { next?: { href?: string } } | undefined;
+    url = links?.next?.href ?? null;
+  }
+  return { records, truncated: Boolean(url) };
+}
+
 async function readAccount(horizon: string, account: string) {
-  const [opsPage, txPage, acct] = await Promise.all([
-    getJson(`${horizon}/accounts/${account}/operations?limit=${PAGE_LIMIT}&order=desc`),
-    getJson(`${horizon}/accounts/${account}/transactions?limit=${PAGE_LIMIT}&order=desc`),
+  const [opsResult, txResult, acct] = await Promise.all([
+    collect(`${horizon}/accounts/${account}/operations?limit=${PAGE_LIMIT}&order=asc`),
+    collect(`${horizon}/accounts/${account}/transactions?limit=${PAGE_LIMIT}&order=asc`),
     getJson(`${horizon}/accounts/${account}`),
   ]);
 
-  const ops = ((opsPage?._embedded as { records?: Record<string, unknown>[] })?.records ?? []) as Record<string, unknown>[];
+  const ops = opsResult.records;
   let walletsCreated = 0;
   let transactionsSponsored = 0;
+  let treasuryTransfers = 0;
   for (const op of ops) {
     if (op.type !== "invoke_host_function" || op.transaction_successful !== true) continue;
     const fn = String(op.function ?? "");
-    if (fn.endsWith("CreateContractV2")) walletsCreated++;
-    else if (fn.endsWith("InvokeContract")) transactionsSponsored++;
+    if (fn.endsWith("CreateContractV2")) {
+      walletsCreated++;
+      continue;
+    }
+    if (!fn.endsWith("InvokeContract")) continue;
+    // A sponsored transaction moves someone else's value and we pay the fee.
+    // When the sponsor account itself is the source of a transfer, that is the
+    // treasury moving its own money (funding a wallet), not sponsorship.
+    const changes = (op.asset_balance_changes ?? []) as { from?: string }[];
+    const sponsorSpentOwnFunds = changes.some((c) => c.from === account);
+    if (sponsorSpentOwnFunds) treasuryTransfers++;
+    else transactionsSponsored++;
   }
 
-  const txs = ((txPage?._embedded as { records?: Record<string, unknown>[] })?.records ?? []) as Record<string, unknown>[];
+  const txs = txResult.records;
   const feeStroops = txs.reduce((sum, tx) => sum + Number(tx.fee_charged ?? 0), 0);
 
   const balances = (acct?.balances ?? []) as { asset_type?: string; balance?: string }[];
@@ -86,10 +117,12 @@ async function readAccount(horizon: string, account: string) {
 
   return {
     walletsCreated,
-    // a creation is also a sponsored transaction
+    // a creation is also a transaction whose fee we paid
     transactionsSponsored: transactionsSponsored + walletsCreated,
+    treasuryTransfers,
     xlmSpent: feeStroops / 1e7,
     xlmRemaining: Number(native?.balance ?? 0),
+    truncated: opsResult.truncated || txResult.truncated,
     reachable: acct !== null,
   };
 }
@@ -123,6 +156,8 @@ async function readProject(project: UsageProject): Promise<ProjectUsage> {
     transactionsSponsored,
     xlmSpent: results.reduce((s, r) => s + r.xlmSpent, 0),
     xlmRemaining: results.reduce((s, r) => s + r.xlmRemaining, 0),
+    treasuryTransfers: results.reduce((s, r) => s + r.treasuryTransfers, 0),
+    truncated: results.some((r) => r.truncated),
     accounts: project.accounts.length,
     sampleAccount: project.accounts[0] ?? "",
     fromFloor,

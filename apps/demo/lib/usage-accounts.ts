@@ -62,3 +62,18 @@ export const EXPLORER: Record<UsageNetwork, string> = {
   mainnet: "https://stellar.expert/explorer/public",
   testnet: "https://stellar.expert/explorer/testnet",
 };
+
+/**
+ * Stellar resets testnet 2-4 times a year, clearing all ledger and Horizon
+ * history. SDF announces each reset at least two weeks ahead on the Stellar
+ * Dashboard and the developer channels.
+ *
+ * Update NEXT_TESTNET_RESET when the next date is announced; set it to null if
+ * no date is currently published.
+ */
+export const TESTNET_RESET = {
+  cadence: "two to four times a year",
+  /** ISO date of the next announced reset, or null when none is published. */
+  next: "2026-12-17T17:00:00Z" as string | null,
+  source: "https://developers.stellar.org/docs/networks",
+};

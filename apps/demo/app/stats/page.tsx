@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { readUsage, type ProjectUsage } from "../../lib/usage";
-import { EXPLORER } from "../../lib/usage-accounts";
+import { EXPLORER, TESTNET_RESET } from "../../lib/usage-accounts";
 import { SembolMark } from "../../components/Brand";
 
 export const revalidate = 60;
@@ -33,6 +33,10 @@ function ProjectRow({ p }: { p: ProjectUsage }) {
         <p className="microlabel mt-2 text-paper-dim">
           {p.network} · {p.accounts} sponsor {p.accounts === 1 ? "account" : "accounts"}
           {p.fromFloor ? " · includes preserved history" : ""}
+          {p.treasuryTransfers > 0
+            ? ` · ${p.treasuryTransfers} treasury ${p.treasuryTransfers === 1 ? "transfer" : "transfers"} excluded`
+            : ""}
+          {p.truncated ? " · counts capped, may understate" : ""}
         </p>
       </div>
       <p className="tnum font-mono text-sm">
@@ -120,10 +124,21 @@ export default async function StatsPage() {
         {testnet.length > 0 ? (
           <section className="mt-16">
             <h2 className="font-display text-2xl font-semibold tracking-wide uppercase">Testnet</h2>
-            <p className="mt-2 max-w-lg text-sm text-paper-dim">
-              Where the reference app and event onboarding run. Stellar resets testnet from time to
-              time and its history resets with it, so these figures can move backwards through no
-              fault of the wallets themselves.
+            <p className="mt-2 max-w-xl text-sm text-paper-dim">
+              Where the reference app and event onboarding run. Stellar resets testnet{" "}
+              {TESTNET_RESET.cadence}, which clears its whole history — so a figure here can fall to
+              zero without a single wallet being lost.{" "}
+              {TESTNET_RESET.next ? (
+                <>
+                  The next reset is{" "}
+                  <span className="text-ink">
+                    {new Date(TESTNET_RESET.next).toUTCString().replace(":00 GMT", " UTC")}
+                  </span>
+                  . Figures we want to keep past it are marked as preserved.
+                </>
+              ) : (
+                <>No reset is currently scheduled.</>
+              )}
             </p>
             <div className="mt-6">
               {testnet.map((p) => (
