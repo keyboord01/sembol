@@ -247,7 +247,7 @@ export default function LandingPage() {
               </span>
               <span className="chip border-mint/35 bg-mint/8 text-[13px] text-mint">
                 <span aria-hidden className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-mint" />
-                Live on Stellar mainnet
+                Proven on Stellar mainnet
               </span>
             </div>
 

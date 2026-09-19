@@ -5,7 +5,7 @@
 [OpenZeppelin Smart Account](https://docs.openzeppelin.com/stellar-contracts/accounts/smart-account)
 contract on Stellar, opened with Face ID / Touch ID / Windows Hello. No seed phrases, no
 extensions. Alongside it, **Sembol Cloud** sponsors fees so people can create and use wallets
-holding zero XLM. **Live on Stellar mainnet.**
+holding zero XLM. **Proven on Stellar mainnet.**
 
 ```tsx
 import { PasskeyWalletProvider, CreateWalletButton, ConnectWalletButton } from "@sembol/passkey-react";
