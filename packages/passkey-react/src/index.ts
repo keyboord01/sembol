@@ -39,6 +39,8 @@ export { SignerList, type SignerListProps } from "./components/SignerList";
 export { AddSignerButton, type AddSignerButtonProps } from "./components/AddSignerButton";
 export { RecoverySetup, type RecoverySetupProps } from "./components/RecoverySetup";
 export { SpendingPolicyForm, type SpendingPolicyFormProps } from "./components/SpendingPolicyForm";
+export { GrantAgentAccess, type GrantAgentAccessProps } from "./components/GrantAgentAccess";
+export { AgentPermissions, type AgentPermissionsProps } from "./components/AgentPermissions";
 
 // Headless hooks
 export { usePasskeyWallet } from "./hooks/usePasskeyWallet";
@@ -83,6 +85,15 @@ export {
   type SpendingPolicyStatus,
   type UseSpendingPolicyResult,
 } from "./hooks/useSpendingPolicy";
+export {
+  useAgentPermission,
+  agentKeyBytes,
+  findAgentRules,
+  type AgentGrant,
+  type AgentPermissionStatus,
+  type GrantAgentParams,
+  type UseAgentPermissionResult,
+} from "./hooks/useAgentPermission";
 export {
   useWalletBalance,
   type BalanceStatus,

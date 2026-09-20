@@ -1160,3 +1160,100 @@
   color: var(--sembol-color-fg-muted);
   font: 400 0.75rem/1.45 var(--sembol-font);
 }
+
+/* Agent permissions ------------------------------------------------------- */
+
+.sembol-agent,
+.sembol-agents {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.sembol-agent__headline {
+  margin: 0;
+  color: var(--sembol-color-fg);
+  font: 600 0.9375rem/1.35 var(--sembol-font);
+}
+
+.sembol-agent__facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+}
+
+.sembol-agent__facts dt {
+  color: var(--sembol-color-fg-muted);
+  font: 550 0.6875rem/1.6 var(--sembol-font);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sembol-agent__facts dd,
+.sembol-agent__mono,
+.sembol-agents__meta {
+  margin: 0;
+  color: var(--sembol-color-fg);
+  font: 450 0.8125rem/1.5 var(--sembol-font-mono);
+  word-break: break-all;
+}
+
+.sembol-agent__summary {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--sembol-color-fg);
+  font: 400 0.8125rem/1.5 var(--sembol-font);
+}
+
+.sembol-agent__row,
+.sembol-agents__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sembol-agent__note,
+.sembol-agents__state {
+  margin: 0;
+  color: var(--sembol-color-fg-muted);
+  font: 400 0.75rem/1.45 var(--sembol-font);
+}
+
+.sembol-agent__danger {
+  color: var(--sembol-color-danger, #dc2626);
+  font-weight: 600;
+}
+
+.sembol-agents__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sembol-agents__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--sembol-color-border);
+  border-radius: var(--sembol-radius-sm);
+  background: var(--sembol-color-surface);
+}
+
+.sembol-agents__main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.sembol-agents__name {
+  color: var(--sembol-color-fg);
+  font: 600 0.875rem/1.35 var(--sembol-font);
+}

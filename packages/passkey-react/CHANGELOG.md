@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Agent access: `useAgentPermission()`, `<GrantAgentAccess />`, `<AgentPermissions />`.**
+  Grant a software agent (a keeper, a bot, an AI) scoped access to the account: a
+  context rule signed by the agent's Ed25519 public key and gated by the policy
+  contracts you pass (`Map<address, installParams>`), with an expiry
+  (`validFor` / `validUntilLedger`). The hook lists such grants with `policies`,
+  `unrestricted`, `validUntil` and `ledgersLeft`, and revokes them. `grant()`
+  refuses a policy-less rule unless `allowUnrestricted: true`, because that is
+  full account access. Also exports `agentKeyBytes` and `findAgentRules`.
+  Contract-agnostic: the policy is yours; the library only installs and lists it.
+
 ## 0.4.0 - 2026-09-15
 
 Theming and compatibility release. No breaking changes; all tests pass.

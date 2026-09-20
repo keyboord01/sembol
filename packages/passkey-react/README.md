@@ -135,6 +135,29 @@ rejected **on-chain**. Enforcement covers transfers built as direct token invoca
 which is how this library sends payments, and, as of `smart-account-kit@0.5.0`, how the
 kit's own `kit.transfer()` works too, so spending limits cover both paths.
 
+### Agent access: let a bot act, within a policy, and take it back
+
+```tsx
+import { GrantAgentAccess, AgentPermissions } from "@sembol/passkey-react";
+
+<GrantAgentAccess
+  agentPublicKey={AGENT_PUBLIC_KEY}                       // the bot's Ed25519 public key, from your backend
+  policies={new Map([[MY_POLICY_CONTRACT, installParams]])} // policy address -> install params (xdr.ScVal)
+  name="keeper"
+  validFor={{ days: 7 }}
+  summary={["Rebalance between markets", "Repay debt from idle USDC"]}
+  onGranted={({ ruleId }) => registerWithKeeper(ruleId)}
+/>
+<AgentPermissions />   {/* what each agent may do, time left, two-step revoke */}
+```
+
+The grant is a context rule whose signer is the agent's Ed25519 key and whose policy contracts decide
+**on-chain** what that key may authorize; the app never holds the agent's secret. The agent signs its
+own transactions with smart-account-kit's `Ed25519Signer` and pins the rule id per auth context
+(`resolveContextRuleIds`). A rule with an agent signer and no policy is full account access, so
+`grant()` refuses it unless `allowUnrestricted: true`. Revoking removes the rule; the agent is cut
+off in the same ledger.
+
 ## Components
 
 | Component | Purpose |
@@ -148,6 +171,8 @@ kit's own `kit.transfer()` works too, so spending limits cover both paths.
 | `<AddSignerButton />` | Add a new passkey (two prompts: register, then approve), an Ed25519 recovery key, or a delegated Stellar address - each on its own single-signer rule. Props: `method`, `label`, `variant`, `size`, `onAdded`, `onError`, `unstyled`. |
 | `<RecoverySetup />` | Guided recovery: enroll a backup credential (`mode="setup"`, shows the wallet address to save), or reconnect on a fresh device (`mode="recover"`: passkey → discovery → manual-address fallback). Props: `mode`, `onEnrolled`, `onRecovered`, `onError`, `unstyled`. |
 | `<SpendingPolicyForm />` | Read + manage the on-chain spending limit for a token: limit/window inputs, spent-remaining meter, update and guarded remove. Props: `token`, `tokenSymbol`, `onChanged`, `onError`, `unstyled`. |
+| `<GrantAgentAccess />` | Consent screen for a software agent: key, policies, expiry, adopter-written summary, one passkey approval. Props: `agentPublicKey`, `policies`, `name`, `contextType`, `validFor`, `validUntilLedger`, `summary`, `agentLabel`, `label`, `onGranted`, `onError`, `unstyled`. |
+| `<AgentPermissions />` | Every agent grant on the account with policies and time left, unrestricted grants flagged, two-step revoke. Props: `readOnly`, `onRevoked`, `onError`, `unstyled`. |
 
 All components take `className` and `unstyled` - with `unstyled` they render bare, semantic
 markup for your own styles.
@@ -168,6 +193,7 @@ markup for your own styles.
 | `useRemoveSigner()` | `{ removeSigner(target), status, error, reset }` - refuses to remove the final signer (`last_signer`) |
 | `useRecovery()` | `{ enroll, recover, walletAddress, status, error, reset }` - `recover` resolves the wallet via local map → indexer → manual address (`recovery_needs_address`) |
 | `useSpendingPolicy(token?)` | `{ policy, setLimit, removeLimit, isLoading, status, error, refresh, reset }` - stroop-precise `{ limit, spent, remaining, periodLedgers }` |
+| `useAgentPermission()` | `{ grants, grant(params), revoke(ruleId), isLoading, status, error, refresh, reset }` - grants are rules whose only signers are Ed25519 keys, with `policies`, `unrestricted`, `validUntil`, `ledgersLeft` |
 
 Utilities: `buildTransferTransaction`, `buildContractCallTransaction`, `summarizeTransaction`,
 `detectWebAuthnCapabilities`, `toSembolError`, `formatTokenAmount`, `parseTokenAmount`,
