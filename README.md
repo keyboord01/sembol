@@ -57,6 +57,7 @@ fee sponsor, a small float onboards hundreds of wallets. Reproduce with
 | [`apps/demo`](apps/demo) | Reference app (Next.js 16 + Tailwind 4) built **only** on the published library: onboarding → dashboard → send → history → security, plus a **theme builder** and multi-page **docs**. Also hosts **Sembol Cloud** (`app/api/relayer` + `lib/sponsor.ts`). |
 | [`apps/storybook`](apps/storybook) | Public Storybook: every component with live examples, a browser-compatibility matrix, a theming playground, and presets. |
 | [`docs/`](docs) | [`SECURITY.md`](docs/SECURITY.md) (Sembol Cloud model), a [Stellar Wallets Kit integration guide](docs/stellar-wallets-kit-integration.md), and a [migration note](docs/migrating-from-passkey-kit.md). |
+| [`AGENTS.md`](AGENTS.md) / [`SKILL.md`](SKILL.md) | For AI coding assistants: when to reach for Sembol, the minimal example, and the constraints that cause real bugs. The library also ships its docs inside the package at `node_modules/@sembol/passkey-react/docs/`, so an assistant can read them without a network call. |
 
 ## Sembol Cloud — fee sponsorship
 

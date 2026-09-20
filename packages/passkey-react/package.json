@@ -20,6 +20,7 @@
   },
   "files": [
     "dist",
+    "docs",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
@@ -30,10 +31,18 @@
     "passkey",
     "webauthn",
     "smart-wallet",
+    "smart-account",
+    "account-abstraction",
+    "gasless",
+    "fee-sponsorship",
+    "stellar-wallet",
+    "soroban-wallet",
+    "web3-onboarding",
+    "self-custody",
     "react",
     "hooks",
-    "passkey-kit",
-    "launchtube"
+    "react-components",
+    "smart-account-kit"
   ],
   "repository": {
     "type": "git",
@@ -45,7 +54,9 @@
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "docs:package": "tsx ../../scripts/generate-package-docs.mjs",
+    "prebuild": "pnpm docs:package"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
