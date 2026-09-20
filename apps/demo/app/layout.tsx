@@ -76,7 +76,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Toaster />
           {children}
         </Providers>
-        <Analytics />
+        {/* Vercel Analytics serves /_vercel/insights/script.js only on Vercel;
+            mounting it elsewhere 404s in local dev and in CI browser checks. */}
+        {process.env.VERCEL ? <Analytics /> : null}
       </body>
     </html>
   );
