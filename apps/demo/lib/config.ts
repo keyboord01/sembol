@@ -5,10 +5,10 @@ import {
 } from "@sembol/passkey-react";
 
 // Opt-in mainnet mode. Testnet stays the zero-config default.
-const ARTIFACTS =
-  process.env.NEXT_PUBLIC_SEMBOL_NETWORK === "mainnet"
-    ? SEMBOL_MAINNET_ARTIFACTS
-    : SEMBOL_TESTNET_ARTIFACTS;
+export const IS_MAINNET = process.env.NEXT_PUBLIC_SEMBOL_NETWORK === "mainnet";
+export const NETWORK_LABEL = IS_MAINNET ? "Stellar mainnet" : "Stellar testnet";
+
+const ARTIFACTS = IS_MAINNET ? SEMBOL_MAINNET_ARTIFACTS : SEMBOL_TESTNET_ARTIFACTS;
 
 /**
  * Testnet configuration with working defaults - the app runs with zero env.

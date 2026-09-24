@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SembolMark } from "../../components/Brand";
 import { Nav } from "../../components/Nav";
+import { NETWORK_LABEL } from "../../lib/config";
 
 /** Shared chrome for the wallet app: status bar on top, slim footer below. */
 export default function WalletLayout({ children }: { children: React.ReactNode }) {
@@ -17,7 +18,7 @@ export default function WalletLayout({ children }: { children: React.ReactNode }
             className="microlabel inline-flex items-center gap-2 text-faint transition-colors hover:text-fg"
           >
             <SembolMark size={12} className="text-gold/70" title="" />
-            Sembol · Stellar testnet
+            Sembol · {NETWORK_LABEL}
           </Link>
           <nav className="flex gap-5 text-sm" aria-label="Project links">
             <a

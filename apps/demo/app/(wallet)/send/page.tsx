@@ -15,6 +15,7 @@ import { QrScanner } from "../../../components/QrScanner";
 import { RequireWallet } from "../../../components/RequireWallet";
 import { toast } from "../../../components/Toast";
 import { recordTransaction } from "../../../lib/history";
+import { NETWORK_LABEL } from "../../../lib/config";
 
 const QUICK_AMOUNTS = ["1", "10", "100"] as const;
 
@@ -193,7 +194,7 @@ function SendForm() {
         open={modalOpen}
         transaction={transaction}
         title="Approve payment"
-        description={`Send ${amount || "?"} XLM on Stellar testnet`}
+        description={`Send ${amount || "?"} XLM on ${NETWORK_LABEL}`}
         onClose={() => setModalOpen(false)}
         onSuccess={(result) => {
           if (address) {

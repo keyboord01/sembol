@@ -11,12 +11,15 @@ import {
 import { FaceIdIcon, KeyIcon, RefreshIcon, ShieldIcon } from "../../../components/icons";
 import { toast } from "../../../components/Toast";
 import { recordTransaction } from "../../../lib/history";
+import { IS_MAINNET, NETWORK_LABEL } from "../../../lib/config";
 
-const STEPS: { phase: Exclude<CreateWalletPhase, null>; label: string }[] = [
+const ALL_STEPS: { phase: Exclude<CreateWalletPhase, null>; label: string }[] = [
   { phase: "passkey", label: "Create your passkey" },
   { phase: "deploying", label: "Deploy the smart account" },
   { phase: "funding", label: "Add free test XLM" },
 ];
+// No Friendbot on mainnet, so no funding step.
+const STEPS = IS_MAINNET ? ALL_STEPS.filter((step) => step.phase !== "funding") : ALL_STEPS;
 
 const REASSURANCE = [
   {
@@ -65,13 +68,15 @@ export default function OnboardingPage() {
   return (
     <div className="grid gap-10 py-4 lg:grid-cols-[1fr_300px] lg:gap-14">
       <section>
-        <p className="microlabel text-gold">New wallet · Stellar testnet</p>
+        <p className="microlabel text-gold">New wallet · {NETWORK_LABEL}</p>
         <h1 className="font-display mt-4 max-w-xl text-4xl leading-[1.06] font-semibold tracking-tight text-balance uppercase sm:text-5xl">
           Create your wallet with a look
         </h1>
         <p className="mt-5 max-w-lg text-base leading-relaxed text-dim">
-          Face ID, Touch ID, or Windows Hello becomes the key. Free test XLM is included,
-          and your first payment is a minute away.
+          Face ID, Touch ID, or Windows Hello becomes the key.{" "}
+          {IS_MAINNET
+            ? "Fees are sponsored, so you need no XLM to start."
+            : "Free test XLM is included, and your first payment is a minute away."}
         </p>
 
         <div className="card mt-9 max-w-lg p-6 sm:p-7">
