@@ -36,13 +36,25 @@ deployed there** — Sembol deploys no contracts of its own. A real passkey wall
 funded → passkey-signed payment, every fee sponsored by Sembol Cloud:
 
 - **Wallet** (smart account): [`CBK7DDIM…S24Q`](https://stellar.expert/explorer/public/contract/CBK7DDIMJIB4H6WNOTIU57QPAD267CHOHE6XLS2C3QWTVWYFDLUJS24Q)
+- **Create** (sponsored wallet deployment): [`0e290e48…`](https://stellar.expert/explorer/public/tx/0e290e48568c1f8230240321d530c8e64d6dbafe2cb093b52cc139b69a9e5b95)
+  — *how to read it:* the transaction's source and fee payer is Sembol Cloud's sponsor account
+  [`GBWUM6U4…DWLS`](https://stellar.expert/explorer/public/account/GBWUM6U4HSTM4CCD6APKROCJPJXBRQTRE67A37ERI424N3AW4DAUDWLS),
+  not the user; the user's passkey only signed the authorization inside it.
 - **Receive** (sponsor → wallet, native SAC): [`a99c2a56…`](https://stellar.expert/explorer/public/tx/a99c2a56c6e197f2c6eed61db112c42c5fa5ec1809d818e76da97db0e1e529d8)
 - **Send** (passkey-signed, from the wallet): [`54ab44b9…`](https://stellar.expert/explorer/public/tx/54ab44b9625b86bcc3abdbd856435ebc705eafae59da3bbee826075dd6f5a3a0)
+
+A second run, recorded on 24 September ([video, 63 s](docs/media/sembol-mainnet-d1.mp4)): wallet
+[`CBLKR7VR…56IX`](https://stellar.expert/explorer/public/contract/CBLKR7VRLZOILD53YTSXBYT3C2I7Z2ZYUYLLU34P532EMXGA4PRL56IX),
+create [`f0dc9589…`](https://stellar.expert/explorer/public/tx/f0dc9589a0809a8e57d0914f5e71d8272f5549dfe1616374dd967b393de89966),
+send [`103a62bf…`](https://stellar.expert/explorer/public/tx/103a62bf9e075b97183169cac0aa17e696855cb25fa662fa275387ebd2c5abbb).
+Every wallet the sponsor has paid for is listed on its
+[account page](https://stellar.expert/explorer/public/account/GBWUM6U4HSTM4CCD6APKROCJPJXBRQTRE67A37ERI424N3AW4DAUDWLS).
 
 Measured mainnet cost: wallet creation **~0.165 XLM** in fees, a payment **~0.003 XLM**. As a pure
 fee sponsor, a small float onboards hundreds of wallets. Reproduce with
 `scripts/e2e-mainnet-proof.mjs` against an app started in mainnet mode
-(`NEXT_PUBLIC_SEMBOL_NETWORK=mainnet`).
+(`NEXT_PUBLIC_SEMBOL_NETWORK=mainnet`). Every fee Sembol Cloud has paid, per project key, can be
+exported from the chain as CSV with `node apps/demo/scripts/export-sponsor-ledger.mjs`.
 
 > **Note on funding a smart wallet:** a Sembol wallet is a *contract* (`C…` address). Exchanges
 > and classic wallets only send classic payments to `G…` addresses, so you cannot fund a smart
@@ -56,7 +68,7 @@ fee sponsor, a small float onboards hundreds of wallets. Reproduce with
 | [`packages/passkey-react`](packages/passkey-react) | **`@sembol/passkey-react`** — the library: 9 components, ~12 headless hooks (create, connect, send, signers, recovery, spending limits), a **typed `theme` API** (`sembolThemeToCss`, presets), WebAuthn edge-case handling, typed errors. **112 tests.** TypeScript, MIT. |
 | [`apps/demo`](apps/demo) | Reference app (Next.js 16 + Tailwind 4) built **only** on the published library: onboarding → dashboard → send → history → security, plus a **theme builder** and multi-page **docs**. Also hosts **Sembol Cloud** (`app/api/relayer` + `lib/sponsor.ts`). |
 | [`apps/storybook`](apps/storybook) | Public Storybook: every component with live examples, a browser-compatibility matrix, a theming playground, and presets. |
-| [`docs/`](docs) | [`SECURITY.md`](docs/SECURITY.md) (Sembol Cloud model), a [Stellar Wallets Kit integration guide](docs/stellar-wallets-kit-integration.md), and a [migration note](docs/migrating-from-passkey-kit.md). |
+| [`docs/`](docs) | [`SECURITY.md`](docs/SECURITY.md) (Sembol Cloud model), a [Stellar Wallets Kit integration guide](docs/stellar-wallets-kit-integration.md), an [interoperability note](docs/interoperability.md), a [builder-feedback synthesis](docs/builder-feedback.md), and a [migration note](docs/migrating-from-passkey-kit.md). |
 | [`AGENTS.md`](AGENTS.md) / [`SKILL.md`](SKILL.md) | For AI coding assistants: when to reach for Sembol, the minimal example, and the constraints that cause real bugs. The library also ships its docs inside the package at `node_modules/@sembol/passkey-react/docs/`, so an assistant can read them without a network call. |
 
 ## Sembol Cloud — fee sponsorship

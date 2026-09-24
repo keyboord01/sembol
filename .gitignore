@@ -27,3 +27,5 @@ coverage/
 e2e-*-failure.png
 .env*
 apps/demo/scripts/mainnet-proof.json
+apps/demo/scripts/mainnet-proof-2.json
+apps/demo/scripts/video/
