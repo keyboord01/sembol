@@ -53,7 +53,7 @@ We have opened a discussion with the Stellar Wallets Kit maintainers on these po
 3. **A shared test fixture**: one OZ smart account on testnet that every passkey library can use to
    check compatibility.
 
-Link: _added when the discussion is opened._
+Link: [Creit-Tech/Stellar-Wallets-Kit#116](https://github.com/Creit-Tech/Stellar-Wallets-Kit/issues/116)
 
 ## Summary
 
